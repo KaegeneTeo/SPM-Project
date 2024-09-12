@@ -14,11 +14,11 @@ export default new Router({
       name: 'Dashboard',
       component: DashboardPage
     },
-    {
-      path: '/settings',
-      name: 'Settings',
-      component: SettingsPage
-    },
+    // {
+    //   path: '/settings',
+    //   name: 'Settings',
+    //   component: SettingsPage
+    // },
     {
       path: '*',
       redirect: '/dashboard'
