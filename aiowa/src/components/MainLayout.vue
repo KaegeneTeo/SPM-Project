@@ -17,7 +17,7 @@
           <a href="#" @click.prevent="handleLinkClick('Team')" class="block text-white text-lg font-medium">Team</a>
           <a href="#" @click.prevent="handleLinkClick('Projects')" class="block text-white text-lg font-medium">Projects</a>
           <a href="#" @click.prevent="handleLinkClick('Calendar')" class="block text-white text-lg font-medium">Calendar</a>
-          <a href="#" @click.prevent="handleLinkClick('Reports')" class="block text-white text-lg font-medium">Reports</a>
+          <a href="#" @click.prevent="handleLinkClick('Requests')" class="block text-white text-lg font-medium">Requests</a>
         </nav>
       </div>
       <div @click="toggleMobileMenu" class="w-full h-full bg-black bg-opacity-50"></div>
@@ -43,11 +43,11 @@
           <!-- Navigation links -->
           <div class="hidden md:block">
             <div class="ml-10 flex items-baseline space-x-4">
-              <a href="#" @click.prevent="handleLinkClick('Dashboard')" class="rounded-md bg-gray-900 px-3 py-2 text-sm font-medium text-white">Dashboard</a>
+              <a href="/dashboard" @click.prevent="handleLinkClick('Dashboard')" class="rounded-md text-gray-300 hover:bg-gray-700 px-3 py-2 text-sm font-medium text-white">Dashboard</a>
               <a href="#" @click.prevent="handleLinkClick('Team')" class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Team</a>
-              <a href="#" @click.prevent="handleLinkClick('Projects')" class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Projects</a>
-              <a href="#" @click.prevent="handleLinkClick('Calendar')" class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Calendar</a>
-              <a href="#" @click.prevent="handleLinkClick('Reports')" class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Reports</a>
+              <a href="" @click.prevent="handleLinkClick('Projects')" class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Projects</a>
+              <a href="/calendar" @click.prevent="handleLinkClick('Calendar')" class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Calendar</a>
+              <a href="/requests" @click.prevent="handleLinkClick('Requests')" class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Requests</a>
             </div>
           </div>
           <!-- Notifications button -->
@@ -71,9 +71,9 @@
                 </div>
                 <!-- Dropdown menu -->
                 <div v-show="showDropdown" class="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="vertical" tabindex="-1">
-                  <a href="#" @click="profilePage" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem" tabindex="-1">Your Profile</a>
-                  <a href="#" @click="settingPage" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem" tabindex="-1">Settings</a>
-                  <a href="#" @click="loginPage" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem" tabindex="-1">Sign out</a>
+                  <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem" tabindex="-1">Your Profile</a>
+                  <a href="/setting" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem" tabindex="-1">Settings</a>
+                  <a href="/login" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem" tabindex="-1">Sign out</a>
                 </div>
               </div>
             </div>
@@ -83,11 +83,6 @@
     </nav>
     
 
-    <header class="bg-white shadow">
-      <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-        <h1 class="text-3xl font-bold tracking-tight text-gray-900">{{ title }}</h1>
-      </div>
-    </header>
 
     <main>
       <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
@@ -99,6 +94,10 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+
+//Routing
+const router = useRouter()
 
 // Props
 const props = defineProps({
@@ -122,26 +121,12 @@ function toggleMobileMenu() {
 }
 
 function handleLinkClick(linkName) {
-  alert(`${linkName} link clicked!`)
-}
-
-function handleNotificationsClick() {
-  alert('Notifications clicked!')
-}
-
-function handleLogoClick() {
-  alert('Home clicked!')
-}
-
-function profilePage() {
-  alert('Profile page clicked!')
-}
-
-function settingPage() {
-  alert('Settings clicked')
+  router.push(`/${linkName.toLowerCase()}`)
 }
 
 function loginPage() {
-  alert('Login page clicked!')
+  router.push('/sign-in')
 }
+
+
 </script>
