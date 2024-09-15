@@ -1,27 +1,21 @@
-// src/router/index.js
-import Vue from 'vue';
-import Router from 'vue-router';
-import DashboardPage from '@/pages/DashboardPage.vue';
-// import SettingsPage from '@/pages/SettingsPage.vue';
+import { createRouter, createWebHistory } from 'vue-router'
+import Dashboard from '../views/Dashboard.vue'
+import Login from '../views/Login.vue'
 
-Vue.use(Router);
-
-export default new Router({
-  mode: 'history',
+const router = createRouter({
+  history: createWebHistory(),
   routes: [
     {
-      path: '/dashboard',
-      name: 'Dashboard',
-      component: DashboardPage
+        path: '/dashboard',
+        name: 'dashboard',
+        component: Dashboard
     },
-    // {
-    //   path: '/settings',
-    //   name: 'Settings',
-    //   component: SettingsPage
-    // },
     {
-      path: '*',
-      redirect: '/dashboard'
+        path: '/login',
+        name: 'login',
+        component: Login
     }
   ]
-});
+})
+
+export default router

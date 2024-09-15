@@ -1,14 +1,10 @@
-<!-- src/App.vue -->
 <template>
-  <div id="app">
-    <router-view></router-view>
-  </div>
+  <MainLayout title="Dashboard">
+    <!-- Your main content goes here -->
+    <router-view></router-view> <!-- This will render the component corresponding to the current route -->
+  </MainLayout>
 </template>
 
-<script>
-import router from './router';
-
-export default {
-  router
-};
+<script setup>
+import MainLayout from './components/MainLayout.vue'
 </script>
