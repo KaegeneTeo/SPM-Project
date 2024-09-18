@@ -11,7 +11,6 @@ CREATE TABLE IF NOT EXISTS Employee (
   Staff_FName VARCHAR(50) NOT NULL,
   Staff_LName VARCHAR(50) NOT NULL,
   Dept VARCHAR(50),
-  Team INT,
   Position VARCHAR(50) NOT NULL,
   Country varchar(50) NOT NULL,
   Email VARCHAR(50) NOT NULL,
@@ -20,20 +19,20 @@ CREATE TABLE IF NOT EXISTS Employee (
   FOREIGN KEY (`Reporting_Manager`) REFERENCES `Employee`(`Staff_ID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
   
-DROP TABLE IF EXISTS Schedule;
-CREATE TABLE IF NOT EXISTS Schedule (
-  Schedule_ID INT PRIMARY KEY,
-  Staff_ID INT NOT NULL,
-  Start_Time DateTime,
-  End_Time DateTime,
-  Reason VARCHAR(200),
-  Status TINYINT NOT NULL,
+DROP TABLE IF EXISTS `Schedule`;
+CREATE TABLE IF NOT EXISTS `Schedule` (
+  `Schedule_ID` INT PRIMARY KEY,
+  `Staff_ID` INT NOT NULL,
+  `Time` CHAR(2) NOT NULL,
+  `Reason` VARCHAR(200),
+  `Status` TINYINT NOT NULL,
   FOREIGN KEY (`Staff_ID`) REFERENCES `Employee`(`Staff_ID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-DROP TABLE IF EXISTS Team;
-CREATE TABLE IF NOT EXISTS Team (
-    Team_ID INT PRIMARY KEY,
-    Staff_ID INT NOT NULL,
-    FOREIGN KEY (`Staff_ID`) REFERENCES `Employee`(`Staff_ID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+DROP TABLE IF EXISTS `Team`;
+CREATE TABLE IF NOT EXISTS `Team` (
+  `Staff_ID` INT NOT NULL,
+  `Team` INT NOT NULL,
+  FOREIGN KEY (`Staff_ID`) REFERENCES `Employee`(`Staff_ID`),
+  PRIMARY KEY (`Staff_ID`, `Team`)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
