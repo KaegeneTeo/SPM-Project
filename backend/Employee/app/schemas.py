@@ -3,24 +3,25 @@ from datetime import datetime
 from typing import List
 
 
-class User(BaseModel):
-    user_id: int | None = None
-    username: str
-    email: str
-    password: str | None = None
-    password_hash: str | None = None
-    telegram_id : str | None = None
-    telegram_tag: str | None = None
-    image: str | None = None
+class Employee(BaseModel):
+    staff_id = int
+    staff_fname = str
+    staff_lname = str
+    dept = str | None = None
+    position = str
+    country = str
+    email = str
+    reporting_manager = int | None = None
+    role = str
 
-class UserResponse(BaseModel):
-    user_id: int
-    username: str
-    email: str
-    password_hash: str
-    telegram_id : str | None = None
-    telegram_tag: str | None = None
-    image: str | None = None
-
-class UserIDs(BaseModel):
-    user_ids: List[int]
+class EmployeeResponse(BaseModel):
+    staff_id = int
+    staff_fname = str
+    staff_lname = str
+    dept = str | None = None
+    position = str
+    country = str
+    email = str
+    reporting_manager = int | None = None
+    role = str
+    

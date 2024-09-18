@@ -3,7 +3,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from dotenv import load_dotenv
 from contextlib import contextmanager
-load_dotenv()
+#load_dotenv()
 import os
 
 
@@ -12,11 +12,11 @@ import os
 #SQLALCHEMY_DATABASE_URL = 'mysql+mysqlconnector://is213@localhost:8889/user'
 # SQLALCHEMY_DATABASE_URL = os.getenv("SQLALCHEMY_DATABASE_URL")
 
-db_host = os.getenv("USER_MYSQL_DATABASE")
-db_port = os.getenv("MYSQL_PORT") 
-db_pwd = os.getenv("MYSQL_ROOT_PASSWORD") 
+db_host = 'root' 
+db_port = 'localhost'
+db_pwd = '3306'
 
-dbURL = f'mysql+mysqlconnector://root:{db_pwd}@{db_host}:{db_port}/user'
+dbURL = f'mysql+mysqlconnector://root:{db_pwd}@{db_host}:{db_port}/Employee'
 
 engine = create_engine(dbURL, echo=True)
 

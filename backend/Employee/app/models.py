@@ -1,16 +1,16 @@
 from sqlalchemy import Column, Integer, TIMESTAMP, String
-from sqlalchemy.orm import relationship
 from database import Base
 
-class User(Base):
-    __tablename__ = 'user'
-    user_id = Column(Integer, primary_key=True)
-    username = Column(String(64), nullable=False)
-    email = Column(String(64), nullable=False)
-    password_hash = Column(String(64), nullable=False)
-    telegram_id = Column(String(64), nullable=True)
-    telegram_tag = Column(String(64), nullable=True)
-    image = Column(String(256), nullable=True)
-
+class Employee(Base):
+    __tablename__ = 'employee'
+    staff_id = Column(Integer, primary_key=True)
+    staff_fname = Column(String(64), nullable=False)
+    staff_lname = Column(String(64), nullable=False)
+    dept = Column(String(64), nullable=True)
+    position = Column(String(64), nullable=False)
+    country = Column(String(64), nullable=False)
+    email = Column(String(256), nullable=False)
+    reporting_manager = Column(Integer, nullable=False)
+    role = Column(Integer, nullable=False)
   
 
