@@ -80,3 +80,7 @@ def login(login: schemas.Login):
     if not check_password_hash(user_result["password_hash"], login.password):
         raise HTTPException(status_code=401, detail="Invalid password.")
     return jsonable_encoder({"message": "User logged in successfully.", "user": user_result})
+
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="127.0.0.1", port=5049)
