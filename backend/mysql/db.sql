@@ -24,8 +24,8 @@ DROP TABLE IF EXISTS Schedule;
 CREATE TABLE IF NOT EXISTS Schedule (
   Schedule_ID INT PRIMARY KEY,
   Staff_ID INT NOT NULL,
-  StartTime DateTime,
-  EndTime DateTime,
+  Start_Time DateTime,
+  End_Time DateTime,
   Reason VARCHAR(200),
   Status TINYINT NOT NULL,
   FOREIGN KEY (`Staff_ID`) REFERENCES `Employee`(`Staff_ID`)

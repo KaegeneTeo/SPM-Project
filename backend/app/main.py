@@ -9,7 +9,7 @@ from contextlib import asynccontextmanager
 from fastapi.responses import JSONResponse
 from dotenv import load_dotenv
 from fastapi import Body
-
+from werkzeug.security import generate_password_hash, check_password_hash
 #load_dotenv()
 
 
@@ -65,3 +65,18 @@ async def get_employee_by_name(name: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Employee not found.")
     return jsonable_encoder(result)
 
+@app.post("/signup")
+def signup(employee: schemas.Employee):
+    employee.password_hash = generate_password_hash(employee.password, method='pbkdf2:sha256')
+    # signup code here
+
+    return jsonable_encoder({"message": "User created successfully.", "user": user_result.json()})
+
+@app.post("/login")
+def login(login: schemas.Login):
+    # login = email & password
+    # login code here
+    user_result = user_result.json()
+    if not check_password_hash(user_result["password_hash"], login.password):
+        raise HTTPException(status_code=401, detail="Invalid password.")
+    return jsonable_encoder({"message": "User logged in successfully.", "user": user_result})

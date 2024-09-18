@@ -13,4 +13,7 @@ class Employee(Base):
     reporting_manager = Column(Integer, nullable=False)
     role = Column(Integer, nullable=False)
   
-
+class Schedule(Base):
+    schedule_id = Column(Integer, primary_key=True)
+    staff_id = Column(Integer, nullable=False)
+    start_time = Column(Datetime, nullable=False)

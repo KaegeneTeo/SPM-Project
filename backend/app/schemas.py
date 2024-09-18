@@ -13,6 +13,8 @@ class Employee(BaseModel):
     email = str
     reporting_manager = int | None = None
     role = str
+    password: str
+    password_hash: str | None = None
 
 class EmployeeResponse(BaseModel):
     staff_id = int
@@ -24,4 +26,8 @@ class EmployeeResponse(BaseModel):
     email = str
     reporting_manager = int | None = None
     role = str
-    
+
+
+class Login(BaseModel):
+    email: str
+    password: str
