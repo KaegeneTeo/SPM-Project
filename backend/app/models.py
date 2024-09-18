@@ -18,8 +18,7 @@ class Schedule(Base):
     __tablename__ = 'schedule'
     schedule_id = Column(Integer, primary_key=True)
     staff_id = Column(Integer, nullable=False)
-    start_time = Column(TIMESTAMP, nullable=False)
-    end_time = Column(TIMESTAMP, nullable=False)
+    time = Column(String(2), nullable=False)
     reason = Column(String(256), nullable=True)
     status = Column(Integer, nullable=False)
 
