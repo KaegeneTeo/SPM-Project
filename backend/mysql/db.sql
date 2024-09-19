@@ -5,8 +5,8 @@ USE HRMS;
 -- ---------------------------------------------------------------- --
 --                     Employee TABLE                        --
 -- ---------------------------------------------------------------- --
-DROP TABLE IF EXISTS Employee;
-CREATE TABLE IF NOT EXISTS Employee (
+DROP TABLE IF EXISTS `Employee`;
+CREATE TABLE IF NOT EXISTS `Employee` (
   `Staff_ID` INT PRIMARY KEY,
   `Staff_FName` VARCHAR(50) NOT NULL,
   `Staff_LName` VARCHAR(50) NOT NULL,
@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS `Request` (
   `Time_Slot` TINYINT NOT NULL,
   `Request_Type` TINYINT NOT NULL,
   FOREIGN KEY (`Staff_ID`) REFERENCES `Employee`(`Staff_ID`),
-  FOREIGN KEY (`Schedule_ID`) REFERENCES `Schedule`(`Schedule_ID`),
+  FOREIGN KEY (`Schedule_ID`) REFERENCES `Schedule`(`Schedule_ID`)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
