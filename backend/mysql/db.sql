@@ -23,6 +23,7 @@ DROP TABLE IF EXISTS `Schedule`;
 CREATE TABLE IF NOT EXISTS `Schedule` (
   `Schedule_ID` INT PRIMARY KEY,
   `Staff_ID` INT NOT NULL,
+  `Date` DATE NOT NULL,
   `Time` CHAR(2) NOT NULL,
   `Reason` VARCHAR(200),
   `Status` TINYINT NOT NULL,

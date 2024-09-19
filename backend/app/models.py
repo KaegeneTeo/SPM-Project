@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, TIMESTAMP, String, ForeignKey
+from sqlalchemy import Column, Integer, TIMESTAMP, String, ForeignKey, Date
 from database import Base
 
 class Employee(Base):
@@ -18,6 +18,7 @@ class Schedule(Base):
     __tablename__ = 'schedule'
     schedule_id = Column(Integer, primary_key=True)
     staff_id = Column(Integer, nullable=False)
+    date = Column(Date, nullable=False)
     time = Column(String(2), nullable=False)
     reason = Column(String(256), nullable=True)
     status = Column(Integer, nullable=False)
