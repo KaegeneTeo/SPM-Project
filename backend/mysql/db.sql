@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS `Request` (
   `Schedule_ID` INT NOT NULL,
   `Reason` VARCHAR(200) NOT NULL,
   `Status` TINYINT NOT NULL,
-  -- `File_Type` MEDIUMBLOB,
+  -- `File_Type` MEDIUMBLOB, SQL cant handle file data types so omitting for now
   `Date` DATE NOT NULL,
   `Time_Slot` TINYINT NOT NULL,
   `Request_Type` TINYINT NOT NULL,
