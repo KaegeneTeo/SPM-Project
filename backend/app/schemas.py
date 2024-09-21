@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from datetime import datetime
+from datetime import date
 from typing import List
 
 
@@ -31,3 +31,12 @@ class EmployeeResponse(BaseModel):
 class Login(BaseModel):
     email: str
     password: str
+
+class RequestCreate(BaseModel):
+    staff_id: int
+    schedule_id: int
+    reason: str
+    status: int
+    date: date
+    time_slot: int
+    request_type: int

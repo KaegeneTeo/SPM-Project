@@ -28,3 +28,13 @@ class Team(Base):
     team_id = Column(Integer, primary_key=True)
     staff_id = Column(Integer, primary_key=True)
 
+class Request(Base):
+    __tablename__ = "Request"
+    request_id = Column(Integer, primary_key=True)
+    staff_id = Column(Integer, ForeignKey("employee.staff_id"),nullable=False)
+    schedule_id = Column(Integer, ForeignKey("schedule.schedule_id"), nullable = False)
+    reason = Column(String(200), nullable=False)
+    status = Column(Integer, nullable=False)
+    date = Column(Date, nullable=False)
+    time_slot = Column(Integer, nullable=False)
+    request_type = Column(Integer, nullable=False)

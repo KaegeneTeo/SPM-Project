@@ -1,7 +1,8 @@
 from fastapi import FastAPI, Depends, Form, UploadFile, File, HTTPException
 from database import SessionLocal
 from fastapi.encoders import jsonable_encoder
-import crud, schemas
+import crud, schemas,models
+import uvicorn
 from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
 import os
@@ -80,6 +81,24 @@ def login(login: schemas.Login):
     if not check_password_hash(user_result["password_hash"], login.password):
         raise HTTPException(status_code=401, detail="Invalid password.")
     return jsonable_encoder({"message": "User logged in successfully.", "user": user_result})
+
+@app.post("/requests/")
+def create_request(request: schemas.RequestCreate, db: Session = Depends(get_db)):
+    db_request = models.Request(
+        staff_id=request.staff_id,
+        schedule_id=request.schedule_id,
+        reason=request.reason,
+        status=request.status,
+        date=request.date,
+        time_slot=request.time_slot,
+        request_type=request.request_type,
+    )
+    
+    db.add(db_request)
+    db.commit()
+    db.refresh(db_request)  
+    
+    return db_request
 
 
 if __name__ == "__main__":

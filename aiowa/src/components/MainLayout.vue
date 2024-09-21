@@ -47,7 +47,7 @@
               <a href="#" @click.prevent="handleLinkClick('Team')" class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Team</a>
               <a href="/schedule" @click.prevent="handleLinkClick('Schedule')" class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Schedules</a>
               <a href="/calendar" @click.prevent="handleLinkClick('Calendar')" class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Calendar</a>
-              <a href="/requests" @click.prevent="handleLinkClick('Requests')" class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Requests</a>
+              <a href="/request" @click.prevent="handleLinkClick('Request')" class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Requests</a>
             </div>
           </div>
           <!-- Notifications button -->
