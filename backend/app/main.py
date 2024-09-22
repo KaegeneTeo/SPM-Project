@@ -1,10 +1,11 @@
-from fastapi import FastAPI, Depends, Form, UploadFile, File, HTTPException
+from fastapi import FastAPI, Depends, Form, UploadFile, File, HTTPException, Request
 from database import SessionLocal
 from fastapi.encoders import jsonable_encoder
 import crud, schemas,models
 import uvicorn
 from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.sessions import SessionMiddleware
 import os
 from contextlib import asynccontextmanager
 from fastapi.responses import JSONResponse
@@ -30,6 +31,12 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.add_middleware(
+    SessionMiddleware,
+    secret_key='your_secret_key'
+)  # Replace with your own secret key
+
 def get_db():
     db = SessionLocal()
     try:
@@ -68,16 +75,27 @@ async def get_employee_by_name(name: str, db: Session = Depends(get_db)):
 
 
 @app.post("/login")
-def login(login: schemas.Login, db: Session = Depends(get_db)):
+def login(request: Request, login: schemas.Login, db: Session = Depends(get_db)):
     # login = email & password
     print(login)
     user_result = crud.get_employee_by_email(db, login.email)
+    if user_result is None:
+        raise HTTPException(status_code=404, detail="User not found.")
     # login code here
 
     print(user_result.password_hash)
     if not check_password_hash(user_result.password_hash, login.password):
         raise HTTPException(status_code=401, detail="Invalid password.")
+    request.session['staff_id'] = user_result.staff_id
+    print("Session stored:", request.session)
     return jsonable_encoder({"message": "User logged in successfully.", "user": user_result})
+
+@app.post("/logout")
+def logout(request: Request):
+    # Clear the session (log out the user)
+    request.session.clear()
+    print("Session Cleared:", request.session)
+    return {"message": "User logged out successfully."}
 
 @app.post("/requests/")
 def create_request(request: schemas.RequestCreate, db: Session = Depends(get_db)):

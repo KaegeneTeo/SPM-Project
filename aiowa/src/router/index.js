@@ -19,13 +19,13 @@ const router = createRouter({
         component: Login
     },
     {
-      path: '/schedule',
-      name: 'schedule',
+      path: '/schedules',
+      name: 'schedules',
       component: Schedule
     },
     {
-      path: '/request',
-      name: 'request',
+      path: '/requests',
+      name: 'requests',
       component: Request
     },
     {

@@ -59,12 +59,12 @@ CREATE TABLE IF NOT EXISTS `Team` (
 --                    FAKE DATA                       --
 -- ---------------------------------------------------------------- --
 
-INSERT INTO Employee (Staff_ID, Staff_FName, Staff_LName, Dept, Position, Country, Email, Reporting_Manager, Role, Hashed_Password) VALUES
-(130002, 'Jack', 'Sim', 'CEO', 'MD', 'Singapore', 'jack.sim@allinone.com.sg', 130002, 1, '5e884898da28047151d0e56f8dc6292773603d0d'), -- Hashed password using SHA-256 for "password"
-(140001, 'Derek', 'Tan', 'Sales', 'Director', 'Singapore', 'Derek.Tan@allinone.com.sg', 130002, 1, '6f8db599de986fab7a21625b7916589c82d6b01d'), -- Hashed password using SHA-1 for "admin"
-(140894, 'Rahim', 'Khalid', 'Sales', 'Sales Manager', 'Singapore', 'Rahim.Khalid@allinone.com.sg', 140001, 3, '7c222fb2927d828af22f592134e8932480637c0d'), -- Hashed password using MD5 for "123456"
-(140002, 'Susan', 'Goh', 'Sales', 'Account Manager', 'Singapore', 'Susan.Goh@allinone.com.sg', 140894, 2, '3c59dc048e8850243be8079a5c74d079988e6f19'),  -- Hashed password using MD5 for "qwerty"
-(160008, 'Sally', 'Loh', 'HR', 'Director', 'Singapore', 'Sally.Loh@allinone.com.sg', 130002, 1, '36bbe50ed96841d10443bcb670d6554f0a34b761be67ec9c4a8ad2c0c44ca42c');  -- Hashed password using sha-256 for "abcde"
+INSERT INTO Employee (Staff_ID, Staff_FName, Staff_LName, Dept, Position, Country, Email, Reporting_Manager, Role, Password_Hash) VALUES
+(130002, 'Jack', 'Sim', 'CEO', 'MD', 'Singapore', 'jack.sim@allinone.com.sg', 130002, 1, 'pbkdf2:sha256:600000$SQQlT5qCT30Vws7V$9b0c930e3c3751c4e282e9ddc05f082cd69580b614be900754be764167eb8f13'), -- Hashed password using 123
+(140001, 'Derek', 'Tan', 'Sales', 'Director', 'Singapore', 'Derek.Tan@allinone.com.sg', 130002, 1, 'pbkdf2:sha256:600000$SQQlT5qCT30Vws7V$9b0c930e3c3751c4e282e9ddc05f082cd69580b614be900754be764167eb8f13'), -- Hashed password using 123
+(140894, 'Rahim', 'Khalid', 'Sales', 'Sales Manager', 'Singapore', 'Rahim.Khalid@allinone.com.sg', 140001, 3, 'pbkdf2:sha256:600000$SQQlT5qCT30Vws7V$9b0c930e3c3751c4e282e9ddc05f082cd69580b614be900754be764167eb8f13'), -- Hashed password using 123
+(140002, 'Susan', 'Goh', 'Sales', 'Account Manager', 'Singapore', 'Susan.Goh@allinone.com.sg', 140894, 2, 'pbkdf2:sha256:600000$SQQlT5qCT30Vws7V$9b0c930e3c3751c4e282e9ddc05f082cd69580b614be900754be764167eb8f13'),  -- Hashed password using 123
+(160008, 'Sally', 'Loh', 'HR', 'Director', 'Singapore', 'Sally.Loh@allinone.com.sg', 130002, 1, 'pbkdf2:sha256:600000$SQQlT5qCT30Vws7V$9b0c930e3c3751c4e282e9ddc05f082cd69580b614be900754be764167eb8f13');  -- Hashed password using 123
 
 -- Insert data into Schedule table
 INSERT INTO Schedule (Schedule_ID, Staff_ID, Date, Time_Slot) VALUES
