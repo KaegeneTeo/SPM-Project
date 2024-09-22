@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, TIMESTAMP, String, ForeignKey
+from sqlalchemy import Column, Integer, TIMESTAMP, String, ForeignKey, Date
 from database import Base
 
 class Employee(Base):
@@ -18,14 +18,23 @@ class Employee(Base):
 class Schedule(Base):
     __tablename__ = 'schedule'
     schedule_id = Column(Integer, primary_key=True)
-    staff_id = Column(Integer, nullable=False)
-    start_time = Column(TIMESTAMP, nullable=False)
-    end_time = Column(TIMESTAMP, nullable=False)
-    reason = Column(String(256), nullable=True)
-    status = Column(Integer, nullable=False)
+    staff_id = Column(Integer, ForeignKey("employee.staff_id"), nullable=False)
+    date = Column(Date, nullable=False)
+    time_slot = Column(Integer, nullable=False)
+
 
 class Team(Base):
     __tablename__ = 'team'
     team_id = Column(Integer, primary_key=True)
-    staff_id = Column(Integer, primary_key=True)
+    staff_id = Column(Integer, ForeignKey("employee.staff_id"), primary_key=True)
 
+class Request(Base):
+    __tablename__ = "Request"
+    request_id = Column(Integer, primary_key=True)
+    staff_id = Column(Integer, ForeignKey("employee.staff_id"),nullable=False)
+    schedule_id = Column(Integer, ForeignKey("schedule.schedule_id"), nullable = False)
+    reason = Column(String(200), nullable=False)
+    status = Column(Integer, nullable=False)
+    date = Column(Date, nullable=False)
+    time_slot = Column(Integer, nullable=False)
+    request_type = Column(Integer, nullable=False)

@@ -15,7 +15,7 @@
         <nav class="mt-8 px-4 space-y-4">
           <a href="#" @click.prevent="handleLinkClick('Dashboard')" class="block text-white text-lg font-medium">Dashboard</a>
           <a href="#" @click.prevent="handleLinkClick('Team')" class="block text-white text-lg font-medium">Team</a>
-          <a href="#" @click.prevent="handleLinkClick('Projects')" class="block text-white text-lg font-medium">Projects</a>
+          <a href="#" @click.prevent="handleLinkClick('Schedules')" class="block text-white text-lg font-medium">Schedules</a>
           <a href="#" @click.prevent="handleLinkClick('Calendar')" class="block text-white text-lg font-medium">Calendar</a>
           <a href="#" @click.prevent="handleLinkClick('Requests')" class="block text-white text-lg font-medium">Requests</a>
         </nav>
@@ -45,9 +45,9 @@
             <div class="ml-10 flex items-baseline space-x-4">
               <a href="/dashboard" @click.prevent="handleLinkClick('Dashboard')" class="rounded-md text-gray-300 hover:bg-gray-700 px-3 py-2 text-sm font-medium text-white">Dashboard</a>
               <a href="#" @click.prevent="handleLinkClick('Team')" class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Team</a>
-              <a href="" @click.prevent="handleLinkClick('Projects')" class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Projects</a>
+              <a href="/schedule" @click.prevent="handleLinkClick('Schedule')" class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Schedules</a>
               <a href="/calendar" @click.prevent="handleLinkClick('Calendar')" class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Calendar</a>
-              <a href="/requests" @click.prevent="handleLinkClick('Requests')" class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Requests</a>
+              <a href="/request" @click.prevent="handleLinkClick('Request')" class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Requests</a>
             </div>
           </div>
           <!-- Notifications button -->
