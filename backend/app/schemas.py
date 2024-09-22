@@ -13,7 +13,6 @@ class Employee(BaseModel):
     email : str
     reporting_manager : int | None = None
     role : str
-    password: str
     password_hash: str | None = None
 
 class EmployeeResponse(BaseModel):
@@ -26,6 +25,7 @@ class EmployeeResponse(BaseModel):
     email : str
     reporting_manager : int | None = None
     role : str
+    password_hash: str | None = None
 
 
 class Login(BaseModel):
@@ -40,3 +40,14 @@ class RequestCreate(BaseModel):
     date: date
     time_slot: int
     request_type: int
+
+class RequestResponse(BaseModel):
+    request_id: int
+    staff_id: int
+    schedule_id: int
+    reason: str
+    status: int
+    date: date
+    time_slot: int
+    request_type: int
+    

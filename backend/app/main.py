@@ -101,5 +101,26 @@ def create_request(request: schemas.RequestCreate, db: Session = Depends(get_db)
     return db_request
 
 
+# Retrieve all staff IDs based on Team_ID (Logged in user's) and retrieve all their requests
+@app.get("/team/{team_id}/requests", response_model=list[schemas.RequestResponse])
+def get_requests_for_team(team_id: int, db: Session = Depends(get_db)):
+    # Get all Staff_IDs by the specified Team_ID
+    staff_ids = crud.get_staff_ids_by_team(db, team_id)
+    
+    # Check if staff_ids list is empty and throw error message if it is
+    if not staff_ids:
+        raise HTTPException(status_code=404, detail=f"No staff found for Team ID {team_id}")
+    
+    # Get all requests for the list of staff IDs
+    requests = crud.get_requests_by_staff_ids(db, staff_ids)
+    
+    # Check if requests are found, else throw error message
+    if not requests:
+        raise HTTPException(status_code=404, detail="No requests found for staff members in this team.")
+    
+    # Return the retrieved request records
+    return jsonable_encoder(requests)
+
+
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=5049)

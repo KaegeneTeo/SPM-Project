@@ -20,6 +20,13 @@ def get_employee_by_name(db: Session, name: str):
         return None
     return db_employee
 
+# Retrieve all staff by team from Team table
+# Can use for viewing schedules/requests for only members of your team (filtered by Team_ID = Current logged in user's Team_ID)
+# Possible logic: Store user's Team_ID as a session variable upon login using localStorage.setItem
+def get_staff_ids_by_team(db: Session, team_id: int):
+    staff_ids = db.query(models.Team.Staff_ID).filter(models.Team.Team_ID == team_id).all()
+    return [staff_id[0] for staff_id in staff_ids]
+
 
 def check_password(self, password):
     return check_password_hash(self.password_hash, password)

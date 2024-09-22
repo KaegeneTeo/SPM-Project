@@ -12,21 +12,21 @@ class Employee(Base):
     email = Column(String(256), nullable=False)
     reporting_manager = Column(Integer, ForeignKey("employee.staff_id"), nullable=False)
     role = Column(Integer, nullable=False)
+    password_hash = Column(String(100), nullable=False)
     
   
 class Schedule(Base):
     __tablename__ = 'schedule'
     schedule_id = Column(Integer, primary_key=True)
-    staff_id = Column(Integer, nullable=False)
+    staff_id = Column(Integer, ForeignKey("employee.staff_id"), nullable=False)
     date = Column(Date, nullable=False)
-    time = Column(String(2), nullable=False)
-    reason = Column(String(256), nullable=True)
-    status = Column(Integer, nullable=False)
+    time_slot = Column(Integer, nullable=False)
+
 
 class Team(Base):
     __tablename__ = 'team'
     team_id = Column(Integer, primary_key=True)
-    staff_id = Column(Integer, primary_key=True)
+    staff_id = Column(Integer, ForeignKey("employee.staff_id"), primary_key=True)
 
 class Request(Base):
     __tablename__ = "Request"
