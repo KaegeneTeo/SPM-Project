@@ -28,6 +28,15 @@ def get_staff_ids_by_team(db: Session, team_id: int):
     return [staff_id[0] for staff_id in staff_ids]
 
 
+# Retrieve all requests from staff members in the list of staff_ids
+def get_requests_by_staff_ids(db: Session, staff_ids: list):
+    if not staff_ids:
+        return []
+    requests = db.query(models.Request).filter(models.Request.Staff_ID.in_(staff_ids)).all()
+    return requests
+
+
+
 def check_password(self, password):
     return check_password_hash(self.password_hash, password)
 

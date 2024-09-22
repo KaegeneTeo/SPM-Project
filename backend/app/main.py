@@ -118,7 +118,7 @@ def get_requests_for_team(team_id: int, db: Session = Depends(get_db)):
     if not requests:
         raise HTTPException(status_code=404, detail="No requests found for staff members in this team.")
     
-    # Return the retrieved request records
+    # Return the retrieved requests
     return jsonable_encoder(requests)
 
 
