@@ -12,6 +12,7 @@ class Employee(Base):
     email = Column(String(256), nullable=False)
     reporting_manager = Column(Integer, ForeignKey("employee.staff_id"), nullable=False)
     role = Column(Integer, nullable=False)
+    password_hash = Column(String(256), nullable=False)
     
   
 class Schedule(Base):

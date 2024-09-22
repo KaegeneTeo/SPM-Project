@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS Employee (
   Email VARCHAR(50) NOT NULL,
   Reporting_Manager INT,
   Role INT NOT NULL,
+  Password_Hash VARCHAR(256) NOT NULL,
   FOREIGN KEY (`Reporting_Manager`) REFERENCES `Employee`(`Staff_ID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
   

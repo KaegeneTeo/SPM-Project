@@ -65,22 +65,16 @@ async def get_employee_by_name(name: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Employee not found.")
     return jsonable_encoder(result)
 
-@app.post("/signup")
-def signup(employee: schemas.Employee):
-    employee.password_hash = generate_password_hash(employee.password, method='pbkdf2:sha256')
-    # signup code here
-
-    return jsonable_encoder({"message": "User created successfully.", "user": user_result.json()})
 
 @app.post("/login")
-def login(login: schemas.Login):
+def login(login: schemas.Login, db: Session = Depends(get_db)):
     # login = email & password
+    print(login)
+    user_result = crud.get_employee_by_email(db, login.email)
     # login code here
-    user_result = user_result.json()
-    if not check_password_hash(user_result["password_hash"], login.password):
+
+    print(user_result.password_hash)
+    if not check_password_hash(user_result.password_hash, login.password):
         raise HTTPException(status_code=401, detail="Invalid password.")
     return jsonable_encoder({"message": "User logged in successfully.", "user": user_result})
 
-
-if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=5049)
