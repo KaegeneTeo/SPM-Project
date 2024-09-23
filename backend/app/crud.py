@@ -24,3 +24,15 @@ def get_employee_by_name(db: Session, name: str):
 def check_password(self, password):
     return check_password_hash(self.password_hash, password)
 
+def get_schedules(db: Session, filters: dict):
+    dept = filters.dept
+    team = filters.team
+    staff_id = filters.staff_id
+    results = db.query(models.Employee).join(models.Schedule).filter(
+    models.Schedule.status == 1,
+    models.Employee.dept == dept,
+    models.Employee.team == team,
+    models.Employee.Staff_ID == staff_id
+    ).all()
+    return results
+

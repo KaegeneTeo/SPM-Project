@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, TIMESTAMP, String, ForeignKey, Date
+from sqlalchemy.orm import relationship, sessionmaker
 from database import Base
 
 class Employee(Base):
@@ -22,6 +23,8 @@ class Schedule(Base):
     time = Column(String(2), nullable=False)
     reason = Column(String(256), nullable=True)
     status = Column(Integer, nullable=False)
+    schedules = relationship("Schedule", back_populates="employee")
+
 
 class Team(Base):
     __tablename__ = 'team'
