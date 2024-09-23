@@ -13,11 +13,11 @@
         </div>
         <!-- Mobile navigation links -->
         <nav class="mt-8 px-4 space-y-4">
-          <a href="#" @click.prevent="handleLinkClick('Dashboard')" class="block text-white text-lg font-medium">Dashboard</a>
-          <a href="#" @click.prevent="handleLinkClick('Team')" class="block text-white text-lg font-medium">Team</a>
-          <a href="#" @click.prevent="handleLinkClick('Schedules')" class="block text-white text-lg font-medium">Schedules</a>
-          <a href="#" @click.prevent="handleLinkClick('Calendar')" class="block text-white text-lg font-medium">Calendar</a>
-          <a href="#" @click.prevent="handleLinkClick('Requests')" class="block text-white text-lg font-medium">Requests</a>
+          <a @click.prevent="handleLinkClick('Dashboard')" class="block text-white text-lg font-medium">Dashboard</a>
+          <a @click.prevent="handleLinkClick('Team')" class="block text-white text-lg font-medium">Team</a>
+          <a @click.prevent="handleLinkClick('Schedules')" class="block text-white text-lg font-medium">Schedules</a>
+          <a @click.prevent="handleLinkClick('Calendar')" class="block text-white text-lg font-medium">Calendar</a>
+          <a @click.prevent="handleLinkClick('Requests')" class="block text-white text-lg font-medium">Requests</a>
         </nav>
       </div>
       <div @click="toggleMobileMenu" class="w-full h-full bg-black bg-opacity-50"></div>
@@ -43,11 +43,11 @@
           <!-- Navigation links -->
           <div class="hidden md:block">
             <div class="ml-10 flex items-baseline space-x-4">
-              <a href="/dashboard" @click.prevent="handleLinkClick('Dashboard')" class="rounded-md text-gray-300 hover:bg-gray-700 px-3 py-2 text-sm font-medium text-white">Dashboard</a>
-              <a href="#" @click.prevent="handleLinkClick('Team')" class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Team</a>
-              <a href="/schedule" @click.prevent="handleLinkClick('Schedule')" class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Schedules</a>
-              <a href="/calendar" @click.prevent="handleLinkClick('Calendar')" class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Calendar</a>
-              <a href="/requests" @click.prevent="handleLinkClick('Requests')" class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Requests</a>
+              <a @click.prevent="handleLinkClick('Dashboard')" class="rounded-md text-gray-300 hover:bg-gray-700 px-3 py-2 text-sm font-medium text-white">Dashboard</a>
+              <a @click.prevent="handleLinkClick('Team')" class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Team</a>
+              <a @click.prevent="handleLinkClick('Schedules')" class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Schedules</a>
+              <a @click.prevent="handleLinkClick('Calendar')" class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Calendar</a>
+              <a @click.prevent="handleLinkClick('Requests')" class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Requests</a>
             </div>
           </div>
           <!-- Notifications button -->
@@ -71,9 +71,9 @@
                 </div>
                 <!-- Dropdown menu -->
                 <div v-show="showDropdown" class="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="vertical" tabindex="-1">
-                  <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem" tabindex="-1">Your Profile</a>
-                  <a href="/setting" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem" tabindex="-1">Settings</a>
-                  <a href="/login" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem" tabindex="-1">Sign out</a>
+                  <a @click.prevent="handleLinkClick('Profile')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem" tabindex="-1">Your Profile</a>
+                  <a @click.prevent="handleLinkClick('Settings')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem" tabindex="-1">Settings</a>
+                  <a @click.prevent="handleSignOut('Login')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem" tabindex="-1">Sign out</a>
                 </div>
               </div>
             </div>
@@ -95,8 +95,9 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import axios from 'axios' // Import axios
 
-//Routing
+// Routing
 const router = useRouter()
 
 // Props
@@ -124,9 +125,17 @@ function handleLinkClick(linkName) {
   router.push(`/${linkName.toLowerCase()}`)
 }
 
-function loginPage() {
-  router.push('/sign-in')
+// Sign out method
+async function handleSignOut() {
+  try {
+    // Call your endpoint to clear the session
+    await axios.post('http://127.0.0.1:5049/logout'); // Adjust this URL as needed
+
+    // Then route to the login page
+    router.push('/login');
+  } catch (error) {
+    console.error('Error during sign out:', error);
+  }
 }
-
-
 </script>
+

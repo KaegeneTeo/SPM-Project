@@ -28,23 +28,21 @@
       </div>
   
       <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-        <form class="space-y-6" action="#" method="POST">
+        <form class="space-y-6" @submit.prevent="handleLogin" method="POST">
           <div>
             <label for="email" class="block text-sm font-medium leading-6 text-gray-900">Email address</label>
             <div class="mt-2">
-              <input id="email" name="email" type="email" autocomplete="email" required="" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
+              <input  v-model="email" id="email" name="email" type="email" autocomplete="email" required class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
             </div>
           </div>
   
           <div>
             <div class="flex items-center justify-between">
               <label for="password" class="block text-sm font-medium leading-6 text-gray-900">Password</label>
-              <div class="text-sm">
-                <a href="#" class="font-semibold text-indigo-600 hover:text-indigo-500">Forgot password?</a>
-              </div>
+              
             </div>
             <div class="mt-2">
-              <input id="password" name="password" type="password" autocomplete="current-password" required="" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
+              <input v-model="password" id="password" name="password" type="password" autocomplete="current-password" required class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
             </div>
           </div>
   
@@ -57,4 +55,46 @@
       </div>
     </div>
   </template>
+
+<script>
+import { ref } from 'vue';
+import axios from 'axios';
+import { useRouter } from 'vue-router'; // Import the router
+
+export default {
+  setup() {
+    const email = ref('');
+    const password = ref('');
+    const errorMessage = ref('');
+    const router = useRouter(); // Access router
+
+    const handleLogin = async () => {
+      try {
+        const response = await axios.post('http://127.0.0.1:5049/login', {
+          email: email.value,
+          password: password.value,
+        });
+
+        console.log('Login successful:', response.data);
+        if (response.data) {
+          router.push('/schedules');
+        }
+      } catch (error) {
+        console.error('Login failed:', error);
+        errorMessage.value = 'Invalid email or password. Please try again.';
+      }
+    };
+
+    const handleLinkClick = (linkName) => {
+      router.push(`/${linkName.toLowerCase()}`);
+    };
+
+    return { email, password, handleLogin, handleLinkClick, errorMessage };
+  },
+};
+</script>
+
+<style scoped>
+/* Your styles here */
+</style>
   
