@@ -90,9 +90,20 @@ def login(request: Request, login: schemas.Login, db: Session = Depends(get_db))
     hash = binascii.hexlify(bytes).decode()
     if not user_result.password_hash == hash:
         raise HTTPException(status_code=401, detail="Invalid password.")
+    
+    # Store the Staff_ID in the session
     request.session['staff_id'] = user_result.staff_id
+    
+    # Get the Team_ID(s) associated with the user's Staff_ID
+    team_ids = crud.get_team_ids(db, user_result.staff_id)
+    
+    # Store the Team_ID(s) in the session
+    request.session['team_ids'] = team_ids
+    
     print("Session stored:", request.session)
-    return jsonable_encoder({"message": "User logged in successfully.", "user": user_result})
+    return jsonable_encoder({"message": "User logged in successfully.", 
+                             "user": user_result, 
+                             "team_ids": team_ids})
 
 @app.post("/logout")
 def logout(request: Request):
@@ -120,22 +131,28 @@ def create_request(request: schemas.RequestCreate, db: Session = Depends(get_db)
     return db_request
 
 
-# Retrieve all staff IDs based on Team_ID (Logged in user's) and retrieve all their requests
-@app.get("/team/{team_id}/requests", response_model=list[schemas.RequestResponse])
-def get_requests_for_team(team_id: int, db: Session = Depends(get_db)):
-    # Get all Staff_IDs by the specified Team_ID
-    staff_ids = crud.get_staff_ids_by_team(db, team_id)
+@app.get("/team/requests", response_model=list[schemas.RequestResponse])
+def get_requests_for_teams(request: Request, db: Session = Depends(get_db)):
+    # Get all team_ids from the session
+    team_ids = request.session.get('team_ids')
     
-    # Check if staff_ids list is empty and throw error message if it is
+    # Check if team_ids exist in the session
+    if not team_ids:
+        raise HTTPException(status_code=404, detail="No team found for the logged-in user.")
+        
+    # Retrieve all Staff_IDs for the provided list of team_ids
+    staff_ids = crud.get_staff_ids_by_team(db, team_ids)
+    
+    # Check if staff_ids list is empty and throw an error if no staff members are found
     if not staff_ids:
-        raise HTTPException(status_code=404, detail=f"No staff found for Team ID {team_id}")
+        raise HTTPException(status_code=404, detail="No staff found for the provided team IDs.")
     
     # Get all requests for the list of staff IDs
     requests = crud.get_requests_by_staff_ids(db, staff_ids)
     
-    # Check if requests are found, else throw error message
+    # Check if requests are found, else throw an error message
     if not requests:
-        raise HTTPException(status_code=404, detail="No requests found for staff members in this team.")
+        raise HTTPException(status_code=404, detail="No requests found for staff members in these teams.")
     
     # Return the retrieved requests
     return jsonable_encoder(requests)

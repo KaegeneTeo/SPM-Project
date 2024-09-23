@@ -22,13 +22,19 @@ def get_employee_by_email(db: Session, email: str):
         return None
     return db_employee
 
-# Retrieve all staff by team from Team table
-# Can use for viewing schedules/requests for only members of your team (filtered by Team_ID = Current logged in user's Team_ID)
-# Possible logic: Store user's Team_ID as a session variable upon login using localStorage.setItem
-def get_staff_ids_by_team(db: Session, team_id: int):
-    staff_ids = db.query(models.Team.Staff_ID).filter(models.Team.Team_ID == team_id).all()
-    return [staff_id[0] for staff_id in staff_ids]
+# Retrieve all Team_IDs that the logged-in user belongs to
+def get_team_ids(db: Session, staff_id: int):
+    team_ids = db.query(models.Team.Team_ID).filter(models.Team.Staff_ID == staff_id).all()
+    return [team_id[0] for team_id in team_ids]
 
+# Retrieve all staff by team(s) from Team table
+# Can use for viewing schedules/requests for only members of your team(s) (filtered by Team_ID = Current logged in user's Team_ID)
+def get_staff_ids_by_team(db: Session, team_ids: list[int]):
+    if not team_ids:
+        return []
+    # Query staff IDs from multiple team IDs
+    staff_ids = db.query(models.Team.Staff_ID).filter(models.Team.Team_ID.in_(team_ids)).all()
+    return [staff_id[0] for staff_id in staff_ids]
 
 # Retrieve all requests from staff members in the list of staff_ids
 def get_requests_by_staff_ids(db: Session, staff_ids: list):
@@ -37,6 +43,12 @@ def get_requests_by_staff_ids(db: Session, staff_ids: list):
     requests = db.query(models.Request).filter(models.Request.Staff_ID.in_(staff_ids)).all()
     return requests
 
+# Retrieve all requests from staff members in the list of staff_ids
+def get_requests_by_staff_ids(db: Session, staff_ids: list[int]):
+    if not staff_ids:
+        return []
+    requests = db.query(models.Request).filter(models.Request.Staff_ID.in_(staff_ids)).all()
+    return requests
 
 
 def check_password(self, password):
