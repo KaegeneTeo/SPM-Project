@@ -9,6 +9,10 @@ const router = createRouter({
   history: createWebHistory(),
   routes: [
     {
+        path: '/',
+        redirect: '/login'
+    },
+    {
         path: '/dashboard',
         name: 'dashboard',
         component: Dashboard

@@ -24,7 +24,7 @@ def get_employee_by_email(db: Session, email: str):
 
 # Retrieve all Team_IDs that the logged-in user belongs to
 def get_team_ids(db: Session, staff_id: int):
-    team_ids = db.query(models.Team.Team_ID).filter(models.Team.Staff_ID == staff_id).all()
+    team_ids = db.query(models.Team.team_id).filter(models.Team.staff_id == staff_id).all()
     return [team_id[0] for team_id in team_ids]
 
 # Retrieve all staff by team(s) from Team table
@@ -33,21 +33,21 @@ def get_staff_ids_by_team(db: Session, team_ids: list[int]):
     if not team_ids:
         return []
     # Query staff IDs from multiple team IDs
-    staff_ids = db.query(models.Team.Staff_ID).filter(models.Team.Team_ID.in_(team_ids)).all()
+    staff_ids = db.query(models.Team.staff_id).filter(models.Team.team_id.in_(team_ids)).all()
     return [staff_id[0] for staff_id in staff_ids]
 
 # Retrieve all requests from staff members in the list of staff_ids
 def get_requests_by_staff_ids(db: Session, staff_ids: list):
     if not staff_ids:
         return []
-    requests = db.query(models.Request).filter(models.Request.Staff_ID.in_(staff_ids)).all()
+    requests = db.query(models.Request).filter(models.Request.staff_id.in_(staff_ids)).all()
     return requests
 
 # Retrieve all requests from staff members in the list of staff_ids
 def get_requests_by_staff_ids(db: Session, staff_ids: list[int]):
     if not staff_ids:
         return []
-    requests = db.query(models.Request).filter(models.Request.Staff_ID.in_(staff_ids)).all()
+    requests = db.query(models.Request).filter(models.Request.staff_id.in_(staff_ids)).all()
     return requests
 
 
@@ -62,7 +62,7 @@ def get_schedules(db: Session, filters: dict):
     models.Schedule.status == 1,
     models.Employee.dept == dept,
     models.Employee.team == team,
-    models.Employee.Staff_ID == staff_id
+    models.Employee.staff_id == staff_id
     ).all()
     return results
 
