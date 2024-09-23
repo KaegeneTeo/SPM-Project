@@ -12,6 +12,8 @@ from fastapi.responses import JSONResponse
 from dotenv import load_dotenv
 from fastapi import Body
 from werkzeug.security import generate_password_hash, check_password_hash
+import hashlib
+import binascii
 #load_dotenv()
 
 
@@ -84,7 +86,9 @@ def login(request: Request, login: schemas.Login, db: Session = Depends(get_db))
     # login code here
 
     print(user_result.password_hash)
-    if not check_password_hash(user_result.password_hash, login.password):
+    bytes = hashlib.pbkdf2_hmac('sha256', login.email.encode('utf-8'), str(login.password).encode('utf-8'), 100000)
+    hash = binascii.hexlify(bytes).decode()
+    if not user_result.password_hash == hash:
         raise HTTPException(status_code=401, detail="Invalid password.")
     request.session['staff_id'] = user_result.staff_id
     print("Session stored:", request.session)
