@@ -46,6 +46,15 @@ def get_db():
     finally:
         db.close()
 
+# To check the session details. If empty route to login.
+@app.get("/session-check")
+async def session_check(request: Request):
+    # Check if session exists
+    staff_id = request.session.get("staff_id")
+    if staff_id:
+        return {"authenticated": True, "staff_id": staff_id}
+    return {"authenticated": False}
+
 @app.get("/online")
 def online():
     return {"status": "OK"}
