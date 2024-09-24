@@ -47,8 +47,7 @@ import axios from 'axios';
 export default {
   data() {
     return {
-      requests: [], // Store all the fetched requests
-      teamId: 1 // Placeholder, replace with logged in user's Team_ID
+      requests: [] // Store all the fetched requests
     };
   },
   methods: {
@@ -58,7 +57,7 @@ export default {
     },
     fetchRequestData() {
       // Fetch request data for all of current user's team members
-      axios.get(`/team/${this.teamId}/requests`) 
+      axios.get(`/team/requests`) 
         .then(response => {
           this.requests = response.data; // Store the list of requests
           console.log(response.data);

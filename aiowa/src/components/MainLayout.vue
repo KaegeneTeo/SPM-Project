@@ -129,7 +129,7 @@ function handleLinkClick(linkName) {
 async function handleSignOut() {
   try {
     // Call your endpoint to clear the session
-    await axios.post('http://127.0.0.1:5049/logout'); // Adjust this URL as needed
+    await axios.post('http://127.0.0.1:8000/logout'); // Adjust this URL as needed
 
     // Then route to the login page
     router.push('/login');
