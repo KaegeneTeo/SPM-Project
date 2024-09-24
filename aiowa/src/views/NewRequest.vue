@@ -8,16 +8,16 @@
           <input type="number" v-model="form.staff_id" id="staff_id" required />
         </div>
         <div>
-          <label for="schedule_id">Schedule ID:</label>
-          <input type="number" v-model="form.schedule_id" id="schedule_id" required />
-        </div>
-        <div>
           <label for="reason">Reason:</label>
           <textarea v-model="form.reason" id="reason" required></textarea>
         </div>
         <div>
-          <label for="date">Date:</label>
-          <input type="date" v-model="form.date" id="date" required />
+          <label for="date">Start Date:</label>
+          <input type="date" v-model="form.startdate" id="startdate" required />
+        </div>
+        <div>
+          <label for="date">End Date:</label>
+          <input type="date" v-model="form.enddate" id="enddate" required />
         </div>
         <div>
         <label>Time Slot:</label>
@@ -62,10 +62,10 @@
       return {
         form: {
           staff_id: null,
-          schedule_id: null,
           reason: "",
           status: 0,
-          date: "",
+          startdate: "",
+          enddate: "",
           time_slot: null,
           request_type: null,
         },
@@ -76,7 +76,7 @@
       async submitRequest() {
         try {
           // Make the POST request to the FastAPI endpoint
-          const response = await axios.post("http://127.0.0.1:5049/requests/", this.form);
+          const response = await axios.post("http://127.0.0.1:8000/requests/", this.form);
           this.message = "Request created successfully!";
           console.log(response.data);  // You can inspect the response if needed
         } catch (error) {
