@@ -5,8 +5,8 @@ USE HRMS;
 -- ---------------------------------------------------------------- --
 --                     Employee TABLE                        --
 -- ---------------------------------------------------------------- --
-DROP TABLE IF EXISTS Employee;
-CREATE TABLE IF NOT EXISTS Employee (
+DROP TABLE IF EXISTS employee;
+CREATE TABLE IF NOT EXISTS employee (
   Staff_ID INT PRIMARY KEY,
   Staff_FName VARCHAR(50) NOT NULL,
   Staff_LName VARCHAR(50) NOT NULL,
@@ -17,20 +17,20 @@ CREATE TABLE IF NOT EXISTS Employee (
   Reporting_Manager INT,
   Role INT NOT NULL,
   Password_Hash VARCHAR(256) NOT NULL,
-  FOREIGN KEY (`Reporting_Manager`) REFERENCES `Employee`(`Staff_ID`)
+  FOREIGN KEY (`Reporting_Manager`) REFERENCES `employee`(`Staff_ID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
   
-DROP TABLE IF EXISTS `Schedule`;
-CREATE TABLE IF NOT EXISTS `Schedule` (
+DROP TABLE IF EXISTS `schedule`;
+CREATE TABLE IF NOT EXISTS `schedule` (
   `Schedule_ID` INT PRIMARY KEY,
   `Staff_ID` INT NOT NULL,
   `Date` DATE NOT NULL,
   `Time_Slot` TINYINT NOT NULL,
-  FOREIGN KEY (`Staff_ID`) REFERENCES `Employee`(`Staff_ID`)
+  FOREIGN KEY (`Staff_ID`) REFERENCES `employee`(`Staff_ID`)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-DROP TABLE IF EXISTS `Request`;
-CREATE TABLE IF NOT EXISTS `Request` (
+DROP TABLE IF EXISTS `request`;
+CREATE TABLE IF NOT EXISTS `request` (
   `Request_ID` INT PRIMARY KEY AUTO_INCREMENT,
   `Staff_ID` INT NOT NULL,
   `Schedule_ID` INT NOT NULL,
@@ -40,16 +40,16 @@ CREATE TABLE IF NOT EXISTS `Request` (
   `Date` DATE NOT NULL,
   `Time_Slot` TINYINT NOT NULL,
   `Request_Type` TINYINT NOT NULL,
-  FOREIGN KEY (`Staff_ID`) REFERENCES `Employee`(`Staff_ID`),
-  FOREIGN KEY (`Schedule_ID`) REFERENCES `Schedule`(`Schedule_ID`)
+  FOREIGN KEY (`Staff_ID`) REFERENCES `employee`(`Staff_ID`),
+  FOREIGN KEY (`Schedule_ID`) REFERENCES `schedule`(`Schedule_ID`)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `Team`;
-CREATE TABLE IF NOT EXISTS `Team` (
+DROP TABLE IF EXISTS `team`;
+CREATE TABLE IF NOT EXISTS `team` (
   `Staff_ID` INT NOT NULL,
   `Team_ID` INT NOT NULL,
-  FOREIGN KEY (`Staff_ID`) REFERENCES `Employee`(`Staff_ID`),
+  FOREIGN KEY (`Staff_ID`) REFERENCES `employee`(`Staff_ID`),
   PRIMARY KEY (`Staff_ID`, `Team_ID`)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -59,7 +59,7 @@ CREATE TABLE IF NOT EXISTS `Team` (
 --                    FAKE DATA                       --
 -- ---------------------------------------------------------------- --
 
-INSERT INTO Employee (Staff_ID, Staff_FName, Staff_LName, Dept, Position, Country, Email, Reporting_Manager, Role, Password_Hash) VALUES
+INSERT INTO employee (Staff_ID, Staff_FName, Staff_LName, Dept, Position, Country, Email, Reporting_Manager, Role, Password_Hash) VALUES
 (130002, 'Jack', 'Sim', 'CEO', 'MD', 'Singapore', 'jack.sim@allinone.com.sg', 130002, 1, "459ff9761f33bf7ef77104e7aa47edb8eb88a65afc300609165848f8ca2e3c17"), -- Hashed password using 123
 (140001, 'Derek', 'Tan', 'Sales', 'Director', 'Singapore', 'Derek.Tan@allinone.com.sg', 130002, 1, "15bd67868b50b2f9c10f2553794def2bb2f24348b2070a827c0a71cd3420d246"), -- Hashed password using 123
 (140894, 'Rahim', 'Khalid', 'Sales', 'Sales Manager', 'Singapore', 'Rahim.Khalid@allinone.com.sg', 140001, 3, 'bebd257f5cfc64347ed352c3730e55481dbc50b75c8eb249bbc2808b691fd837'), -- Hashed password using 123
@@ -67,7 +67,7 @@ INSERT INTO Employee (Staff_ID, Staff_FName, Staff_LName, Dept, Position, Countr
 (160008, 'Sally', 'Loh', 'HR', 'Director', 'Singapore', 'Sally.Loh@allinone.com.sg', 130002, 1, '173a0d2b90dca473b3309cb01b4ebcce427913929e6ee6cea48a34b1a640d772');  -- Hashed password using 123
 
 -- Insert data into Schedule table
-INSERT INTO Schedule (Schedule_ID, Staff_ID, Date, Time_Slot) VALUES
+INSERT INTO schedule (Schedule_ID, Staff_ID, Date, Time_Slot) VALUES
 (1, 130002, '2024-11-11', 1),
 (2, 140001, '2024-11-12', 2),
 (3, 140894, '2024-11-13', 3),
@@ -76,7 +76,7 @@ INSERT INTO Schedule (Schedule_ID, Staff_ID, Date, Time_Slot) VALUES
 -- 1 = AM, 2 = PM, 3 = AMPM
 
 -- Insert data into Request table
-INSERT INTO Request (Request_ID, Staff_ID, Schedule_ID, Reason, Status, Date, Time_Slot, Request_Type) VALUES
+INSERT INTO request (Request_ID, Staff_ID, Schedule_ID, Reason, Status, Date, Time_Slot, Request_Type) VALUES
 (1, 140001, 2, 'Medical leave', 0, '2024-11-08', 1, 1),
 (2, 140894, 3, 'Training session', 0, '2024-11-07', 2, 2),
 (3, 140002, 4, 'Personal time off', 0, '2024-11-06', 3, 1);
@@ -85,7 +85,7 @@ INSERT INTO Request (Request_ID, Staff_ID, Schedule_ID, Reason, Status, Date, Ti
 -- For Request_Type: 1 = Adhoc, 2 = Recurring
 
 -- Insert data into Team table
-INSERT INTO Team (Staff_ID, Team_ID) VALUES
+INSERT INTO team (Staff_ID, Team_ID) VALUES
 (130002, 1),
 (140001, 2),
 (140001, 1),
