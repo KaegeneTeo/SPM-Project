@@ -166,3 +166,6 @@ def get_requests_for_teams(request: Request, db: Session = Depends(get_db)):
     # Return the retrieved requests
     return jsonable_encoder(requests)
 
+if __name__ == "__main__":
+    uvicorn.run(app, host="127.0.0.1", port=8000)
+
