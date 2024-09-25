@@ -143,7 +143,10 @@ def create_request(request: schemas.RequestCreate, db: Session = Depends(get_db)
 @app.get("/team/requests", response_model=list[schemas.RequestResponse])
 def get_requests_for_teams(request: Request, db: Session = Depends(get_db)):
     # Get all team_ids from the session
+    print("Request received!")
+    print(request.session)
     team_ids = request.session.get('team_ids')
+    print(team_ids)
     
     # Check if team_ids exist in the session
     if not team_ids:
@@ -151,6 +154,7 @@ def get_requests_for_teams(request: Request, db: Session = Depends(get_db)):
         
     # Retrieve all Staff_IDs for the provided list of team_ids
     staff_ids = crud.get_staff_ids_by_team(db, team_ids)
+    print(staff_ids)
     
     # Check if staff_ids list is empty and throw an error if no staff members are found
     if not staff_ids:
@@ -158,6 +162,7 @@ def get_requests_for_teams(request: Request, db: Session = Depends(get_db)):
     
     # Get all requests for the list of staff IDs
     requests = crud.get_requests_by_staff_ids(db, staff_ids)
+    print(requests)
     
     # Check if requests are found, else throw an error message
     if not requests:

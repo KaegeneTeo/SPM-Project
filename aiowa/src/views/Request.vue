@@ -56,9 +56,11 @@ export default {
       this.$router.push({ name: 'newrequest' });
     },
     fetchRequestData() {
+      console.log('Fetching requests...');
       // Fetch request data for all of current user's team members
       axios.get(`/team/requests`) 
         .then(response => {
+          console.log('Request data received:', response.data.requests);
           this.requests = response.data; // Store the list of requests
           console.log(response.data);
         })
@@ -68,6 +70,7 @@ export default {
     }
   },
   mounted() {
+    console.log('Component mounted, fetching data...');
     // Fetch the request data when the component is mounted
     this.fetchRequestData();
   }

@@ -14,7 +14,7 @@ class Employee(Base):
     reporting_manager = Column(Integer, ForeignKey("employee.staff_id"), nullable=False)
     role = Column(Integer, nullable=False)
     password_hash = Column(String(256), nullable=False)
-    schedule = relationship("schedule", back_populates="employee")
+    schedule = relationship("Schedule", back_populates="employee")
     
   
 class Schedule(Base):
@@ -23,7 +23,7 @@ class Schedule(Base):
     staff_id = Column(Integer, ForeignKey("employee.staff_id"), nullable=False)
     date = Column(Date, nullable=False)
     time_slot = Column(Integer, nullable=False)
-    employee = relationship("employee", back_populates="schedule")
+    employee = relationship("Employee", back_populates="schedule")
 
     
 
