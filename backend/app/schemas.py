@@ -34,10 +34,10 @@ class Login(BaseModel):
 
 class RequestCreate(BaseModel):
     staff_id: int
-    schedule_id: int
     reason: str
     status: int
-    date: date
+    startdate: date
+    enddate: date
     time_slot: int
     request_type: int
 

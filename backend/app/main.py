@@ -14,6 +14,7 @@ from fastapi import Body
 from werkzeug.security import generate_password_hash, check_password_hash
 import hashlib
 import binascii
+from typing import Union
 #load_dotenv()
 
 
@@ -47,14 +48,15 @@ def get_db():
         db.close()
 
 # To check the session details. If empty route to login.
+"""
 @app.get("/session-check")
 async def session_check(request: Request):
-    # Check if session exists
     staff_id = request.session.get("staff_id")
+    print("Session staff_id:", request.session)  # Debugging print
     if staff_id:
         return {"authenticated": True, "staff_id": staff_id}
     return {"authenticated": False}
-
+"""
 @app.get("/online")
 def online():
     return {"status": "OK"}
@@ -114,6 +116,8 @@ def login(request: Request, login: schemas.Login, db: Session = Depends(get_db))
                              "user": user_result, 
                              "team_ids": team_ids})
 
+
+
 @app.post("/logout")
 def logout(request: Request):
     # Clear the session (log out the user)
@@ -122,13 +126,15 @@ def logout(request: Request):
     return {"message": "User logged out successfully."}
 
 @app.post("/requests/")
-def create_request(request: schemas.RequestCreate, db: Session = Depends(get_db)):
+def create_request(request: schemas.RequestCreate, session: Request, db: Session = Depends(get_db)):
+    staff_id = session.session.get("staff_id")
+    print(staff_id)
     db_request = models.Request(
         staff_id=request.staff_id,
-        schedule_id=request.schedule_id,
         reason=request.reason,
         status=request.status,
-        date=request.date,
+        startdate=request.startdate,
+        enddate = request.enddate,
         time_slot=request.time_slot,
         request_type=request.request_type,
     )
@@ -170,6 +176,7 @@ def get_requests_for_teams(request: Request, db: Session = Depends(get_db)):
     
     # Return the retrieved requests
     return jsonable_encoder(requests)
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)

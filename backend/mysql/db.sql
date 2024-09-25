@@ -33,15 +33,14 @@ DROP TABLE IF EXISTS `request`;
 CREATE TABLE IF NOT EXISTS `request` (
   `Request_ID` INT PRIMARY KEY AUTO_INCREMENT,
   `Staff_ID` INT NOT NULL,
-  `Schedule_ID` INT NOT NULL,
   `Reason` VARCHAR(200) NOT NULL,
   `Status` TINYINT NOT NULL,
   -- `File_Type` MEDIUMBLOB, SQL cant handle file data types so omitting for now
-  `Date` DATE NOT NULL,
+  `StartDate` DATE NOT NULL,
+  `EndDate` DATE NOT NULL,
   `Time_Slot` TINYINT NOT NULL,
   `Request_Type` TINYINT NOT NULL,
-  FOREIGN KEY (`Staff_ID`) REFERENCES `employee`(`Staff_ID`),
-  FOREIGN KEY (`Schedule_ID`) REFERENCES `schedule`(`Schedule_ID`)
+  FOREIGN KEY (`Staff_ID`) REFERENCES `employee`(`Staff_ID`)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
@@ -76,10 +75,10 @@ INSERT INTO schedule (Schedule_ID, Staff_ID, Date, Time_Slot) VALUES
 -- 1 = AM, 2 = PM, 3 = AMPM
 
 -- Insert data into Request table
-INSERT INTO request (Request_ID, Staff_ID, Schedule_ID, Reason, Status, Date, Time_Slot, Request_Type) VALUES
-(1, 140001, 2, 'Medical leave', 0, '2024-11-08', 1, 1),
-(2, 140894, 3, 'Training session', 0, '2024-11-07', 2, 2),
-(3, 140002, 4, 'Personal time off', 0, '2024-11-06', 3, 1);
+INSERT INTO request (Request_ID, Staff_ID, Reason, Status, StartDate, EndDate, Time_Slot, Request_Type) VALUES
+(1, 140001, 'Medical leave', 0, '2024-11-08', '2024-11-08',1, 1),
+(2, 140894, 'Training session', 0, '2024-11-04', '2024-11-08', 2, 2),
+(3, 140002, 'Personal time off', 0, '2024-11-06', '2024-11-07', 3, 1);
 -- For Status: 0 = Pending, 1 = Approved (should be reflected in schedule DB), -1 = Rejected
 -- For Time_Slot: 1 = AM, 2 = PM, 3 = AMPM
 -- For Request_Type: 1 = Adhoc, 2 = Recurring
