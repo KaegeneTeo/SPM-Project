@@ -44,10 +44,10 @@ class RequestCreate(BaseModel):
 class RequestResponse(BaseModel):
     request_id: int
     staff_id: int
-    schedule_id: int
     reason: str
     status: int
-    date: date
+    startdate: date
+    enddate: date
     time_slot: int
     request_type: int
     

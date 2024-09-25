@@ -58,9 +58,9 @@ export default {
     fetchRequestData() {
       console.log('Fetching requests...');
       // Fetch request data for all of current user's team members
-      axios.get(`/team/requests`) 
+      axios.get('http://127.0.0.1:8000/team/requests', { withCredentials: true }) 
         .then(response => {
-          console.log('Request data received:', response.data.requests);
+          console.log('Request data received:', response.data);
           this.requests = response.data; // Store the list of requests
           console.log(response.data);
         })
