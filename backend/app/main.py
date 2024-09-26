@@ -145,6 +145,12 @@ def create_request(request: schemas.RequestCreate, session: Request, db: Session
     
     return db_request
 
+@app.get("/requests/{staff_id}", response_model=list[schemas.RequestResponse])
+def get_requests_by_staff(staff_id: int, db: Session = Depends(get_db)):
+    requests = crud.get_request(db, staff_id)
+    if not requests:
+        raise HTTPException(status_code=404, detail="No requests found for this staff ID")
+    return requests
 
 @app.get("/team/requests", response_model=list[schemas.RequestResponse])
 def get_requests_for_teams(request: Request, db: Session = Depends(get_db)):

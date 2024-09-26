@@ -5,6 +5,7 @@ import Login from '../views/Login.vue'
 import Schedule from '../views/Schedule.vue'
 import Request from '../views/Request.vue'
 import NewRequest from '../views/NewRequest.vue'
+import ViewRequestStaff from '../views/ViewRequestStaff.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -41,6 +42,12 @@ const router = createRouter({
       name: 'newrequest',
       component: NewRequest,
       meta: { requiresAuth: true }
+    },
+    {
+      path: '/viewrequeststaff',
+      name: 'viewrequeststaff',
+      component : ViewRequestStaff,
+      meta: {requiresAuth: true}
     },
     {
       path: '/team',

@@ -50,6 +50,10 @@ def get_requests_by_staff_ids(db: Session, staff_ids: list[int]):
     requests = db.query(models.Request).filter(models.Request.staff_id.in_(staff_ids)).all()
     return requests
 
+def get_request(db:Session, staff_id:int):
+    requests = db.query(models.Request).filter(models.Request.staff_id == staff_id).all()
+    return requests
+
 
 def check_password(self, password):
     return check_password_hash(self.password_hash, password)
