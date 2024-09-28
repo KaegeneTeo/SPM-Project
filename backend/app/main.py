@@ -183,6 +183,36 @@ def get_requests_for_teams(request: Request, db: Session = Depends(get_db)):
     # Return the retrieved requests
     return jsonable_encoder(requests)
 
+# Retrieve selected request by request ID
+@app.get("/request/{request_id}", response_model=schemas.RequestResponse)
+def get_selected_request(request_id: int, request: Request, db: Session = Depends(get_db)):
+    selected_request = crud.get_request_by_id(db, request_id)
+    
+    if not db_request:
+        raise HTTPException(status_code=404, detail="Request not found.")
+    
+    return jsonable_encoder(selected_request)
+
+# Approve request method
+@app.post("/request/{request_id}/approve")
+def request_approve(request_id: int, request: Request, db: Session = Depends(get_db)):
+    result = crud.approve_request(db, request_id)
+    
+    if not result:
+        raise HTTPException(status_code=404, detail="Request not found.")
+    
+    return {"message": "Request approved successfully"}
+
+# Reject request method
+@app.post("/request/{request_id}/reject")
+def request_reject(request_id: int, request: Request, db: Session = Depends(get_db)):
+    result = crud.reject_request(db, request_id)
+    
+    if not result:
+        raise HTTPException(status_code=404, detail="Request not found.")
+    
+    return {"message": "Request rejected successfully"}
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)

@@ -28,20 +28,13 @@ def get_team_ids(db: Session, staff_id: int):
     return [team_id[0] for team_id in team_ids]
 
 # Retrieve all staff by team(s) from Team table
-# Can use for viewing schedules/requests for only members of your team(s) (filtered by Team_ID = Current logged in user's Team_ID)
+# Can use for viewing schedules/requests for only members of your team(s) (filtered by Team_ID = Current logged in user's Team_ID(s))
 def get_staff_ids_by_team(db: Session, team_ids: list[int]):
     if not team_ids:
         return []
-    # Query staff IDs from multiple team IDs
+    # Query staff IDs from team ID(s)
     staff_ids = db.query(models.Team.staff_id).filter(models.Team.team_id.in_(team_ids)).all()
     return [staff_id[0] for staff_id in staff_ids]
-
-# Retrieve all requests from staff members in the list of staff_ids
-def get_requests_by_staff_ids(db: Session, staff_ids: list):
-    if not staff_ids:
-        return []
-    requests = db.query(models.Request).filter(models.Request.staff_id.in_(staff_ids)).all()
-    return requests
 
 # Retrieve all requests from staff members in the list of staff_ids
 def get_requests_by_staff_ids(db: Session, staff_ids: list[int]):
@@ -50,6 +43,30 @@ def get_requests_by_staff_ids(db: Session, staff_ids: list[int]):
     requests = db.query(models.Request).filter(models.Request.staff_id.in_(staff_ids)).all()
     return requests
 
+# Retrieve the selected request by request_id
+def get_request_by_id(db: Session, request_id: int):
+    request = db.query(models.Request).filter(models.Request.request_id == request_id).first()
+    return request
+
+# Method executed upon clicking 'Approve' button
+def approve_request(db: Session, request_id: int):
+    request = db.query(models.Request).filter(models.Request.request_id == request_id).first()
+    if request:
+        request.status = 1
+        db.commit()
+        db.refresh(request)
+    return request
+
+# Method executed upon clicking 'Reject' button
+def reject_request(db: Session, request_id: int):
+    request = db.query(models.Request).filter(models.Request.request_id == request_id).first()
+    if request:
+        request.status = -1
+        db.commit()
+        db.refresh(request)
+    return request
+
+# Retrieve requests from a specific staff_id
 def get_request(db:Session, staff_id:int):
     requests = db.query(models.Request).filter(models.Request.staff_id == staff_id).all()
     return requests
