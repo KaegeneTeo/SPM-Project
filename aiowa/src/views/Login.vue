@@ -99,12 +99,11 @@ export default {
                     email: email.value,
                     password: password.value,
                 });
-                console.log("Login successful:", response.data);
+                console.log("Login successful");
 
                 localStorage.setItem("access_token", response.data.session.access_token);
                 localStorage.setItem("refresh_token", response.data.session.refresh_token);
                 localStorage.setItem("user_email", response.data.user.email);
-                console.log(localStorage.getItem("access_token"));
                 if (response.data) {
                     router.push("/schedules");
                 }
