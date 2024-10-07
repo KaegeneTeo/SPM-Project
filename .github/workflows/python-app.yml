@@ -6,10 +6,10 @@ name: CI/CD
 on:
     push:
         branches: ["dev"]
-        paths:
-            - app/**
-            - requirements.txt
-            - zappa_settings.json
+        #paths:
+        #    - app/**
+        #    - requirements.txt
+        #    - zappa_settings.json
 
 jobs:
     build:
@@ -22,6 +22,7 @@ jobs:
               with:
                   python-version: "3.12"
             - name: Set up the virtual environment and install dependencies
+              working-directory: ./backend
               run: |
                   python -m venv env
                   source env/bin/activate
@@ -29,6 +30,7 @@ jobs:
                   pip install -r requirements.txt
 
             - name: Deploy to AWS with Zappa
+              working-directory: ./backend
               env:
                   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
                   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
