@@ -7,9 +7,9 @@ on:
     push:
         branches: ["dev"]
         paths:
-            - "backend/app/**"
-            - "backend/requirements.txt"
-            - "backend/zappa_settings.json"
+            - app/**
+            - requirements.txt
+            - zappa_settings.json
 
 jobs:
     build:
