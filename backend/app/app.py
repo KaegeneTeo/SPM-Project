@@ -88,8 +88,6 @@ def check_auth():
     return json, status_code
 
 
-
-
 # @app.route("/team/requests", methods=['GET'])
 # def get_requests_for_teams():
 #     # Get all team_ids from the session
@@ -97,10 +95,10 @@ def check_auth():
 #     session = await supabase.auth.get_session()
 #     print(session)
 #     user_staff_id = session['data']['session']['user']['staff_id']  
-#     print("Extracted staff_id:", staff_id)
+#     print("Extracted staff_id:", user_staff_id)
 
 #     # Get team ID(s) of logged in user by staff ID using get_team_ids_by_staff Supabase function 
-#     team_ids_response = await supabase.rpc("get_team_ids_by_staff", {'staff_id': staff_id}).execute()
+#     team_ids_response = await supabase.rpc("get_team_ids_by_staff", {'staff_id': user_staff_id}).execute()
 #     print(team_ids_response)
 
 #     if team_ids_response.get("error"):
