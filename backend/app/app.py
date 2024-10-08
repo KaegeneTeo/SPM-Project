@@ -33,20 +33,42 @@ def login():
             "email": form_data['email'],
             "password": form_data['password']
         })
-        json = {
+
+        json_response = {
             "email": response.user.email,
             "access_token": response.session.access_token,
             "refresh_token": response.session.refresh_token,
         }   
 
-        return jsonify(json), 200
+        # Fetch staff_id from the Employee table
+        staff_response = supabase.table("Employee").select("Staff_ID").eq("Email", json_response["email"]).execute()
+        # print(staff_response.data[0]["Staff_ID"])
+        if staff_response.data:
+            json_response["staff_id"] = staff_response.data[0]["Staff_ID"]
+        else:
+            json_response["staff_id"] = None  # Or handle as needed
+
+
+        return jsonify(json_response), 200
+
+    except Exception as e:
+        json_response = {
+            "message": str(e),  # Use str(e) to get the error message
+        }
+        return jsonify(json_response), 400  # Use 400 for bad requests
+    
+@app.route("/logout", methods=['POST'])
+def logout():
+    try:
+        # Call Supabase to sign the user out
+        supabase.auth.sign_out()
+        return jsonify({"message": "User signed out successfully."}), 200
     except Exception as e:
         json = {
-            "message": e.message,
+            "message": str(e),
         }
-        return jsonify(json), e.status
+        return jsonify(json), 400
     
-
 
 @app.route("/check_auth", methods=['POST'])
 def check_auth():
@@ -65,7 +87,8 @@ def check_auth():
         status_code = 404
     return json, status_code
 
-# @app.route("/")
+
+
 
 # @app.route("/team/requests", methods=['GET'])
 # def get_requests_for_teams():
