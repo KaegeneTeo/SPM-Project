@@ -142,5 +142,40 @@ def get_requests_for_teams():
     # Return the retrieved requests
     return jsonable_encoder(requests)
 
+@app.route("/requests/", methods=['POST'])
+def create_request():
+    form_data = request.json
+
+    # Validate input
+    if not form_data:
+        return jsonify({"error": "No request data provided"}), 400
+
+    try:
+        # Insert new request into the Supabase database
+        response = supabase.table("request").insert({
+            "staff_id": form_data.get("staff_id"),
+            "reason": form_data.get("reason"),
+            "status": form_data.get("status"),
+            "startdate": form_data.get("startdate"),
+            "enddate": form_data.get("enddate"),
+            "time_slot": form_data.get("time_slot"),
+            "request_type": form_data.get("request_type"),
+        }).execute()
+
+        # Check for errors in the response
+        if response.get("error"):
+            app.logger.error("Database insert error: %s", response["error"]["message"])
+            return jsonify({"error": response["error"]["message"]}), 500
+
+        # If everything is fine, return the inserted request with a 201 status
+        return jsonify(response.data[0]), 201
+
+    except Exception as e:
+        app.logger.error("An error occurred: %s", str(e))
+        return jsonify({"error": str(e)}), 500
+    
+
+    
+
 if __name__ == '__main__':
     app.run(host="0.0.0.0")

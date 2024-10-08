@@ -64,9 +64,9 @@
           this.error = null;
           this.showNoRecords = false;  // Reset flag before fetching
   
-          const response = await axios.get(`http://127.0.0.1:8000/requests/${this.staffId}`);
+          const response =  axios.get(`http://127.0.0.1:5000/requests/${this.staffId}`, {withCredentials: true});
           this.requests = response.data;
-  
+          console.log(response.data);
           // Only set showNoRecords to true if the response data is empty
           if (this.requests.length === 0) {
             this.showNoRecords = true;
