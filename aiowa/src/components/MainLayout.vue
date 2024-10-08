@@ -208,7 +208,7 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios"; // Import axios
-import { supabase } from "../lib/supabaseClient";
+
 // Routing
 const router = useRouter();
 
@@ -239,14 +239,14 @@ function handleLinkClick(linkName) {
 
 // Sign out method
 async function handleSignOut() {
-    try {
-        // Call your endpoint to clear the session
-        const { error } = await supabase.auth.signOut(); // Adjust this URL as needed
+  try {
+    // Call your endpoint to clear the session
+    await axios.post('http://127.0.0.1:5000/logout'); // Adjust this URL as needed
 
-        // Then route to the login page
-        router.push("/login");
-    } catch (error) {
-        console.error("Error during sign out:", error);
-    }
+    // Then route to the login page
+    router.push('/login');
+  } catch (error) {
+    console.error('Error during sign out:', error);
+  }
 }
 </script>

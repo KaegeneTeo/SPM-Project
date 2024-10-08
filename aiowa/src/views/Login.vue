@@ -81,45 +81,40 @@
 </template>
 
 <script>
-import { supabase } from "../lib/supabaseClient";
-import { ref } from "vue";
-import axios from "axios";
-import { useRouter } from "vue-router"; // Import the router
+import { ref } from 'vue';
+import axios from 'axios';
+import { useRouter } from 'vue-router'; // Import the router
 
 export default {
-    setup() {
-        const email = ref("");
-        const password = ref("");
-        const errorMessage = ref("");
-        const router = useRouter(); // Access router
+  setup() {
+    const email = ref('');
+    const password = ref('');
+    const errorMessage = ref('');
+    const router = useRouter(); // Access router
 
-        const handleLogin = async () => {
-            try {
-                const response = await supabase.auth.signInWithPassword({
-                    email: email.value,
-                    password: password.value,
-                });
-                console.log("Login successful");
+    const handleLogin = async () => {
+      try {
+        const response = await axios.post('http://127.0.0.1:5000/login', {
+          email: email.value,
+          password: password.value,
+        });
 
-                localStorage.setItem("access_token", response.data.session.access_token);
-                localStorage.setItem("refresh_token", response.data.session.refresh_token);
-                localStorage.setItem("user_email", response.data.user.email);
+        console.log('Login successful:', response.data);
+        if (response.data) {
+          router.push('/schedules');
+        }
+      } catch (error) {
+        console.error('Login failed:', error);
+        errorMessage.value = 'Invalid email or password. Please try again.';
+      }
+    };
 
-                if (response.data) {
-                    router.push("/schedules");
-                }
-            } catch (error) {
-                console.error("Login failed:", error);
-                errorMessage.value = "Invalid email or password. Please try again.";
-            }
-        };
+    const handleLinkClick = (linkName) => {
+      router.push(`/${linkName.toLowerCase()}`);
+    };
 
-        const handleLinkClick = (linkName) => {
-            router.push(`/${linkName.toLowerCase()}`);
-        };
-
-        return { email, password, handleLogin, handleLinkClick, errorMessage };
-    },
+    return { email, password, handleLogin, handleLinkClick, errorMessage };
+  },
 };
 </script>
 

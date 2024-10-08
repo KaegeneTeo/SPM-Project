@@ -1,8 +1,12 @@
-from flask import Flask
+from flask import Flask, jsonify
 import os
 from supabase import create_client, Client
 from flask import request
+from flask_cors import CORS
 app = Flask(__name__)
+CORS(app, credentials=True ,resources={r"/*": {"origins": "http://localhost:5173"}})  # Enable CORS for frontend origin
+
+
 
 url: str = os.environ.get("SUPABASE_URL")
 key: str = os.environ.get("SUPABASE_KEY")
@@ -23,7 +27,7 @@ def update_employee():
 
 @app.route("/login", methods=['POST'])
 def login():
-    form_data = request.form
+    form_data = request.json
     try: 
         response = supabase.auth.sign_in_with_password({
             "email": form_data['email'],
@@ -35,12 +39,14 @@ def login():
             "refresh_token": response.session.refresh_token,
         }   
 
-        return json, 200
+        return jsonify(json), 200
     except Exception as e:
         json = {
             "message": e.message,
         }
-        return json, e.status
+        return jsonify(json), e.status
+    
+
 
 @app.route("/check_auth", methods=['POST'])
 def check_auth():
@@ -59,59 +65,61 @@ def check_auth():
         status_code = 404
     return json, status_code
 
-@app.route("/team/requests", methods=['GET'])
-def get_requests_for_teams():
-    # Get all team_ids from the session
-    print("Request received!")
-    session = await supabase.auth.get_session()
-    print(session)
-    user_staff_id = session['data']['session']['user']['staff_id']  
-    print("Extracted staff_id:", staff_id)
+# @app.route("/")
 
-    # Get team ID(s) of logged in user by staff ID using get_team_ids_by_staff Supabase function 
-    team_ids_response = await supabase.rpc("get_team_ids_by_staff", {'staff_id': staff_id}).execute()
-    print(team_ids_response)
+# @app.route("/team/requests", methods=['GET'])
+# def get_requests_for_teams():
+#     # Get all team_ids from the session
+#     print("Request received!")
+#     session = await supabase.auth.get_session()
+#     print(session)
+#     user_staff_id = session['data']['session']['user']['staff_id']  
+#     print("Extracted staff_id:", staff_id)
 
-    if team_ids_response.get("error"):
-        raise HTTPException(status_code=500, detail="Error fetching team IDs: " + team_ids_response["error"])
+#     # Get team ID(s) of logged in user by staff ID using get_team_ids_by_staff Supabase function 
+#     team_ids_response = await supabase.rpc("get_team_ids_by_staff", {'staff_id': staff_id}).execute()
+#     print(team_ids_response)
 
-    team_ids = [team['team_id'] for team in team_ids_response.data]
-    print("Retrieved team_ids:", team_ids)
+#     if team_ids_response.get("error"):
+#         raise HTTPException(status_code=500, detail="Error fetching team IDs: " + team_ids_response["error"])
 
-    # Throw error if no team_ids
-    if not team_ids:
-        raise HTTPException(status_code=404, detail="No team found for the logged-in user.")
+#     team_ids = [team['team_id'] for team in team_ids_response.data]
+#     print("Retrieved team_ids:", team_ids)
 
-    # Retrieve all staff IDs using get_staff_ids_by_team Supabase function
-    staff_ids_response = supabase.rpc('get_staff_ids_by_team', {'team_ids': team_ids}).execute()
-    print(staff_ids_response)
+#     # Throw error if no team_ids
+#     if not team_ids:
+#         raise HTTPException(status_code=404, detail="No team found for the logged-in user.")
 
-    if staff_ids_response.get("error"):
-        raise HTTPException(status_code=500, detail="Error fetching staff IDs: " + staff_ids_response["error"])
+#     # Retrieve all staff IDs using get_staff_ids_by_team Supabase function
+#     staff_ids_response = supabase.rpc('get_staff_ids_by_team', {'team_ids': team_ids}).execute()
+#     print(staff_ids_response)
+
+#     if staff_ids_response.get("error"):
+#         raise HTTPException(status_code=500, detail="Error fetching staff IDs: " + staff_ids_response["error"])
     
-    staff_ids = [staff['staff_id'] for staff in staff_ids_response.data]
-    print(staff_ids)
+#     staff_ids = [staff['staff_id'] for staff in staff_ids_response.data]
+#     print(staff_ids)
     
-    # Throw error if no staff members are found
-    if not staff_ids:
-        raise HTTPException(status_code=404, detail="No staff found for the provided team IDs.")
+#     # Throw error if no staff members are found
+#     if not staff_ids:
+#         raise HTTPException(status_code=404, detail="No staff found for the provided team IDs.")
     
-    # Get all requests for the list of staff IDs using get_requests_by_staff_ids Supabase function
-    requests_response = supabase.rpc('get_requests_by_staff_ids', {'staff_ids': staff_ids}).execute()
-    print(requests_response)
+#     # Get all requests for the list of staff IDs using get_requests_by_staff_ids Supabase function
+#     requests_response = supabase.rpc('get_requests_by_staff_ids', {'staff_ids': staff_ids}).execute()
+#     print(requests_response)
     
-    if requests_response.get("error"):
-        raise HTTPException(status_code=500, detail="Error fetching requests: " + requests_response["error"])
+#     if requests_response.get("error"):
+#         raise HTTPException(status_code=500, detail="Error fetching requests: " + requests_response["error"])
     
-    requests = requests_response.data
-    print(requests)
+#     requests = requests_response.data
+#     print(requests)
     
-    # Check if requests are found, else throw an error message
-    if not requests:
-        raise HTTPException(status_code=404, detail="No requests found for staff members in these teams.")
+#     # Check if requests are found, else throw an error message
+#     if not requests:
+#         raise HTTPException(status_code=404, detail="No requests found for staff members in these teams.")
     
-    # Return the retrieved requests
-    return jsonable_encoder(requests)
+#     # Return the retrieved requests
+#     return jsonable_encoder(requests)
 
 if __name__ == '__main__':
-    app.run()
+    app.run(host="0.0.0.0")
