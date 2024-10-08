@@ -240,12 +240,18 @@ function handleLinkClick(linkName) {
 // Sign out method
 async function handleSignOut() {
     try {
-        // Call your endpoint to clear the session
+        // Call your endpoint to clear the session on the server
         await axios.post("http://127.0.0.1:5000/logout", {
             access_token: localStorage.getItem("access_token"),
-        }); // Adjust this URL as needed
+        });
 
-        // Then route to the login page
+        // Clear the session data from localStorage
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("refresh_token");
+        localStorage.removeItem("user_email");
+        localStorage.removeItem("staff_id");
+
+        // Log the sign-out action and navigate to the login page
         console.log("Signed out!");
         router.push("/login");
     } catch (error) {

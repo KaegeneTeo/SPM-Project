@@ -41,7 +41,7 @@ def login():
         }   
 
         # Fetch staff_id from the Employee table
-        staff_response = supabase.table("Employee").select("Staff_ID").eq("Email", json_response["email"]).execute()
+        staff_response = supabase.table("Employee").select("Staff_ID").ilike("Email", json_response["email"]).execute()
         # print(staff_response.data[0]["Staff_ID"])
         if staff_response.data:
             json_response["staff_id"] = staff_response.data[0]["Staff_ID"]
