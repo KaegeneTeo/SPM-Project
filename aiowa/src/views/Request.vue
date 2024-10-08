@@ -71,6 +71,8 @@
 <script>
 import axios from 'axios';
 
+
+// console.log(staff_id)
 export default {
   data() {
     return {
@@ -91,8 +93,15 @@ export default {
     },
     fetchRequestData() {
       console.log('Fetching requests...');
+      console.log(this.access_token,this.staff_id)
       // Fetch request data for all of current user's team members
-      axios.get('http://127.0.0.1:8000/team/requests', { withCredentials: true })
+      axios.get('http://localhost:5000/team/requests', {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${this.access_token}`,  // Include the access token here
+            'X-Staff-ID': this.staff_id          // Include the staff ID here 
+          }
+        })
         .then(response => {
           console.log('Request data received:', response.data);
           this.requests = response.data; // Store the list of requests
@@ -104,7 +113,7 @@ export default {
     openRequestDetails(requestId) {
       console.log(`Fetching details for request ID: ${requestId}`);
       // Fetch the details of the selected request from the server
-      axios.get(`http://127.0.0.1:8000/request/${requestId}`, { withCredentials: true })
+      axios.get(`http://127.0.0.1:5000/request/${requestId}`, { withCredentials: true })
         .then(response => {
           this.selectedRequest = response.data;
           this.showModal = true; // Show the modal with request details
@@ -119,7 +128,7 @@ export default {
     approveRequest() {
       console.log(`Approving request ID: ${this.selectedRequest.request_id}`);
       // API Call to method for approval in backend
-      axios.post(`http://127.0.0.1:8000/request/${this.selectedRequest.request_id}/approve`, { withCredentials: true })
+      axios.post(`http://127.0.0.1:5000/request/${this.selectedRequest.request_id}/approve`, { withCredentials: true })
         .then(response => {
           console.log('Request approved:', response.data);
           this.showModal = false; // Close the modal
@@ -146,7 +155,7 @@ export default {
     rejectRequest() {
       console.log(`Rejecting request ID: ${this.selectedRequest.request_id}`);
       // API Call to method for rejection in backend
-      axios.post(`http://127.0.0.1:8000/request/${this.selectedRequest.request_id}/reject`, { withCredentials: true })
+      axios.post(`http://127.0.0.1:5000/request/${this.selectedRequest.request_id}/reject`, { withCredentials: true })
         .then(response => {
           console.log('Request rejected:', response.data);
           this.showModal = false; // Close the modal
@@ -188,6 +197,8 @@ export default {
   },
   mounted() {
     console.log('Component mounted, fetching data...');
+    this.access_token = localStorage.getItem('access_token');
+    this.staff_id = localStorage.getItem('staff_id');
     // Fetch the request data when the component is mounted
     this.fetchRequestData();
   }

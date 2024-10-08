@@ -4,7 +4,8 @@ from supabase import create_client, Client
 from flask import request
 from flask_cors import CORS
 app = Flask(__name__)
-CORS(app, credentials=True ,resources={r"/*": {"origins": "http://localhost:5173"}})  # Enable CORS for frontend origin
+CORS(app, credentials=True ,resources={r"/*": {
+    "origins": "http://localhost:5173", "allow_headers": ["Authorization", "Content-Type", "X-Staff-ID"]}})  # Enable CORS for frontend origin
 
 
 
@@ -90,6 +91,13 @@ def check_auth():
 
 
 
+@app.route('/team/requests', methods=['GET'])
+def team_requests():
+    staff_id = request.headers.get('X-Staff-ID')
+    access_token = request.headers.get('Authorization').split(' ')[1]  # Extract Bearer token
+    print(staff_id, access_token)
+    return {"message": "CORS is working", "staff_id": staff_id, "access_token": access_token}
+
 # @app.route("/team/requests", methods=['GET'])
 # def get_requests_for_teams():
 #     # Get all team_ids from the session
@@ -143,6 +151,6 @@ def check_auth():
     
 #     # Return the retrieved requests
 #     return jsonable_encoder(requests)
-
+   
 if __name__ == '__main__':
     app.run(host="0.0.0.0")
