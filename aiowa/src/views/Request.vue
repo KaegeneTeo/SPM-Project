@@ -22,6 +22,7 @@
             <th>End Date</th>
             <th>Time Slot</th>
             <th>Request Type</th>
+            <th>Result Reason</th>
           </tr>
         </thead>
         <tbody>
@@ -39,6 +40,7 @@
             <td>{{ request.enddate }}</td>
             <td>{{ mapTimeSlot(request.time_slot) }}</td> <!-- Time Slot based on int value -->
             <td>{{ mapRequestType(request.request_type) }}</td> <!-- Request Type based on int value -->
+            <td>{{ request.result_reason }}</td>
           </tr>
         </tbody>
       </table>
@@ -48,25 +50,36 @@
     <div v-else>
       <p>No requests available.</p>
     </div>
-
     <!-- Modal for displaying request details -->
     <div v-if="showModal" class="modal">
       <div class="modal-content">
         <span class="close" @click="closeModal">&times;</span>
         <h2>Request Details</h2>
-        <p><strong>Request ID:</strong> {{ selectedRequest.request_id }}</p>
-        <p><strong>Staff ID:</strong> {{ selectedRequest.staff_id }}</p>
-        <p><strong>Schedule ID:</strong> {{ selectedRequest.schedule_id }}</p>
-        <p><strong>Reason:</strong> {{ selectedRequest.reason }}</p>
-        <p><strong>Status:</strong> {{ mapStatus(selectedRequest.status) }}</p> <!-- Status based on int value -->
-        <p><strong>Start Date:</strong> {{ selectedRequest.startdate }}</p>
-        <p><strong>End Date:</strong> {{ selectedRequest.enddate }}</p>
-        <p><strong>Time Slot:</strong> {{ mapTimeSlot(selectedRequest.time_slot) }}</p> <!-- Time Slot based on int value -->
-        <p><strong>Request Type:</strong> {{ mapRequestType(selectedRequest.request_type) }}</p> <!-- Request Type based on int value -->
+
+        <!-- Request Information -->
+        <div class="request-info">
+          <p><strong>Request ID:</strong> {{ selectedRequest.request_id }}</p>
+          <p><strong>Staff ID:</strong> {{ selectedRequest.staff_id }}</p>
+          <p><strong>Schedule ID:</strong> {{ selectedRequest.schedule_id }}</p>
+          <p><strong>Reason:</strong> {{ selectedRequest.reason }}</p>
+          <p><strong>Status:</strong> {{ mapStatus(selectedRequest.status) }}</p>
+          <p><strong>Start Date:</strong> {{ selectedRequest.startdate }}</p>
+          <p><strong>End Date:</strong> {{ selectedRequest.enddate }}</p>
+          <p><strong>Time Slot:</strong> {{ mapTimeSlot(selectedRequest.time_slot) }}</p>
+          <p><strong>Request Type:</strong> {{ mapRequestType(selectedRequest.request_type) }}</p>
+        </div>
+
+        <!-- Reason for Approval/Rejection -->
+        <div class="result-reason">
+          <p><strong>Reason for Approval/Rejection:</strong></p>
+          <textarea v-model="resultReason" rows="3" placeholder="Enter reason for approval/rejection"></textarea>
+        </div>
 
         <!-- Approve and Reject buttons -->
-        <button @click="approveRequest">Approve</button>
-        <button @click="rejectRequest">Reject</button>
+        <div class="action-buttons">
+          <button class="approve-button" @click="approveRequest">Approve</button>
+          <button class="reject-button" @click="rejectRequest">Reject</button>
+        </div>
       </div>
     </div>
   </div>
@@ -85,7 +98,8 @@ export default {
       selectedRequest: {}, // Store details of the selected request
       showModal: false, // Show upon clicking into a specific request, by default hidden
       feedbackMessage: '', // Display message user feedback after approval/rejection
-      feedbackType: '' // Message type: 'success' or 'error'
+      feedbackType: '', // Message type: 'success' or 'error'
+      resultReason: '' // Store the result_reason entered by the user
     };
   },
   methods: {
@@ -106,7 +120,7 @@ export default {
             'Authorization': `Bearer ${this.access_token}`,  // Include the access token here
             'X-Staff-ID': this.staff_id          // Include the staff ID here 
           }
-        })
+      })
         .then(response => {
           console.log('Request data received:', response.data);
           this.requests = response.data; // Store the list of requests
@@ -138,63 +152,49 @@ export default {
     approveRequest() {
       console.log(`Approving request ID: ${this.selectedRequest.request_id}`);
       // API Call to method for approval in backend
-      axios.put(`http://localhost:5000/request/${this.selectedRequest.request_id}/approve`, {}, {  // Empty body for PUT
+      axios.put(`http://localhost:5000/request/${this.selectedRequest.request_id}/approve`, {
+        result_reason: this.resultReason
+      }, {
         headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${this.access_token}`,  // Include the access token here
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.access_token}`
         }
       })
         .then(response => {
           console.log('Request approved:', response.data);
-          this.showModal = false; // Close the modal
-
-          // Display success message
+          this.showModal = false;
           this.feedbackMessage = 'Request approved successfully!';
           this.feedbackType = 'success';
-          
-          // Refresh list of requests
           this.refreshRequests();
-          
-          // Message auto clears after 3 seconds
-          setTimeout(() => {
-            this.feedbackMessage = '';
-          }, 3000);
+          setTimeout(() => this.feedbackMessage = '', 3000);
         })
         .catch(error => {
-          console.error("There was an error approving the request:", error);
-          // Display error message
+          console.error('Failed to approve request:', error);
           this.feedbackMessage = 'Failed to approve the request. Please try again.';
           this.feedbackType = 'error';
         });
     },
     rejectRequest() {
       console.log(`Rejecting request ID: ${this.selectedRequest.request_id}`);
-      // API Call to method for rejection in backend
-      axios.put(`http://localhost:5000/request/${this.selectedRequest.request_id}/reject`, {}, {  // Empty body for PUT
+      // Send the result_reason with the rejection
+      axios.put(`http://localhost:5000/request/${this.selectedRequest.request_id}/reject`, {
+        result_reason: this.resultReason
+      }, {
         headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${this.access_token}`,  // Include the access token here
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.access_token}`
         }
       })
         .then(response => {
           console.log('Request rejected:', response.data);
-          this.showModal = false; // Close the modal
-
-          // Display success message
+          this.showModal = false;
           this.feedbackMessage = 'Request rejected successfully!';
           this.feedbackType = 'success';
-          
-          // Refresh list of requests
           this.refreshRequests();
-          
-          // Message auto clears after 3 seconds
-          setTimeout(() => {
-            this.feedbackMessage = '';
-          }, 3000);
+          setTimeout(() => this.feedbackMessage = '', 3000);
         })
         .catch(error => {
-          console.error("There was an error rejecting the request:", error);
-          // Display error message
+          console.error('Failed to reject request:', error);
           this.feedbackMessage = 'Failed to reject the request. Please try again.';
           this.feedbackType = 'error';
         });
@@ -301,10 +301,57 @@ p {
 
 .modal-content {
   background-color: #fefefe;
-  margin: 15% auto;
-  padding: 20px;
+  margin: 10% auto; /* Reduced margin */
+  padding: 30px; /* Increased padding */
   border: 1px solid #888;
-  width: 80%;
+  width: 60%; /* Adjusted width for better layout */
+  border-radius: 8px; /* Rounded corners for modern look */
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */
+}
+
+.request-info p {
+  margin: 10px 0; /* Increased margin between paragraphs */
+}
+
+.result-reason {
+  margin-top: 20px; /* Spacing above the result reason section */
+}
+
+.result-reason textarea {
+  width: 100%; /* Full width for the textarea */
+  margin-top: 5px; /* Space above the textarea */
+  padding: 10px; /* Padding inside textarea */
+  border: 1px solid #ccc; /* Subtle border */
+  border-radius: 4px; /* Rounded corners */
+}
+
+.action-buttons {
+  margin-top: 20px; /* Space above the buttons */
+  display: flex;
+  justify-content: space-between; /* Distribute space evenly */
+}
+
+.approve-button {
+  padding: 10px 20px;
+  background-color: #42b983; /* Green for approve */
+  color: white;
+  border: none;
+  cursor: pointer;
+  margin: 5px;
+}
+
+.reject-button {
+  padding: 10px 20px;
+  background-color: #d9534f; /* Red for reject */
+  color: white;
+  border: none;
+  cursor: pointer;
+  margin: 5px;
+}
+
+button {
+  flex: 1; /* Equal size for buttons */
+  margin: 0 5px; /* Spacing between buttons */
 }
 
 .close {
@@ -319,11 +366,6 @@ p {
   color: black;
   text-decoration: none;
   cursor: pointer;
-}
-
-button {
-  padding: 10px 20px;
-  margin: 5px;
 }
 
 .feedback {

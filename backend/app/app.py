@@ -1,7 +1,7 @@
 from flask import Flask, jsonify
 import os
 from supabase import create_client, Client
-from flask import request
+from flask import request, abort
 from flask_cors import CORS
 app = Flask(__name__)
 CORS(app, credentials=True ,resources={r"/*": {
@@ -89,8 +89,6 @@ def check_auth():
     return json, status_code
 
 
-
-
 @app.route('/team/requests', methods=['GET'])
 def get_team_requests():
     staff_id = request.headers.get('X-Staff-ID')
@@ -104,17 +102,17 @@ def get_team_requests():
 
     # Throw error if no team_ids
     if not team_ids:
-        raise HTTPException(status_code=404, detail="No team found for the logged-in user.")
+        abort(404, description="No team found for the logged-in user.")
 
-    # Retrieve Staff_ID(s) of staff belonging to the team(s) of current logged in user
-    staff_ids_response = supabase.table("team").select("staff_id").in_("team_id", team_ids).execute()
+    # Retrieve Staff_ID(s) of staff belonging to the team(s) of the current logged-in user
+    staff_ids_response = supabase.table("team").select("staff_id").in_("team_id", team_ids).neq("staff_id", staff_id).execute()
     
     staff_ids = [staff['staff_id'] for staff in staff_ids_response.data]
     print("Retrieved staff_ids:", staff_ids)
     
     # Throw error if no staff members are found
     if not staff_ids:
-        raise HTTPException(status_code=404, detail="No staff found for the provided team IDs.")
+        abort(404, description="No staff found for the provided team IDs.")
     
     # Retrieve all requests of staff belonging to team(s) of logged in user
     requests_response = supabase.table("request").select("*").in_("staff_id", staff_ids).execute()
@@ -124,7 +122,7 @@ def get_team_requests():
     
     # Check if requests are found, else throw an error message
     if not requests:
-        raise HTTPException(status_code=404, detail="No requests found for staff members in these teams.")
+        abort(404, description="No requests found for staff members in these teams.")
     
     # Create the response and add CORS headers manually
     response = jsonify(requests)
@@ -141,7 +139,7 @@ def get_selected_request(request_id):
     selected_request = request_response.data[0]
 
     if not request_response.data:
-        raise HTTPException(status_code=404, detail="Request not found.")
+        abort(404, description="Request not found.")
     
     # Create the response and add CORS headers manually
     response = jsonify(selected_request)
@@ -150,24 +148,34 @@ def get_selected_request(request_id):
 
 @app.route("/request/<request_id>/approve", methods=['PUT'])
 def request_approve(request_id):
-    access_token = request.headers.get('Authorization').split(' ')[1]  # Extract Bearer token
-    print(access_token)
-    response = supabase.table("request").update({"status": 1}).eq("request_id", request_id).execute()
-    
+    access_token = request.headers.get('Authorization').split(' ')[1]
+    result_reason = request.json.get('result_reason')  # Get result_reason from request body
+    print(access_token, result_reason)
+
+    response = supabase.table("request").update({
+        "status": 1,  # Approved status
+        "result_reason": result_reason  # Store the result_reason
+    }).eq("request_id", request_id).execute()
+
     if not response.data:
-        raise HTTPException(status_code=404, detail="Request not found.")
-    
+        abort(404, description="Request not found.")
+
     return {"message": "Request approved successfully"}
 
 @app.route("/request/<request_id>/reject", methods=['PUT'])
 def request_reject(request_id):
-    access_token = request.headers.get('Authorization').split(' ')[1]  # Extract Bearer token
-    print(access_token)
-    response = supabase.table("request").update({"status": -1}).eq("request_id", request_id).execute()
-    
+    access_token = request.headers.get('Authorization').split(' ')[1]
+    result_reason = request.json.get('result_reason')  # Get result_reason from request body
+    print(access_token, result_reason)
+
+    response = supabase.table("request").update({
+        "status": -1,  # Rejected status
+        "result_reason": result_reason  # Store the result_reason
+    }).eq("request_id", request_id).execute()
+
     if not response.data:
-        raise HTTPException(status_code=404, detail="Request not found.")
-    
+        abort(404, description="Request not found.")
+
     return {"message": "Request rejected successfully"}
 
 @app.route("/getstaffid", methods=['GET'])
