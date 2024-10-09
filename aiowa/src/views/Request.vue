@@ -16,10 +16,10 @@
           <tr>
             <th>Request ID</th>
             <th>Staff ID</th>
-            <th>Schedule ID</th>
             <th>Reason</th>
             <th>Status</th>
-            <th>Date</th>
+            <th>Start Date</th>
+            <th>End Date</th>
             <th>Time Slot</th>
             <th>Request Type</th>
           </tr>
@@ -29,10 +29,10 @@
           <tr v-for="request in requests" :key="request.request_id">
             <td><a href="#" @click.prevent="openRequestDetails(request.request_id)">{{ request.request_id }}</a></td>
             <td>{{ request.staff_id }}</td>
-            <td>{{ request.schedule_id }}</td>
             <td>{{ request.reason }}</td>
             <td>{{ mapStatus(request.status) }}</td> <!-- Status based on integer value -->
-            <td>{{ request.date }}</td>
+            <td>{{ request.startdate }}</td>
+            <td>{{ request.enddate }}</td>
             <td>{{ request.time_slot }}</td>
             <td>{{ request.request_type }}</td>
           </tr>
@@ -55,7 +55,8 @@
         <p><strong>Schedule ID:</strong> {{ selectedRequest.schedule_id }}</p>
         <p><strong>Reason:</strong> {{ selectedRequest.reason }}</p>
         <p><strong>Status:</strong> {{ mapStatus(selectedRequest.status) }}</p> <!-- Status based on integer value -->
-        <p><strong>Date:</strong> {{ selectedRequest.date }}</p>
+        <p><strong>Start Date:</strong> {{ selectedRequest.startdate }}</p>
+        <p><strong>End Date:</strong> {{ selectedRequest.enddate }}</p>
         <p><strong>Time Slot:</strong> {{ selectedRequest.time_slot }}</p>
         <p><strong>Request Type:</strong> {{ selectedRequest.request_type }}</p>
 
@@ -113,8 +114,7 @@ export default {
     openRequestDetails(requestId) {
       console.log(`Fetching details for request ID: ${requestId}`);
       // Fetch the details of the selected request from the server
-      axios.get(`http://127.0.0.1:5000/request/${requestId}`, { withCredentials: true })
-      axios.get(`http://127.0.0.1:5000/request/${requestId}`, { withCredentials: true })
+      axios.get(`http://localhost:5000/request/${requestId}`, { withCredentials: true })
         .then(response => {
           this.selectedRequest = response.data;
           this.showModal = true; // Show the modal with request details
@@ -129,8 +129,7 @@ export default {
     approveRequest() {
       console.log(`Approving request ID: ${this.selectedRequest.request_id}`);
       // API Call to method for approval in backend
-      axios.post(`http://127.0.0.1:5000/request/${this.selectedRequest.request_id}/approve`, { withCredentials: true })
-      axios.post(`http://127.0.0.1:5000/request/${this.selectedRequest.request_id}/approve`, { withCredentials: true })
+      axios.post(`http://localhost:5000/request/${this.selectedRequest.request_id}/approve`, { withCredentials: true })
         .then(response => {
           console.log('Request approved:', response.data);
           this.showModal = false; // Close the modal
@@ -157,8 +156,7 @@ export default {
     rejectRequest() {
       console.log(`Rejecting request ID: ${this.selectedRequest.request_id}`);
       // API Call to method for rejection in backend
-      axios.post(`http://127.0.0.1:5000/request/${this.selectedRequest.request_id}/reject`, { withCredentials: true })
-      axios.post(`http://127.0.0.1:5000/request/${this.selectedRequest.request_id}/reject`, { withCredentials: true })
+      axios.post(`http://localhost:5000/request/${this.selectedRequest.request_id}/reject`, { withCredentials: true })
         .then(response => {
           console.log('Request rejected:', response.data);
           this.showModal = false; // Close the modal
