@@ -27,14 +27,18 @@
         <tbody>
           <!-- For loop to display all request records -->
           <tr v-for="request in requests" :key="request.request_id">
-            <td><a href="#" @click.prevent="openRequestDetails(request.request_id)">{{ request.request_id }}</a></td>
+            <td>
+              <a href="#" @click.prevent="openRequestDetails(request.request_id)" style="color: blue; text-decoration: underline;">
+                {{ request.request_id }}
+              </a>
+            </td>
             <td>{{ request.staff_id }}</td>
             <td>{{ request.reason }}</td>
-            <td>{{ mapStatus(request.status) }}</td> <!-- Status based on integer value -->
+            <td>{{ mapStatus(request.status) }}</td> <!-- Status based on int value -->
             <td>{{ request.startdate }}</td>
             <td>{{ request.enddate }}</td>
-            <td>{{ request.time_slot }}</td>
-            <td>{{ request.request_type }}</td>
+            <td>{{ mapTimeSlot(request.time_slot) }}</td> <!-- Time Slot based on int value -->
+            <td>{{ mapRequestType(request.request_type) }}</td> <!-- Request Type based on int value -->
           </tr>
         </tbody>
       </table>
@@ -54,11 +58,11 @@
         <p><strong>Staff ID:</strong> {{ selectedRequest.staff_id }}</p>
         <p><strong>Schedule ID:</strong> {{ selectedRequest.schedule_id }}</p>
         <p><strong>Reason:</strong> {{ selectedRequest.reason }}</p>
-        <p><strong>Status:</strong> {{ mapStatus(selectedRequest.status) }}</p> <!-- Status based on integer value -->
+        <p><strong>Status:</strong> {{ mapStatus(selectedRequest.status) }}</p> <!-- Status based on int value -->
         <p><strong>Start Date:</strong> {{ selectedRequest.startdate }}</p>
         <p><strong>End Date:</strong> {{ selectedRequest.enddate }}</p>
-        <p><strong>Time Slot:</strong> {{ selectedRequest.time_slot }}</p>
-        <p><strong>Request Type:</strong> {{ selectedRequest.request_type }}</p>
+        <p><strong>Time Slot:</strong> {{ mapTimeSlot(selectedRequest.time_slot) }}</p> <!-- Time Slot based on int value -->
+        <p><strong>Request Type:</strong> {{ mapRequestType(selectedRequest.request_type) }}</p> <!-- Request Type based on int value -->
 
         <!-- Approve and Reject buttons -->
         <button @click="approveRequest">Approve</button>
@@ -114,7 +118,12 @@ export default {
     openRequestDetails(requestId) {
       console.log(`Fetching details for request ID: ${requestId}`);
       // Fetch the details of the selected request from the server
-      axios.get(`http://localhost:5000/request/${requestId}`, { withCredentials: true })
+      axios.get(`http://localhost:5000/request/${requestId}`, {
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${this.access_token}`,  // Include the access token here
+          }
+      })
         .then(response => {
           this.selectedRequest = response.data;
           this.showModal = true; // Show the modal with request details
@@ -129,7 +138,12 @@ export default {
     approveRequest() {
       console.log(`Approving request ID: ${this.selectedRequest.request_id}`);
       // API Call to method for approval in backend
-      axios.post(`http://localhost:5000/request/${this.selectedRequest.request_id}/approve`, { withCredentials: true })
+      axios.put(`http://localhost:5000/request/${this.selectedRequest.request_id}/approve`, {}, {  // Empty body for PUT
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${this.access_token}`,  // Include the access token here
+        }
+      })
         .then(response => {
           console.log('Request approved:', response.data);
           this.showModal = false; // Close the modal
@@ -156,7 +170,12 @@ export default {
     rejectRequest() {
       console.log(`Rejecting request ID: ${this.selectedRequest.request_id}`);
       // API Call to method for rejection in backend
-      axios.post(`http://localhost:5000/request/${this.selectedRequest.request_id}/reject`, { withCredentials: true })
+      axios.put(`http://localhost:5000/request/${this.selectedRequest.request_id}/reject`, {}, {  // Empty body for PUT
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${this.access_token}`,  // Include the access token here
+        }
+      })
         .then(response => {
           console.log('Request rejected:', response.data);
           this.showModal = false; // Close the modal
@@ -194,7 +213,25 @@ export default {
         default:
           return 'Pending';
       }
-    }
+    },
+    mapTimeSlot(timeSlot) {
+      switch (timeSlot) {
+        case 1:
+          return 'AM';
+        case 2:
+          return 'PM';
+        case 3:
+          return 'AMPM';
+      }
+    },
+    mapRequestType(requestType) {
+      switch (requestType) {
+        case 1:
+          return 'Adhoc';
+        case 2:
+          return 'Recurring';
+      }
+    },
   },
   mounted() {
     console.log('Component mounted, fetching data...');

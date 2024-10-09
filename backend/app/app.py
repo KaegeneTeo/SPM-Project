@@ -101,12 +101,6 @@ def get_team_requests():
     team_ids_response = supabase.table("team").select("team_id").eq("staff_id", staff_id).execute()
     team_ids = [team['team_id'] for team in team_ids_response.data]
     print("Retrieved team_ids:", team_ids)
-    # return {
-    #     "message": "CORS is working", 
-    #     "staff_id": staff_id, 
-    #     "access_token": access_token, 
-    #     "team_id(s)": team_ids
-    # }
 
     # Throw error if no team_ids
     if not team_ids:
@@ -137,5 +131,44 @@ def get_team_requests():
     response.headers.add('Access-Control-Allow-Origin', '*')  # Allow requests from any origin
     return response
    
+@app.route("/request/<request_id>", methods=['GET'])
+def get_selected_request(request_id):
+    access_token = request.headers.get('Authorization').split(' ')[1]  # Extract Bearer token
+    print(access_token)
+
+    # Retrieve selected request by request_id
+    request_response = supabase.table("request").select("*").eq("request_id", request_id).execute()
+    selected_request = request_response.data[0]
+
+    if not request_response.data:
+        raise HTTPException(status_code=404, detail="Request not found.")
+    
+    # Create the response and add CORS headers manually
+    response = jsonify(selected_request)
+    response.headers.add('Access-Control-Allow-Origin', '*')  # Allow requests from any origin
+    return response
+
+@app.route("/request/<request_id>/approve", methods=['PUT'])
+def request_approve(request_id):
+    access_token = request.headers.get('Authorization').split(' ')[1]  # Extract Bearer token
+    print(access_token)
+    response = supabase.table("request").update({"status": 1}).eq("request_id", request_id).execute()
+    
+    if not response.data:
+        raise HTTPException(status_code=404, detail="Request not found.")
+    
+    return {"message": "Request approved successfully"}
+
+@app.route("/request/<request_id>/reject", methods=['PUT'])
+def request_reject(request_id):
+    access_token = request.headers.get('Authorization').split(' ')[1]  # Extract Bearer token
+    print(access_token)
+    response = supabase.table("request").update({"status": -1}).eq("request_id", request_id).execute()
+    
+    if not response.data:
+        raise HTTPException(status_code=404, detail="Request not found.")
+    
+    return {"message": "Request rejected successfully"}
+
 if __name__ == '__main__':
     app.run(host="0.0.0.0")
