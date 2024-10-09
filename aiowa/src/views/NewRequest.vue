@@ -3,10 +3,7 @@
     <h1><strong>New Request</strong></h1>
     <br>
     <form @submit.prevent="submitRequest">
-      <div>
-        <label for="staff_id">Staff ID:</label>
-        <input type="number" v-model="form.staff_id" id="staff_id" required />
-      </div>
+      
       <div>
         <label for="reason">Reason:</label>
         <textarea v-model="form.reason" id="reason" required></textarea>
@@ -63,7 +60,7 @@ export default {
   data() {
     return {
       form: {
-        staff_id: null,
+        staffid: localStorage.getItem('staff_id'),
         reason: "",
         status: 0,
         startdate: "",
@@ -81,6 +78,19 @@ export default {
     };
   },
   methods: {
+    getStaffId() {
+      axios.get(`http://127.0.0.1:5000/getstaffid`, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${this.access_token}`,  // Include the access token here
+            'X-Staff-ID': this.staff_id          // Include the staff ID here 
+          }
+        })
+      .then(response => {
+        console.log(response.data);
+        return response.data.staff_id
+      })
+    },
     getCurrentDate() {
       const today = new Date();
       return today.toISOString().split("T")[0]; // Format as YYYY-MM-DD
@@ -92,7 +102,6 @@ export default {
     handleStartDateChange() {
       const selectedDate = new Date(this.form.startdate);
       const currentDate = new Date(this.getCurrentDate());
-
 
       // Check if the selected date is a weekend
       if (this.isWeekend(this.form.startdate)) {
@@ -135,6 +144,17 @@ export default {
       }
     },
     validateEndDate() {
+      const currentDate = new Date(this.getCurrentDate());
+      const selectedEndDate = new Date(this.form.enddate);
+      if(selectedEndDate.getTime() != currentDate.getTime()){
+        this.canChooseAM = true;
+        this.canChoosePM = true;
+        this.canChooseFullDay = true;
+        this.endDateError = null; // Reset end date error
+      } else {
+        this.handleStartDateChange();
+      }
+
       if (this.form.enddate < this.form.startdate) {
         this.endDateError = "End date cannot be earlier than start date.";
       } else if (this.isWeekend(this.form.enddate)) {
@@ -151,7 +171,7 @@ export default {
       }
 
       try {
-        const response = axios.post( `http://127.0.0.1:5000/requests/`, this.form, {withCredentials: true});
+        const response = axios.post( `http://127.0.0.1:5000/requests/`, this.form);
         this.message = "Request created successfully!";
         console.log(response.data);
       } catch (error) {
@@ -162,6 +182,11 @@ export default {
         }
       }
     },
+  },
+  mounted() {
+    this.staff_id = localStorage.getItem('staff_id');
+    this.access_token = localStorage.getItem('access_token');
+    this.getStaffId();
   },
 };
 </script>

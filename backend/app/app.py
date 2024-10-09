@@ -170,5 +170,63 @@ def request_reject(request_id):
     
     return {"message": "Request rejected successfully"}
 
+@app.route("/getstaffid", methods=['GET'])
+def get_staff_id():
+    staff_id = request.headers.get('X-Staff-ID')
+    access_token = request.headers.get('Authorization').split(' ')[1]  # Extract Bearer token
+    return {"message": "CORS is working", "staff_id": staff_id, "access_token": access_token}
+
+@app.route("/requests/", methods=['POST'])
+def create_request():
+    form_data = request.json
+    print(form_data)
+    # Validate input
+    if not form_data:
+        return jsonify({"error": "No request data provided"}), 400
+    try:
+        # Insert new request into the Supabase database
+        response = supabase.table("request").insert({
+            "staff_id": form_data.get('staffid'),
+            "reason": form_data.get("reason"),
+            "status": form_data.get("status"),
+            "startdate": form_data.get("startdate"),
+            "enddate": form_data.get("enddate"),
+            "time_slot": form_data.get("time_slot"),
+            "request_type": form_data.get("request_type"),
+        }).execute()
+        # Check for errors in the response
+
+        if response == None:
+            app.logger.error("Database insert error: %s", response.status_code)
+            return jsonify({"error": "Failed to insert data into the database"}), 500
+
+        # If everything is fine, return the inserted request with a 201 status
+        return jsonify(response.data[0]), 201
+    except Exception as e:
+        app.logger.error("An error occurred: %s", str(e))
+        return jsonify({"error": str(e)}), 500
+    
+@app.route("/requests/<int:staff_id>", methods=['GET'])
+def get_requests_by_staff(staff_id: int):
+    try:
+        # Retrieve requests for the specified staff_id from the Supabase database
+        response = supabase.table("request").select("*").eq("staff_id", staff_id).execute()
+        print(response)
+        # Check for errors in the response
+        if response == None:
+            app.logger.error("Database query error: %s", response["error"]["message"])
+            return jsonify({"error": response["error"]["message"]}), 500
+        
+        # If no requests found, return a 404
+        if response.data == []:
+            return jsonify({"error": "No requests found for this staff ID"}), 404
+
+        # Return the retrieved requests with a 200 status
+        return jsonify(response.data), 200
+
+    except Exception as e:
+        app.logger.error("An error occurred: %s", str(e))
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == '__main__':
     app.run(host="0.0.0.0")
