@@ -17,6 +17,26 @@ supabase: Client = create_client(url, key)
 def test():
     return "Hello world", 200
 
+@app.route("/schedules", methods=['GET'])
+def get_schedules():
+    data = request.json
+    keys = list(data.keys())
+    dict1 = {}
+    if "ID" in keys:
+        response = supabase.from_('schedules').select('STAFF_ID, Staff_FName, Staff_LName, Dept, schedule(Schedule_ID, Staff_ID, Date, Time_Slot)').eq("STAFF_ID", data["ID"]).execute()
+    if "Team" in keys:
+        response = supabase.from_('schedules').select('STAFF_ID, Staff_FName, Staff_LName, Dept, schedule(Schedule_ID, Staff_ID, Date, Time_Slot)').eq("Team", data["Team"]).execute()
+    if "Dept" in keys:
+        response = supabase.from_('schedules').select('STAFF_ID, Staff_FName, Staff_LName, Dept, schedule(Schedule_ID, Staff_ID, Date, Time_Slot)').eq("Dept", data["Dept"]).execute()
+    responselist = list(response.data)
+    for i in range(0, len(responselist)):
+        dict1 = dict1.get((responselist[i]["Date"], responselist[i]["Time_Slot"]), {
+            "Date": responselist[i]["Date"],
+            "Time_Slot": responselist[i]["Time_Slot"],
+            "Name_List": list(responselist[i]["STAFF_ID"] + " - " + responselist[i]["STAFF_FName"] + " " + responselist[i]["STAFF_LName"])
+            })["Name_List"].append(responselist[i]["STAFF_ID"] + " - " + responselist[i]["STAFF_FName"] + " " + responselist[i]["STAFF_LName"])
+    return dict1.json
+
 @app.route("/employees", methods=['GET'])
 def get_employees():
     response = supabase.table('Employee').select("*").execute()
