@@ -23,12 +23,15 @@ def get_schedules():
     keys = list(data.keys())
     dict1 = {}
     if "ID" in keys:
-        response = supabase.from_('schedules').select('STAFF_ID, Staff_FName, Staff_LName, Dept, schedule(Schedule_ID, Staff_ID, Date, Time_Slot)').eq("STAFF_ID", data["ID"]).execute()
+        allnames = supabase.from_('employees').select('STAFF_ID, Staff_FName, Staff_LName').eq("STAFF_ID", data["ID"]).execute()
+        response = supabase.from_('employees').select('STAFF_ID, Staff_FName, Staff_LName, Dept, schedule(Schedule_ID, Staff_ID, Date, Time_Slot)').eq("STAFF_ID", data["ID"]).execute()
     elif "Dept" in keys:
         if "Team" in keys:
-            response = supabase.from_('schedules').select('STAFF_ID, Staff_FName, Staff_LName, Dept, schedule(Schedule_ID, Staff_ID, Date, Time_Slot)').eq("Team", data["Team"]).eq("Dept", data["Dept"]).execute()  
+            allnames = supabase.from_('employees').select('STAFF_ID, Staff_FName, Staff_LName').eq("Team", data["Team"]).eq("Dept", data["Dept"]).execute()
+            response = supabase.from_('employees').select('STAFF_ID, Staff_FName, Staff_LName, Dept, schedule(Schedule_ID, Staff_ID, Date, Time_Slot)').eq("Team", data["Team"]).eq("Dept", data["Dept"]).execute()  
         else:
-            response = supabase.from_('schedules').select('STAFF_ID, Staff_FName, Staff_LName, Dept, schedule(Schedule_ID, Staff_ID, Date, Time_Slot)').eq("Dept", data["Dept"]).execute()  
+            allnames = supabase.from_('employees').select('STAFF_ID, Staff_FName, Staff_LName').eq("Dept", data["Dept"]).execute()
+            response = supabase.from_('employees').select('STAFF_ID, Staff_FName, Staff_LName, Dept, schedule(Schedule_ID, Staff_ID, Date, Time_Slot)').eq("Dept", data["Dept"]).execute()  
     responselist = list(response.data)
     for i in range(0, len(responselist)):
         dict1 = dict1.get((responselist[i]["Date"], responselist[i]["Time_Slot"]), {
@@ -52,7 +55,8 @@ def get_schedules():
             "class": "PM",
             "Name_List": dict1[key]["Name_List"]
             }
-        return jsonify(dict2)
+    
+        return jsonify({"schedules": dict2, "allnames": allnames})
 
 @app.route("/employees", methods=['GET'])
 def get_employees():
