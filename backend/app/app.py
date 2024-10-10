@@ -24,10 +24,11 @@ def get_schedules():
     dict1 = {}
     if "ID" in keys:
         response = supabase.from_('schedules').select('STAFF_ID, Staff_FName, Staff_LName, Dept, schedule(Schedule_ID, Staff_ID, Date, Time_Slot)').eq("STAFF_ID", data["ID"]).execute()
-    if "Team" in keys:
-        response = supabase.from_('schedules').select('STAFF_ID, Staff_FName, Staff_LName, Dept, schedule(Schedule_ID, Staff_ID, Date, Time_Slot)').eq("Team", data["Team"]).execute()
-    if "Dept" in keys:
-        response = supabase.from_('schedules').select('STAFF_ID, Staff_FName, Staff_LName, Dept, schedule(Schedule_ID, Staff_ID, Date, Time_Slot)').eq("Dept", data["Dept"]).execute()
+    elif "Dept" in keys:
+        if "Team" in keys:
+            response = supabase.from_('schedules').select('STAFF_ID, Staff_FName, Staff_LName, Dept, schedule(Schedule_ID, Staff_ID, Date, Time_Slot)').eq("Team", data["Team"]).eq("Dept", data["Dept"]).execute()  
+        else:
+            response = supabase.from_('schedules').select('STAFF_ID, Staff_FName, Staff_LName, Dept, schedule(Schedule_ID, Staff_ID, Date, Time_Slot)').eq("Dept", data["Dept"]).execute()  
     responselist = list(response.data)
     for i in range(0, len(responselist)):
         dict1 = dict1.get((responselist[i]["Date"], responselist[i]["Time_Slot"]), {
