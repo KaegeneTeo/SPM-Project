@@ -35,7 +35,23 @@ def get_schedules():
             "Time_Slot": responselist[i]["Time_Slot"],
             "Name_List": list(responselist[i]["STAFF_ID"] + " - " + responselist[i]["STAFF_FName"] + " " + responselist[i]["STAFF_LName"])
             })["Name_List"].append(responselist[i]["STAFF_ID"] + " - " + responselist[i]["STAFF_FName"] + " " + responselist[i]["STAFF_LName"])
-    return dict1.json
+    dict2 = {}
+    for key, value in dict1.items():
+        if dict1[key]["Time_Slot"] == "AM":
+            dict2[key] = {
+            "start": str(dict1[key]["Date"]) + " 09:00",
+            "end": str(dict1[key]["Date"]) + " 13:00",
+            "class": "AM",
+            "Name_List": dict1[key]["Name_List"]
+            }
+        if dict1[key]["Time_Slot"] == "PM":
+            dict2[key] = {
+            "start": str(dict1[key]["Date"]) + " 14:00",
+            "end": str(dict1[key]["Date"]) + " 18:00",
+            "class": "PM",
+            "Name_List": dict1[key]["Name_List"]
+            }
+        return jsonify(dict2)
 
 @app.route("/employees", methods=['GET'])
 def get_employees():
