@@ -5,7 +5,7 @@ from flask import request, abort
 from flask_cors import CORS
 app = Flask(__name__)
 CORS(app, credentials=True ,resources={r"/*": {
-    "origins": "http://localhost:5173", "allow_headers": ["Authorization", "Content-Type", "X-Staff-ID"]}})  # Enable CORS for frontend origin
+    "origins": "http://localhost:5173", "allow_headers": ["Authorization", "Content-Type", "X-Staff-ID", "X-Role"]}})  # Enable CORS for frontend origin
 
 
 
@@ -79,13 +79,14 @@ def login():
         }   
 
         # Fetch staff_id from the Employee table
-        staff_response = supabase.table("Employee").select("Staff_ID").ilike("Email", json_response["email"]).execute()
-        # print(staff_response.data[0]["Staff_ID"])
+        staff_response = supabase.table("Employee").select("Staff_ID, Role").ilike("Email", json_response["email"]).execute()
+        print(staff_response.data)
         if staff_response.data:
             json_response["staff_id"] = staff_response.data[0]["Staff_ID"]
+            json_response["role"] = staff_response.data[0]["Role"]
         else:
             json_response["staff_id"] = None  # Or handle as needed
-
+            json_response["role"] = None
 
         return jsonify(json_response), 200
 

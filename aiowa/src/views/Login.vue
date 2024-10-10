@@ -105,6 +105,7 @@ export default {
                     localStorage.setItem("refresh_token", response.data.refresh_token);
                     localStorage.setItem("user_email", response.data.email);
                     localStorage.setItem("staff_id", response.data.staff_id)
+                    localStorage.setItem("role", response.data.role)
                     router.push("/schedules");
                 }
             } catch (error) {
