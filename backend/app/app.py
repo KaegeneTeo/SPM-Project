@@ -40,7 +40,7 @@ def get_schedules():
             "Name_List": list(responselist[i]["STAFF_ID"] + " - " + responselist[i]["STAFF_FName"] + " " + responselist[i]["STAFF_LName"])
             })["Name_List"].append(responselist[i]["STAFF_ID"] + " - " + responselist[i]["STAFF_FName"] + " " + responselist[i]["STAFF_LName"])
     dict2 = {}
-    for key, value in dict1.items():
+    for key in list(dict1.keys()):
         if dict1[key]["Time_Slot"] == "AM":
             dict2[key] = {
             "start": str(dict1[key]["Date"]) + " 09:00",
@@ -55,7 +55,7 @@ def get_schedules():
             "class": "PM",
             "Name_List": dict1[key]["Name_List"]
             }
-    
+            
         return jsonify({"schedules": dict2, "allnames": allnames})
 
 @app.route("/employees", methods=['GET'])
