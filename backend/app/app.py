@@ -56,28 +56,54 @@ def create_schedule_entries(staff_id, dates, time_slot):
 def test():
     return "Hello world", 200
 
+@app.route("/teams_by_dept", methods=['GET'])
+def get_teams():
+    department = request.args.get('department')
+    
+    staff_list = []
+    team_list = []
+    # Query the database
+    response = supabase.from_('Employee').select('Staff_ID').eq("Dept", department).execute()
+    for item in response.data:
+        staff_list.append(item['Staff_ID'])
+
+    for id in staff_list:
+        response = supabase.from_('team').select('team_id').eq('staff_id', id).execute()
+        for i in response.data:
+            if i['team_id'] not in team_list:
+                team_list.append(i['team_id'])
+    # Check if the query was successful and return the data
+    if team_list!=[]:
+        print(team_list)
+        return team_list  # Return the retrieved teams as JSON
+    else:    
+        return jsonify({"error: No teams found"}), 400  # Return error if query fails
+
+   
+
 @app.route("/schedules", methods=['GET'])
 def get_schedules():
     data = request.json
+    print(data)
     keys = list(data.keys())
     dict1 = {}
-    if "ID" in keys:
-        allnames = supabase.from_('employees').select('STAFF_ID, Staff_FName, Staff_LName').eq("STAFF_ID", data["ID"]).execute()
-        response = supabase.from_('employees').select('STAFF_ID, Staff_FName, Staff_LName, Dept, schedule(Schedule_ID, Staff_ID, Date, Time_Slot)').eq("STAFF_ID", data["ID"]).execute()
-    elif "Dept" in keys:
-        if "Team" in keys:
-            allnames = supabase.from_('employees').select('STAFF_ID, Staff_FName, Staff_LName').eq("Team", data["Team"]).eq("Dept", data["Dept"]).execute()
-            response = supabase.from_('employees').select('STAFF_ID, Staff_FName, Staff_LName, Dept, schedule(Schedule_ID, Staff_ID, Date, Time_Slot)').eq("Team", data["Team"]).eq("Dept", data["Dept"]).execute()  
+    if "staff_id" in keys:
+        allnames = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName').eq("Staff_ID", data["staff_id"]).execute()
+        response = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, schedule(Schedule_ID, Staff_ID, Date, Time_Slot)').eq("Staff_ID", data["staff_id"]).execute()
+    elif "dept" in keys:
+        if "team" in keys:
+            allnames = supabase.from_('Employee').select('Staff, Staff_FName, Staff_LName').eq("Team", data["team"]).eq("Dept", data["dept"]).execute()
+            response = supabase.from_('Employee').select('Staff, Staff_FName, Staff_LName, Dept, schedule(Schedule, Staff, Date, Time_Slot)').eq("Team", data["Team"]).eq("Dept", data["dept"]).execute()  
         else:
-            allnames = supabase.from_('employees').select('STAFF_ID, Staff_FName, Staff_LName').eq("Dept", data["Dept"]).execute()
-            response = supabase.from_('employees').select('STAFF_ID, Staff_FName, Staff_LName, Dept, schedule(Schedule_ID, Staff_ID, Date, Time_Slot)').eq("Dept", data["Dept"]).execute()  
+            allnames = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName').eq("Dept", data["dept"]).execute()
+            response = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, schedule(Schedule_ID, Staff_ID, Date, Time_Slot)').eq("Dept", data["dept"]).execute()  
     responselist = list(response.data)
     for i in range(0, len(responselist)):
         dict1 = dict1.get((responselist[i]["Date"], responselist[i]["Time_Slot"]), {
             "Date": responselist[i]["Date"],
             "Time_Slot": responselist[i]["Time_Slot"],
-            "Name_List": list(responselist[i]["STAFF_ID"] + " - " + responselist[i]["STAFF_FName"] + " " + responselist[i]["STAFF_LName"])
-            })["Name_List"].append(responselist[i]["STAFF_ID"] + " - " + responselist[i]["STAFF_FName"] + " " + responselist[i]["STAFF_LName"])
+            "Name_List": list(responselist[i]["Staff_ID"] + " - " + responselist[i]["Staff_FName"] + " " + responselist[i]["Staff_LName"])
+            })["Name_List"].append(responselist[i]["Staff_ID"] + " - " + responselist[i]["Staff_FName"] + " " + responselist[i]["Staff_LName"])
     dict2 = {}
     for key in list(dict1.keys()):
         if dict1[key]["Time_Slot"] == "AM":
@@ -123,15 +149,27 @@ def login():
 
         # Fetch staff_id from the Employee table
         staff_response = supabase.table("Employee").select("Staff_ID, Role, Dept").ilike("Email", json_response["email"]).execute()
-        print(staff_response.data)
+        
         if staff_response.data:
+            # Fetch all team IDs associated with this staff ID
+            team_response = supabase.table("team").select("team_id").eq("staff_id", staff_response.data[0]["Staff_ID"]).execute()
+            
             json_response["staff_id"] = staff_response.data[0]["Staff_ID"]
             json_response["role"] = staff_response.data[0]["Role"]
             json_response["dept"] = staff_response.data[0]["Dept"]
+
+            # Check if multiple teams are found
+            if team_response.data:
+                team_ids = [team["team_id"] for team in team_response.data] 
+                if team_ids:
+                    json_response["team"] = team_ids 
+                else:
+                    json_response["team"] = [None]   # Return empty list or None as needed
         else:
-            json_response["staff_id"] = None  # Or handle as needed
+            json_response["staff_id"] = None  # Handle case if no staff data is found
             json_response["role"] = None
 
+        print(json_response)
         return jsonify(json_response), 200
 
     except Exception as e:

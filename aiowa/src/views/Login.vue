@@ -107,6 +107,7 @@ export default {
                     localStorage.setItem("staff_id", response.data.staff_id)
                     localStorage.setItem("role", response.data.role)
                     localStorage.setItem("dept", response.data.dept)
+                    localStorage.setItem("team", JSON.stringify(response.data.team));
                     router.push("/schedules");
                 }
             } catch (error) {
