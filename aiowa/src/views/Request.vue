@@ -75,10 +75,31 @@
           <textarea v-model="resultReason" rows="3" placeholder="Enter reason for approval/rejection"></textarea>
         </div>
 
+        <!-- Checkbox options for affected dates -->
+        <div class="affected-dates">
+          <p><strong>Select Affected Dates:</strong></p>
+          <div v-for="date in affectedDates" :key="date">
+            <label>
+              <input type="checkbox" :value="date" v-model="selectedDates" />
+              {{ date }}
+            </label>
+          </div>
+        </div>
+
         <!-- Approve and Reject buttons -->
         <div class="action-buttons">
-          <button class="approve-button" @click="approveRequest">Approve</button>
-          <button class="reject-button" @click="rejectRequest">Reject</button>
+          <button 
+            class="approve-button" 
+            @click="approveRequest" 
+            :disabled="!isApproveEnabled"
+            :class="{ 'disabled': !isApproveEnabled }">Approve
+          </button>
+          <button 
+            class="reject-button"
+            @click="rejectRequest" 
+            :disabled="!isRejectEnabled"
+            :class="{ 'disabled': !isRejectEnabled }">Reject
+          </button>
         </div>
       </div>
     </div>
@@ -99,10 +120,34 @@ export default {
       showModal: false, // Show upon clicking into a specific request, by default hidden
       feedbackMessage: '', // Display message user feedback after approval/rejection
       feedbackType: '', // Message type: 'success' or 'error'
-      resultReason: '' // Store the result_reason entered by the user
+      resultReason: '', // Store the result_reason entered by the user
+      affectedDates: [], // Store the list of all affected dates
+      selectedDates: [] // Store the selected dates for approval
     };
   },
+  computed: {
+    // Determine if the Approve button should be enabled
+    isApproveEnabled() {
+      return this.selectedDates.length > 0 && this.resultReason.trim() !== '';
+    },
+    isRejectEnabled() {
+      return this.resultReason.trim() !== '';
+    }
+  },
   methods: {
+    // Method to calculate all dates between two dates
+    calculateAffectedDates(startDate, endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      const dates = [];
+
+      while (start <= end) {
+        dates.push(new Date(start).toISOString().split('T')[0]); // Format as YYYY-MM-DD
+        start.setDate(start.getDate() + 1);
+      }
+
+      return dates;
+    },
     goToCreateRequestPage() {
       // Programmatic navigation to the Create New Request page
       this.$router.push({ name: 'newrequest' });
@@ -140,6 +185,8 @@ export default {
       })
         .then(response => {
           this.selectedRequest = response.data;
+          this.affectedDates = this.calculateAffectedDates(this.selectedRequest.startdate, this.selectedRequest.enddate);
+          this.selectedDates = []; // Reset selected dates for each request
           this.showModal = true; // Show the modal with request details
         })
         .catch(error => {
@@ -150,10 +197,15 @@ export default {
       this.showModal = false; // Hide the modal
     },
     approveRequest() {
+      if (!this.isApproveEnabled) {
+        console.error('Approve button should not be enabled when conditions are not met.');
+        return; // Should not reach this point due to the disabled button
+      }
       console.log(`Approving request ID: ${this.selectedRequest.request_id}`);
       // API Call to method for approval in backend
       axios.put(`http://localhost:5000/request/${this.selectedRequest.request_id}/approve`, {
-        result_reason: this.resultReason
+        result_reason: this.resultReason,
+        approved_dates: this.selectedDates
       }, {
         headers: {
           'Content-Type': 'application/json',
@@ -175,6 +227,10 @@ export default {
         });
     },
     rejectRequest() {
+      if (!this.isRejectEnabled) {
+        console.error('Reject button should not be enabled when conditions are not met.');
+        return; // Should not reach this point due to the disabled button
+      }
       console.log(`Rejecting request ID: ${this.selectedRequest.request_id}`);
       // Send the result_reason with the rejection
       axios.put(`http://localhost:5000/request/${this.selectedRequest.request_id}/reject`, {
@@ -340,6 +396,16 @@ p {
   margin: 5px;
 }
 
+.approve-button.disabled {
+  background-color: #cccccc; /* Light gray background */
+  color: #666666; /* Darker gray text */
+  cursor: not-allowed; /* Not allowed cursor */
+}
+
+.approve-button.disabled:hover {
+  background-color: #cccccc; /* Prevent hover effect when disabled */
+}
+
 .reject-button {
   padding: 10px 20px;
   background-color: #d9534f; /* Red for reject */
@@ -347,6 +413,16 @@ p {
   border: none;
   cursor: pointer;
   margin: 5px;
+}
+
+.reject-button.disabled {
+  background-color: #cccccc; /* Light gray background */
+  color: #666666; /* Darker gray text */
+  cursor: not-allowed; /* Not allowed cursor */
+}
+
+.reject-button.disabled:hover {
+  background-color: #cccccc; /* Prevent hover effect when disabled */
 }
 
 button {

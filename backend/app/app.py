@@ -3,16 +3,55 @@ import os
 from supabase import create_client, Client
 from flask import request, abort
 from flask_cors import CORS
+from datetime import datetime, timedelta
 app = Flask(__name__)
 CORS(app, credentials=True ,resources={r"/*": {
     "origins": "http://localhost:5173", "allow_headers": ["Authorization", "Content-Type", "X-Staff-ID", "X-Role", "X-Dept"]}})  # Enable CORS for frontend origin
-
-
 
 url: str = os.environ.get("SUPABASE_URL")
 key: str = os.environ.get("SUPABASE_KEY")
 supabase: Client = create_client(url, key)
 
+# Methods
+def calculate_recurring_dates(approved_dates):
+    if not approved_dates:
+        return []
+    # Given a list of approved dates, calculate all recurring dates for the next year
+    date_list = []
+    earliest_date = min([datetime.strptime(date, '%Y-%m-%d') for date in approved_dates])
+    print(earliest_date)
+    end_date = earliest_date + timedelta(days=365)
+
+    # Determine the days of the week for the approved dates
+    approved_weekdays = [date.weekday() for date in [datetime.strptime(date, '%Y-%m-%d') for date in approved_dates]]
+
+    current_date = earliest_date
+    while current_date <= end_date:
+        if current_date.weekday() in approved_weekdays:
+            date_list.append(current_date.strftime('%Y-%m-%d'))
+        current_date += timedelta(days=1)
+
+    return date_list
+
+def create_schedule_entries(staff_id, dates, time_slot):
+    # Create schedule entries for each date in the provided list
+    # Placeholder value to test, need set auto increment in our db
+    schedule_id = 6
+
+    for date in dates:
+        response = supabase.table("schedule").insert({
+            "schedule_id": schedule_id,
+            "staff_id": staff_id,
+            "date": date,
+            "time_slot": time_slot
+        }).execute()
+
+        if response == None:
+            app.logger.error("Failed to create schedule entry for date %s: %s", date, response)
+
+        schedule_id += 1
+
+# Routes
 @app.route("/")
 def test():
     return "Hello world", 200
@@ -189,11 +228,36 @@ def get_selected_request(request_id):
     response.headers.add('Access-Control-Allow-Origin', '*')  # Allow requests from any origin
     return response
 
-@app.route("/request/<request_id>/approve", methods=['PUT'])
+@app.route("/request/<request_id>/approve", methods=['PUT', 'POST'])
 def request_approve(request_id):
     access_token = request.headers.get('Authorization').split(' ')[1]
     result_reason = request.json.get('result_reason')  # Get result_reason from request body
-    print(access_token, result_reason)
+    approved_dates = request.json.get("approved_dates")  # Get approved dates from the request
+    print(access_token, result_reason, approved_dates)
+
+    # Retrieve the request to be approved
+    request_response = supabase.table("request").select("*").eq("request_id", request_id).execute()
+    print(request_response)
+
+    if not request_response.data:
+        abort(404, description="Request not found.")
+    
+    # Extract the necessary details
+    request_data = request_response.data[0]
+    print(request_data)
+    staff_id = request_data['staff_id']
+    request_type = request_data['request_type']
+    time_slot = request_data['time_slot']
+
+    # If Recurring
+    if request_type == 2:
+        recurring_dates = calculate_recurring_dates(approved_dates)
+        print(recurring_dates)
+        create_schedule_entries(staff_id, recurring_dates, time_slot)
+
+    # If Ad-hoc
+    elif request_type == 1:
+        create_schedule_entries(staff_id, approved_dates, time_slot)
 
     response = supabase.table("request").update({
         "status": 1,  # Approved status
@@ -203,7 +267,9 @@ def request_approve(request_id):
     if not response.data:
         abort(404, description="Request not found.")
 
-    return {"message": "Request approved successfully"}
+    response = jsonify({"message": "Request approved successfully"})
+    response.headers.add('Access-Control-Allow-Origin', '*')  # Add CORS header
+    return response
 
 @app.route("/request/<request_id>/reject", methods=['PUT'])
 def request_reject(request_id):
