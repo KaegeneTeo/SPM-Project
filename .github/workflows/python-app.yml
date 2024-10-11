@@ -15,6 +15,11 @@ jobs:
     build:
         runs-on: ubuntu-latest
 
+        env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_REGION: us-east-1
+
         steps:
             - uses: actions/checkout@v4
             - name: Set up Python 3.12
@@ -31,18 +36,15 @@ jobs:
 
             - name: Deploy to AWS with Zappa
               working-directory: ./backend
-              env:
-                  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-                  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-                  AWS_REGION: us-east-1
+
               run: |
                   # Install the CLI
                   pip install awscli
 
                   # Configure the CLI
-                  aws configure set aws_access_key_id ${{env.AWS_ACCESS_KEY_ID}}
-                  aws configure set aws_secret_access_key ${{env.AWS_SECRET_ACCESS_KEY}}
-                  aws configure set region ${{env.AWS_REGION}}
+                  aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+                  aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+                  aws configure set region $AWS_REGION
 
                   # Activate the virtual environment
                   source env/bin/activate
