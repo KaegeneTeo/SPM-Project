@@ -8,8 +8,8 @@ app = Flask(__name__)
 CORS(app, credentials=True ,resources={r"/*": {
     "origins": "http://localhost:5173", "allow_headers": ["Authorization", "Content-Type", "X-Staff-ID", "X-Role", "X-Dept"]}})  # Enable CORS for frontend origin
 
-url: str = os.environ.get("SUPABASE_URL")
-key: str = os.environ.get("SUPABASE_KEY")
+url: str = os.getenv("SUPABASE_URL")
+key: str = os.getenv("SUPABASE_KEY")
 supabase: Client = create_client(url, key)
 
 # Methods
@@ -79,26 +79,25 @@ def get_teams():
 @app.route("/schedules", methods=['GET'])
 def get_schedules():
     data = request.args
-    print(data)
     keys = list(data.keys())
     dict1 = {}
     if "staff_id" in keys:
-        allnames = supabase.from_('employee').select('Staff_ID, Staff_FName, Staff_LName').eq("Staff_ID", data["staff_id"]).execute()
-        response = supabase.from_('employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, schedule(Schedule_ID, Staff_ID, Date, Time_Slot)').eq("Staff_ID", data["staff_id"]).execute()
+        allnames = supabase.from_('employee').select('staff_id, staff_fname, staff_lname').eq("staff_id", data["staff_id"]).execute()
+        response = supabase.from_('employee').select('staff_id, staff_fname, staff_lname, dept, schedule(schedule_id, staff_id, date, time_slot)').eq("Staff_ID", data["staff_id"]).execute()
     elif "dept" in keys:
-        allnames = supabase.from_('employee').select('Staff_ID, Staff_FName, Staff_LName').eq("Dept", data["dept"]).execute()
-        response = supabase.from_('employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, schedule(Schedule_ID, Staff_ID, Date, Time_Slot)').eq("Dept", data["dept"]).execute() 
+        allnames = supabase.from_('employee').select('staff_id, staff_fname, staff_lname').eq("dept", data["dept"]).execute()
+        response = supabase.from_('employee').select('staff_id, staff_fname, staff_lname, dept, schedule(schedule_ID, staff_id, date, time_slot)').eq("dept", data["dept"]).execute() 
     elif "team" in keys:
-        allnames = supabase.from_('employee').select('Staff, Staff_FName, Staff_LName, team(staff_id, team_id)').eq("team_id", data["team"]).execute()
-        response = supabase.from_('employee').select('Staff, Staff_FName, Staff_LName, Dept, schedule(Schedule, Staff, Date, Time_Slot), team(staff_id, team_id)').eq("team_id", data["team"]).execute()   
+        allnames = supabase.from_('employee').select('staff, staff_fname, staff_lname, team(staff_id, team_id)').eq("team_id", data["team"]).execute()
+        response = supabase.from_('employee').select('staff, staff_fname, staff_lname, dept, schedule(dchedule, staff, date, time_slot), team(staff_id, team_id)').eq("team_id", data["team"]).execute()  
     responselist = list(response.data)
     
     for i in range(0, len(responselist)):
-        dict1 = dict1.get((responselist[i]["Date"], responselist[i]["Time_Slot"]), {
-            "Date": responselist[i]["Date"],
-            "Time_Slot": responselist[i]["Time_Slot"],
-            "Name_List": list(responselist[i]["Staff_ID"] + " - " + responselist[i]["Staff_FName"] + " " + responselist[i]["Staff_LName"])
-            })["Name_List"].append(responselist[i]["Staff_ID"] + " - " + responselist[i]["Staff_FName"] + " " + responselist[i]["Staff_LName"])
+        dict1 = dict1.get((responselist[i]["date"], responselist[i]["time_slot"]), {
+            "Date": responselist[i]["date"],
+            "Time_Slot": responselist[i]["time_slot"],
+            "Name_List": list(responselist[i]["staff_id"] + " - " + responselist[i]["staff_fname"] + " " + responselist[i]["Staff_LName"])
+            })["Name_List"].append(responselist[i]["staff_ID"] + " - " + responselist[i]["Staff_FName"] + " " + responselist[i]["Staff_LName"])
     dict2 = {}
     for key in list(dict1.keys()):
         if dict1[key]["Time_Slot"] == "AM":
@@ -116,7 +115,7 @@ def get_schedules():
             "Name_List": dict1[key]["Name_List"]
             }
             
-        return jsonify({"schedules": dict2, "allnames": allnames})
+        return jsonify({"schedules": dict2, "allnames": allnames.data})
 
 @app.route("/employees", methods=['GET'])
 def get_employees():
