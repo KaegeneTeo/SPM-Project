@@ -83,14 +83,26 @@ def get_schedules():
     keys = list(data.keys())
     dict1 = {}
     if "staff_id" in keys:
-        allnames = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName').eq("Staff_ID", data["staff_id"]).execute()
-        response = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, schedule!inner(schedule_id, staff_id, date, time_slot)').eq("Staff_ID", data["staff_id"]).execute()
+        if data["staff_id"] == "all":
+            allnames = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName').execute()
+            response = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, schedule!inner(schedule_id, staff_id, date, time_slot)').execute()
+        else:
+            allnames = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName').eq("Staff_ID", data["staff_id"]).execute()
+            response = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, schedule!inner(schedule_id, staff_id, date, time_slot)').eq("Staff_ID", data["staff_id"]).execute()
     elif "dept" in keys:
-        allnames = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName').eq("Dept", data["dept"]).execute()
-        response = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, schedule!inner(schedule_id, staff_id, date, time_slot)').eq("Dept", data["dept"]).execute()
+        if data["dept"] == "all":
+            allnames = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName').execute()
+            response = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, schedule!inner(schedule_id, staff_id, date, time_slot)').execute()
+        else:
+            allnames = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName').eq("Dept", data["dept"]).execute()
+            response = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, schedule!inner(schedule_id, staff_id, date, time_slot)').eq("Dept", data["dept"]).execute()
     elif "team" in keys:
-        allnames = supabase.from_('Employee').select('staff, Staff_FName, Staff_LName, team!inner(staff_id, team_id)').eq("team_id", data["team"]).execute()
-        response = supabase.from_('Employee').select('staff, Staff_FName, Staff_LName, Dept, schedule!inner(schedule_id, staff_id, date, time_slot), team!inner(staff_id, team_id)').eq("team_id", data["team"]).execute()  
+        if data["team"] == "all":
+            allnames = supabase.from_('Employee').select('staff, Staff_FName, Staff_LName, team!inner(staff_id, team_id)').execute()
+            response = supabase.from_('Employee').select('staff, Staff_FName, Staff_LName, Dept, schedule!inner(schedule_id, staff_id, date, time_slot), team!inner(staff_id, team_id)').execute()
+        else:
+            allnames = supabase.from_('Employee').select('staff, Staff_FName, Staff_LName, team!inner(staff_id, team_id)').eq("team_id", data["team"]).execute()
+            response = supabase.from_('Employee').select('staff, Staff_FName, Staff_LName, Dept, schedule!inner(schedule_id, staff_id, date, time_slot), team!inner(staff_id, team_id)').eq("team_id", data["team"]).execute()  
     try:
         responselist = list(response.data)
     except:
