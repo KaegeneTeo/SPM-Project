@@ -80,7 +80,7 @@ export default {
                     params: { department } // Pass department as a query parameter
                 });
 
-                this.filteredTeams = response.data; // Update filteredTeams with the fetched data
+                this.filteredTeams = ["All", ...response.data];
             } catch (error) {
                 console.error("Error fetching teams:", error);
             }
@@ -88,13 +88,13 @@ export default {
         search() {
             let params = {};
             if (this.role === '1') {
-                params = { role: this.role, dept: this.selectedDept, team: this.selectedTeam.replace('Team ', '') };
+                params = { staff_id: this.staff_id, dept: this.selectedDept, team: this.selectedTeam.replace('Team ', '') };
                 console.log(params);
             } else if (this.role === '3') {
-                params = { role: this.role, dept: localStorage.getItem('dept'),team: this.selectedTeam.replace('Team ', '') };
+                params = { staff_id: this.staff_id, dept: localStorage.getItem('dept'),team: this.selectedTeam.replace('Team ', '') };
                 console.log(params);
             } else if (this.role === '2'){
-                params = {role: this.role, staff_id}
+                params = {staff_id: this.staff_id}
             }
 
             axios.get('http://127.0.0.1:5000/schedules', { params })
@@ -145,7 +145,9 @@ export default {
                         <label for="schedule-selector-team" class="block text-sm font-medium text-gray-700">Select Team:</label>
                         <select v-model="selectedTeam" id="schedule-selector-team" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                             <option value="">Select a team</option>
-                            <option v-for="item in filteredTeams" :key="item">Team {{ item }}</option>
+                            <option v-for="item in filteredTeams" :key="item">
+                                {{ item === 'All' ? 'All' : 'Team ' + item }}
+                            </option>
                         </select>
                     </div>
                     <!-- Search Button -->
@@ -211,6 +213,21 @@ export default {
                             </v-card-actions>
                         </v-card>
                     </v-dialog>
+                </div>
+
+                <!-- Right column: Legend --> 
+                <div class="col-span-12 lg:col-span-3"> 
+                    <h2 class="text-lg font-semibold text-gray-900">Legend</h2> 
+                    <ul class="mt-2 space-y-1"> 
+                        <li class="flex items-center"> 
+                            <span class="inline-block h-4 w-4 rounded-full mr-2" 
+                                style="background-color:#FFA500;"></span> AM 
+                        </li> 
+                        <li class="flex items-center"> 
+                            <span class="inline-block h-4 w-4 rounded-full mr-2" 
+                                style="background-color:#9C27B0;"></span> PM 
+                        </li> 
+                    </ul> 
                 </div>
             </main>
         </MainLayout>

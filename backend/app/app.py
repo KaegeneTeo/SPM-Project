@@ -79,7 +79,7 @@ def get_teams():
 @app.route("/schedules", methods=['GET'])
 def get_schedules():
     data = request.args
-
+    print(data)
     keys = list(data.keys())
     dict1 = {}
     if "staff_id" in keys:
