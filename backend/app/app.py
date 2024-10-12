@@ -94,15 +94,17 @@ def get_schedules():
             allnames = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName').execute()
             response = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, schedule!inner(schedule_id, staff_id, date, time_slot)').execute()
         else:
-            allnames = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName').eq("Dept", data["dept"]).execute()
-            response = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, schedule!inner(schedule_id, staff_id, date, time_slot)').eq("Dept", data["dept"]).execute()
-    elif "team" in keys:
-        if data["team"] == "all":
-            allnames = supabase.from_('Employee').select('staff, Staff_FName, Staff_LName, team!inner(staff_id, team_id)').execute()
-            response = supabase.from_('Employee').select('staff, Staff_FName, Staff_LName, Dept, schedule!inner(schedule_id, staff_id, date, time_slot), team!inner(staff_id, team_id)').execute()
-        else:
-            allnames = supabase.from_('Employee').select('staff, Staff_FName, Staff_LName, team!inner(staff_id, team_id)').eq("team_id", data["team"]).execute()
-            response = supabase.from_('Employee').select('staff, Staff_FName, Staff_LName, Dept, schedule!inner(schedule_id, staff_id, date, time_slot), team!inner(staff_id, team_id)').eq("team_id", data["team"]).execute()  
+            if "team" in keys:
+                if data["team"] == "all":
+                    allnames = supabase.from_('Employee').select('staff, Staff_FName, Staff_LName, team!inner(staff_id, team_id)').execute()
+                    response = supabase.from_('Employee').select('staff, Staff_FName, Staff_LName, Dept, schedule!inner(schedule_id, staff_id, date, time_slot), team!inner(staff_id, team_id)').execute()
+                else:
+                    allnames = supabase.from_('Employee').select('staff, Staff_FName, Staff_LName, team!inner(staff_id, team_id)').eq("team_id", data["team"]).execute()
+                    response = supabase.from_('Employee').select('staff, Staff_FName, Staff_LName, Dept, schedule!inner(schedule_id, staff_id, date, time_slot), team!inner(staff_id, team_id)').eq("team_id", data["team"]).execute() 
+            else: 
+                allnames = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName').eq("Dept", data["dept"]).execute()
+                response = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, schedule!inner(schedule_id, staff_id, date, time_slot)').eq("Dept", data["dept"]).execute()
+    
     try:
         responselist = list(response.data)
     except:
