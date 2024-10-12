@@ -83,7 +83,9 @@ def get_teams():
 
 @app.route("/schedules", methods=['GET'])
 def get_schedules():
+    return jsonify("hello")
     data = request.json
+    
     print(data)
     keys = list(data.keys())
     dict1 = {}
@@ -98,6 +100,7 @@ def get_schedules():
             allnames = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName').eq("Dept", data["dept"]).execute()
             response = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, schedule(Schedule_ID, Staff_ID, Date, Time_Slot)').eq("Dept", data["dept"]).execute()  
     responselist = list(response.data)
+    
     for i in range(0, len(responselist)):
         dict1 = dict1.get((responselist[i]["Date"], responselist[i]["Time_Slot"]), {
             "Date": responselist[i]["Date"],
