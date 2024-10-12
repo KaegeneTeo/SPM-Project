@@ -251,15 +251,11 @@ def get_team_requests():
     if not staff_ids:
         abort(404, description="No staff found for the provided team IDs.")
     
-    # Retrieve all requests of staff belonging to team(s) of logged in user
-    requests_response = supabase.table("request").select("*").in_("staff_id", staff_ids).execute()
+    # Retrieve all requests of staff belonging to team(s) of logged in user where status = 0
+    requests_response = supabase.table("request").select("*").in_("staff_id", staff_ids).eq("status", 0).execute()
     
     requests = requests_response.data
     print("Retrieved requests:", requests)
-    
-    # Check if requests are found, else throw an error message
-    if not requests:
-        abort(404, description="No requests found for staff members in these teams.")
     
     # Create the response and add CORS headers manually
     response = jsonify(requests)
