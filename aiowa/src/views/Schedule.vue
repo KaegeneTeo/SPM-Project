@@ -15,7 +15,7 @@ export default {
             role: null,
             selectedDept: "",   // Stores the currently selected department
             selectedTeam: "",   // Stores the currently selected team
-            dept: ["CEO", "Consultancy", "Engineering", "Finance", "HR", "IT", "Sales", "Solutioning"],
+            dept: ["All", "CEO", "Consultancy", "Engineering", "Finance", "HR", "IT", "Sales", "Solutioning"],
             staff_id: null,
             filteredTeams: [],  // Initialize filteredTeams to hold teams for the selected department
             events: [
