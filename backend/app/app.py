@@ -27,8 +27,8 @@ def get_schedules():
         response = supabase.from_('employees').select('STAFF_ID, Staff_FName, Staff_LName, Dept, schedule(Schedule_ID, Staff_ID, Date, Time_Slot)').eq("STAFF_ID", data["ID"]).execute()
     elif "Dept" in keys:
         if "Team" in keys:
-            allnames = supabase.from_('employees').select('STAFF_ID, Staff_FName, Staff_LName').eq("Team", data["Team"]).eq("Dept", data["Dept"]).execute()
-            response = supabase.from_('employees').select('STAFF_ID, Staff_FName, Staff_LName, Dept, schedule(Schedule_ID, Staff_ID, Date, Time_Slot)').eq("Team", data["Team"]).eq("Dept", data["Dept"]).execute()  
+            allnames = supabase.from_('employees').select('STAFF_ID, Staff_FName, Staff_LName, Team(staff_id, team_id)').eq("Team", data["Team"]).eq("Dept", data["Dept"]).execute()
+            response = supabase.from_('employees').select('STAFF_ID, Staff_FName, Staff_LName, Dept, schedule(Schedule_ID, Staff_ID, Date, Time_Slot), Team(staff_id, team_id)').eq("Team", data["Team"]).eq("Dept", data["Dept"]).execute()  
         else:
             allnames = supabase.from_('employees').select('STAFF_ID, Staff_FName, Staff_LName').eq("Dept", data["Dept"]).execute()
             response = supabase.from_('employees').select('STAFF_ID, Staff_FName, Staff_LName, Dept, schedule(Schedule_ID, Staff_ID, Date, Time_Slot)').eq("Dept", data["Dept"]).execute()  
