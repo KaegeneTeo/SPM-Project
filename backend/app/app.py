@@ -122,26 +122,30 @@ def get_schedules():
             else:
                 dict1[(schedulelist[i]["date"], schedulelist[i]["time_slot"])]["Name_List"].append(str(schedulelist[i]["staff_id"]) + " - " + schedulelist[i]["staff_fname"] + " " + schedulelist[i]["staff_lname"])
         returnlist = []
+        allnamelist = [str(employee["Staff_ID"]) + " - " + employee["Staff_FName"] + " " + employee["Staff_LName"] for employee in list(allnames.data)]
         for key in list(dict1.keys()):
             if dict1[key]["Time_Slot"] == 1:
+                print(dict1[key]["Name_List"])
                 returnlist.append({
                 "start": str(dict1[key]["Date"]) + " 09:00",
                 "end": str(dict1[key]["Date"]) + " 13:00",
                 "class": "AM",
-                "nameList": dict1[key]["Name_List"],
+                "WFH": dict1[key]["Name_List"],
                 "count" : str(len(dict1[key]["Name_List"])),
-                "title": len(dict1[key]["Name_List"])
+                "title": len(dict1[key]["Name_List"]),
+                "inOffice" : [employee for employee in allnamelist if employee not in dict1[key]["Name_List"]]
                 })
             if dict1[key]["Time_Slot"] == 2:
                 returnlist.append({
                 "start": str(dict1[key]["Date"]) + " 14:00",
                 "end": str(dict1[key]["Date"]) + " 18:00",
                 "class": "PM",
-                "nameList": dict1[key]["Name_List"],
+                "WFH": dict1[key]["Name_List"],
                 "count" : str(len(dict1[key]["Name_List"])),
-                "title": len(dict1[key]["Name_List"])
+                "title": len(dict1[key]["Name_List"]),
+                "inOffice" : [employee for employee in allnamelist if employee not in dict1[key]["Name_List"]]
                 })
-        return jsonify({"schedules": returnlist, "allnames": allnames.data})
+        return jsonify({"schedules": returnlist})
 
 
 @app.route("/employees", methods=['GET'])
