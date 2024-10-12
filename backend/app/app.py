@@ -83,9 +83,7 @@ def get_teams():
 
 @app.route("/schedules", methods=['GET'])
 def get_schedules():
-    return jsonify("hello")
     data = request.json
-    
     print(data)
     keys = list(data.keys())
     dict1 = {}
