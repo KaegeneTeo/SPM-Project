@@ -51,12 +51,6 @@ def create_schedule_entries(staff_id, dates, time_slot):
 def test():
     return "Hello world", 200
 
-@app.route("/test1")
-def test1():
-    data = {"dept": "Sales"}
-    response = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, schedule!inner(schedule_id, staff_id, date, time_slot)').eq("Dept", data["dept"]).execute() 
-    return jsonify(response.data)
-
 @app.route("/teams_by_dept", methods=['GET'])
 def get_teams():
     department = request.args.get('department')
@@ -85,59 +79,67 @@ def get_teams():
 @app.route("/schedules", methods=['GET'])
 def get_schedules():
     data = request.args
-    print(data)
 
     keys = list(data.keys())
     dict1 = {}
-    if "Staff_ID" in keys:
+    if "staff_id" in keys:
         allnames = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName').eq("Staff_ID", data["staff_id"]).execute()
-        response = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, schedule!inner(schedule_id, Staff_ID, date, time_slot)').eq("Staff_ID", data["staff_id"]).execute()
-    elif "Dept" in keys:
+        response = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, schedule!inner(schedule_id, staff_id, date, time_slot)').eq("Staff_ID", data["staff_id"]).execute()
+    elif "dept" in keys:
         allnames = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName').eq("Dept", data["dept"]).execute()
-        response = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, schedule!inner(schedule_id, Staff_ID, date, time_slot)').eq("Dept", data["dept"]).execute()
+        response = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, schedule!inner(schedule_id, staff_id, date, time_slot)').eq("Dept", data["dept"]).execute()
     elif "team" in keys:
         allnames = supabase.from_('Employee').select('staff, Staff_FName, Staff_LName, team!inner(staff_id, team_id)').eq("team_id", data["team"]).execute()
-        response = supabase.from_('Employee').select('staff, Staff_FName, Staff_LName, Dept, schedule!inner(schedule, staff, date, time_slot), team!inner(staff_id, team_id)').eq("team_id", data["team"]).execute()  
-    responselist = list(response.data)
+        response = supabase.from_('Employee').select('staff, Staff_FName, Staff_LName, Dept, schedule!inner(schedule_id, staff_id, date, time_slot), team!inner(staff_id, team_id)').eq("team_id", data["team"]).execute()  
+    try:
+        responselist = list(response.data)
+    except:
+        return jsonify({"code":404,
+                       "message": "No data or bad data"})
+    else:
     # removing nested list in the data return format for easier processing
-    schedulelist = []
-    for i in range(0, len(responselist)):
-        for j in range(0, len(responselist[i]["schedule"])):
-            schedulelist.append({
-                "dept" : responselist[i]["Dept"],
-                "staff_fname" : responselist[i]["Staff_FName"],
-                "staff_lname" : responselist[i]["Staff_LName"],
-                "date" : responselist[i]["schedule"][j]["date"],
-                "schedule_id" : responselist[i]["schedule"][j]["schedule_id"],
-                "time_slot" : responselist[i]["schedule"][j]["time_slot"],
-                "staff_id" : responselist[i]["Staff_ID"]
-            })
-    for i in range(0, len(schedulelist)):
-        dict1 = dict1.get((responselist[i]["date"], responselist[i]["time_slot"]), {
-            "Date": responselist[i]["date"],
-            "Time_Slot": responselist[i]["time_slot"],
-            "Name_List": list(responselist[i]["staff_id"] + " - " + responselist[i]["staff_fname"] + " " + responselist[i]["staff_lname"])
-            })["Name_List"].append(responselist[i]["staff_id"] + " - " + responselist[i]["staff_fname"] + " " + responselist[i]["staff_lname"])
-    dict2 = {}
-    for key in list(dict1.keys()):
-        if dict1[key]["Time_Slot"] == "AM":
-            dict2[key] = {
-            "start": str(dict1[key]["Date"]) + " 09:00",
-            "end": str(dict1[key]["Date"]) + " 13:00",
-            "class": "AM",
-            "nameList": dict1[key]["Name_List"],
-            "count": len(dict1[key]["Name_List"])
-            }
-        if dict1[key]["Time_Slot"] == "PM":
-            dict2[key] = {
-            "start": str(dict1[key]["Date"]) + " 14:00",
-            "end": str(dict1[key]["Date"]) + " 18:00",
-            "class": "PM",
-            "nameList": dict1[key]["Name_List"],
-            "count": len(dict1[key]["Name_List"])
-            }
-            
-        return jsonify({"schedules": dict2, "allnames": allnames.data})
+        schedulelist = []
+        for i in range(0, len(responselist)):
+            for j in range(0, len(responselist[i]["schedule"])):
+                schedulelist.append({
+                    "dept" : responselist[i]["Dept"],
+                    "staff_fname" : responselist[i]["Staff_FName"],
+                    "staff_lname" : responselist[i]["Staff_LName"],
+                    "date" : responselist[i]["schedule"][j]["date"],
+                    "schedule_id" : responselist[i]["schedule"][j]["schedule_id"],
+                    "time_slot" : responselist[i]["schedule"][j]["time_slot"],
+                    "staff_id" : responselist[i]["Staff_ID"]
+                })
+        dict1 = {}
+        for i in range(0, len(schedulelist)):
+            temp = {
+                "Date": schedulelist[i]["date"],
+                "Time_Slot": schedulelist[i]["time_slot"],
+                "Name_List": [str(schedulelist[i]["staff_id"]) + " - " + schedulelist[i]["staff_fname"] + " " + schedulelist[i]["staff_lname"]]
+                }
+            if dict1.get((schedulelist[i]["date"], schedulelist[i]["time_slot"])) == None:
+                dict1[(schedulelist[i]["date"], schedulelist[i]["time_slot"])] = temp
+            else:
+                dict1[(schedulelist[i]["date"], schedulelist[i]["time_slot"])]["Name_List"].append(str(schedulelist[i]["staff_id"]) + " - " + schedulelist[i]["staff_fname"] + " " + schedulelist[i]["staff_lname"])
+        returnlist = []
+        for key in list(dict1.keys()):
+            if dict1[key]["Time_Slot"] == 1:
+                returnlist.append({
+                "start": str(dict1[key]["Date"]) + " 09:00",
+                "end": str(dict1[key]["Date"]) + " 13:00",
+                "class": "AM",
+                "nameList": dict1[key]["Name_List"],
+                "count": len(dict1[key]["Name_List"])
+                })
+            if dict1[key]["Time_Slot"] == 2:
+                returnlist.append({
+                "start": str(dict1[key]["Date"]) + " 14:00",
+                "end": str(dict1[key]["Date"]) + " 18:00",
+                "class": "PM",
+                "nameList": dict1[key]["Name_List"],
+                "count": len(dict1[key]["Name_List"])
+                })
+        return jsonify({"schedules": returnlist, "allnames": allnames.data})
 
 
 @app.route("/employees", methods=['GET'])
