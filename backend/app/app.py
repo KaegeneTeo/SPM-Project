@@ -79,17 +79,21 @@ def get_teams():
 @app.route("/schedules", methods=['GET'])
 def get_schedules():
     data = request.args
+    print(data)
+
     keys = list(data.keys())
     dict1 = {}
+
+    
     if "staff_id" in keys:
-        allnames = supabase.from_('employee').select('staff_id, staff_fname, staff_lname').eq("staff_id", data["staff_id"]).execute()
-        response = supabase.from_('employee').select('staff_id, staff_fname, staff_lname, dept, schedule(schedule_id, staff_id, date, time_slot)').eq("Staff_ID", data["staff_id"]).execute()
+        allnames = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName').eq("Staff_id", data["Staff_id"]).execute()
+        response = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, schedule(schedule_id, staff_id, date, time_slot)').eq("Staff_ID", data["Staff_id"]).execute()
     elif "dept" in keys:
-        allnames = supabase.from_('employee').select('staff_id, staff_fname, staff_lname').eq("dept", data["dept"]).execute()
-        response = supabase.from_('employee').select('staff_id, staff_fname, staff_lname, dept, schedule(schedule_ID, staff_id, date, time_slot)').eq("dept", data["dept"]).execute() 
+        allnames = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName').eq("Dept", data["dept"]).execute()
+        response = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, schedule(schedule_id, staff_id, date, time_slot)').eq("Dept", data["dept"]).execute() 
     elif "team" in keys:
-        allnames = supabase.from_('employee').select('staff, staff_fname, staff_lname, team(staff_id, team_id)').eq("team_id", data["team"]).execute()
-        response = supabase.from_('employee').select('staff, staff_fname, staff_lname, dept, schedule(dchedule, staff, date, time_slot), team(staff_id, team_id)').eq("team_id", data["team"]).execute()  
+        allnames = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, team(Staff_id, team_id)').eq("team_id", data["team"]).execute()
+        response = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, schedule(schedule_id, staff_id, date, time_slot), team(Staff_id, team_id)').eq("team_id", data["team"]).execute()  
     responselist = list(response.data)
     
     for i in range(0, len(responselist)):
@@ -116,6 +120,7 @@ def get_schedules():
             }
             
         return jsonify({"schedules": dict2, "allnames": allnames.data})
+
 
 @app.route("/employees", methods=['GET'])
 def get_employees():
