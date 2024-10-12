@@ -96,8 +96,8 @@ def get_schedules():
         allnames = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName').eq("Dept", data["dept"]).execute()
         response = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, schedule!inner(schedule_id, Staff_ID, date, time_slot)').eq("Dept", data["dept"]).execute()
     elif "team" in keys:
-        allnames = supabase.from_('Employee').select('staff, Staff_FName, Staff_LName, team(staff_id, team_id)').eq("team_id", data["team"]).execute()
-        response = supabase.from_('Employee').select('staff, Staff_FName, Staff_LName, Dept, schedule!inner(schedule, staff, date, time_slot), team(staff_id, team_id)').eq("team_id", data["team"]).execute()  
+        allnames = supabase.from_('Employee').select('staff, Staff_FName, Staff_LName, team!inner(staff_id, team_id)').eq("team_id", data["team"]).execute()
+        response = supabase.from_('Employee').select('staff, Staff_FName, Staff_LName, Dept, schedule!inner(schedule, staff, date, time_slot), team!inner(staff_id, team_id)').eq("team_id", data["team"]).execute()  
     responselist = list(response.data)
     # removing nested list in the data return format for easier processing
     schedulelist = []
