@@ -91,12 +91,11 @@ def get_schedules():
         allnames = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName').eq("Staff_ID", data["staff_id"]).execute()
         response = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, schedule(Schedule_ID, Staff_ID, Date, Time_Slot)').eq("Staff_ID", data["staff_id"]).execute()
     elif "dept" in keys:
-        if "team" in keys:
-            allnames = supabase.from_('Employee').select('Staff, Staff_FName, Staff_LName, team(staff_id, team_id)').eq("team_id", data["team"]).eq("Dept", data["dept"]).execute()
-            response = supabase.from_('Employee').select('Staff, Staff_FName, Staff_LName, Dept, schedule(Schedule, Staff, Date, Time_Slot), team(staff_id, team_id)').eq("team_id", data["Team"]).eq("Dept", data["dept"]).execute()  
-        else:
-            allnames = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName').eq("Dept", data["dept"]).execute()
-            response = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, schedule(Schedule_ID, Staff_ID, Date, Time_Slot)').eq("Dept", data["dept"]).execute()  
+        allnames = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName').eq("Dept", data["dept"]).execute()
+        response = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, schedule(Schedule_ID, Staff_ID, Date, Time_Slot)').eq("Dept", data["dept"]).execute() 
+    elif "team" in keys:
+        allnames = supabase.from_('Employee').select('Staff, Staff_FName, Staff_LName, team(staff_id, team_id)').eq("team_id", data["team"]).execute()
+        response = supabase.from_('Employee').select('Staff, Staff_FName, Staff_LName, Dept, schedule(Schedule, Staff, Date, Time_Slot), team(staff_id, team_id)').eq("team_id", data["team"]).execute()   
     responselist = list(response.data)
     
     for i in range(0, len(responselist)):
