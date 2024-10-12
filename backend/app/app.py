@@ -129,7 +129,8 @@ def get_schedules():
                 "end": str(dict1[key]["Date"]) + " 13:00",
                 "class": "AM",
                 "nameList": dict1[key]["Name_List"],
-                "count": len(dict1[key]["Name_List"])
+                "count" : str(len(dict1[key]["Name_List"])),
+                "title": len(dict1[key]["Name_List"])
                 })
             if dict1[key]["Time_Slot"] == 2:
                 returnlist.append({
@@ -137,7 +138,8 @@ def get_schedules():
                 "end": str(dict1[key]["Date"]) + " 18:00",
                 "class": "PM",
                 "nameList": dict1[key]["Name_List"],
-                "count": len(dict1[key]["Name_List"])
+                "count" : str(len(dict1[key]["Name_List"])),
+                "title": len(dict1[key]["Name_List"])
                 })
         return jsonify({"schedules": returnlist, "allnames": allnames.data})
 
