@@ -3,6 +3,7 @@ import MainLayout from "../components/MainLayout.vue"
 import VueCal from 'vue-cal'
 import 'vue-cal/dist/vuecal.css'
 import axios from "axios";
+import { compile } from "vue";
 
 export default {
     components: {
@@ -87,14 +88,29 @@ export default {
         },
         search() {
             let params = {};
+            
             if (this.role === '1') {
-                params = { staff_id: this.staff_id, dept: this.selectedDept, team: this.selectedTeam.replace('Team ', '') };
-                console.log(params);
+                if (this.selectedTeam == 'All'){
+                    params = {dept: this.selectedDept}
+                    console.log(params)
+                }
+                else {
+                    params = { team: this.selectedTeam.replace('Team ', '') };
+                    console.log(params);
+                }
+                
             } else if (this.role === '3') {
-                params = { staff_id: this.staff_id, dept: localStorage.getItem('dept'),team: this.selectedTeam.replace('Team ', '') };
-                console.log(params);
+                if (this.selectedTeam == 'All'){
+                    params = {dept: localStorage.getItem('dept')}
+                    console.log(params)
+                }
+                else {
+                    params = { team: this.selectedTeam.replace('Team ', '') };
+                    console.log(params);
+                }
             } else if (this.role === '2'){
-                params = {staff_id: this.staff_id}
+                params = {team: this.selectedTeam.replace('Team ', '')}
+                console.log(params)
             }
 
             axios.get('http://127.0.0.1:5000/schedules', { params })
@@ -167,6 +183,7 @@ export default {
                         <label for="schedule-selector-team" class="block text-sm font-medium text-gray-700">Select Team:</label>
                         <select v-model="selectedTeam" id="schedule-selector-team" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                             <option value="">Select a team</option>
+                            <option value="All">All</option>
                             <option v-for="item in team" :key="item">Team {{ item }}</option>
                         </select>
                     </div>
@@ -185,9 +202,9 @@ export default {
                             <span class="vuecalcell-date" :class="view.id" @click="goNarrower">
                                 <span class="clickable">{{ cell.content }}</span>
                             </span>
-                            <span class="vuecalcell-events-count" v-if="['years', 'year', 'month'].includes(view.id) && events.length">
-                                <span class="am-count">{{ AMCount(events) }}</span>&nbsp;
-                                <span class="pm-count">{{ PMCount(events) }}</span>
+                            <span class="vuecalcell-events-count " v-if="['years', 'year', 'month'].includes(view.id) && events.length">
+                                <span style="background-color:#FFA500; color: white; " class="am-count px-2 h-4 w-4 rounded-full">{{ AMCount(events) }}</span>&nbsp;
+                                <span style="background-color:#9C27B0; color: white; " class="pm-count px-2 h-4 w-4 rounded-full">{{ PMCount(events) }}</span>
                             </span>
                             <span class="vuecal__no-event" v-if="['week', 'day'].includes(view.id) && !events.length">
                                 No WFH 👌
@@ -202,10 +219,16 @@ export default {
                                 <strong>Employee List (ID - name)</strong>
                                 <v-spacer />
                             </v-card-title>
-                            <v-card-text>
-                                <ul v-for="employee in selectedEvent.nameList" :key="employee.staff_id">
-                                    <li>{{ employee.staff_id }} - {{ employee.name }}</li>
-                                </ul>
+                            <v-card-text> 
+                                <span>WFH</span> 
+                                <ul v-for="employee in selectedEvent.WFH"> 
+                                    <li>{{ employee }}</li> 
+                                </ul> 
+                                
+                                <span>In Office</span> 
+                                <ul v-for="employee in selectedEvent.inOffice"> 
+                                    <li>{{ employee }}</li> 
+                                </ul> 
                             </v-card-text>
                             <v-card-actions>
                                 <v-spacer />
