@@ -2,6 +2,7 @@
 import MainLayout from "../components/MainLayout.vue"
 import VueCal from 'vue-cal'
 import 'vue-cal/dist/vuecal.css'
+import axios from "axios";
 
 export default {
     components: {
@@ -11,6 +12,11 @@ export default {
         return {
             selectedEvent: {},
             showDialog: false,
+            role: null,
+            selectedDept: "",   // Stores the currently selected department
+            selectedTeam: "",   // Stores the currently selected team
+            dept: ["CEO", "Consultancy", "Engineering", "Finance", "HR", "IT", "Sales", "Solutioning"],
+            filteredTeams: [],  // Initialize filteredTeams to hold teams for the selected department
             events: [
                 {
                     start: '2024-09-19 09:00',
@@ -20,7 +26,7 @@ export default {
                     count: 1,
                     nameList: [
                         {
-                            ID: 0,
+                            staff_id: 0,
                             name: "John"
                         }
                     ]
@@ -33,41 +39,73 @@ export default {
                     count: 3,
                     nameList: [
                         {
-                            ID: 3,
+                            staff_id: 3,
                             name: "Bob"
                         },
                         {
-                            ID: 4,
+                            staff_id: 4,
                             name: "Alice"
                         },
                         {
-                            ID: 1,
+                            staff_id: 1,
                             name: "Jane"
                         }
                     ]
                 }
-            ],
-            role: null // Store the role here
+            ]
         }
     },
     mounted() {
         // Retrieve the role from localStorage when the component is mounted
         this.role = localStorage.getItem('role');
+        const teamData = localStorage.getItem('team');
+        this.team = teamData ? JSON.parse(teamData).sort() : [];
+    },
+    watch: {
+        selectedDept(newDept) {
+            this.fetchTeams(newDept); // Fetch teams whenever the department changes
+            this.selectedTeam = "";    // Reset the selected team
+        }
     },
     methods: {
+        async fetchTeams(department) {
+            if (!department) {
+                this.filteredTeams = []; // Clear teams if no department is selected
+                return;
+            }
+            try {
+                const response = await axios.get(`http://127.0.0.1:5000/teams_by_dept`, {
+                    params: { department } // Pass department as a query parameter
+                });
+
+                this.filteredTeams = response.data; // Update filteredTeams with the fetched data
+            } catch (error) {
+                console.error("Error fetching teams:", error);
+            }
+        },
+        search() {
+            let params = {};
+            if (this.role === '1') {
+                params = { dept: this.selectedDept, team: this.selectedTeam };
+                console.log(params);
+            } else if (this.role === '3') {
+                params = { team: this.selectedTeam };
+                console.log(params);
+            }
+
+            axios.get('http://127.0.0.1:5000/schedules', { params })
+                .then(response => {
+                    this.events = response.data.schedules;
+                })
+                .catch(error => {
+                    console.error("Error fetching schedules: ", error);
+                });
+        },
         AMCount(events) {
-            let AM = 0;
-            events.forEach(event => {
-                if (event.class === "AM") AM += event.count;
-            });
-            return AM;
+            return events.reduce((acc, event) => event.class === "AM" ? acc + event.count : acc, 0);
         },
         PMCount(events) {
-            let PM = 0;
-            events.forEach(event => {
-                if (event.class === "PM") PM += event.count;
-            });
-            return PM;
+            return events.reduce((acc, event) => event.class === "PM" ? acc + event.count : acc, 0);
         },
         onEventClick(event, e) {
             this.selectedEvent = event;
@@ -83,36 +121,32 @@ export default {
         <MainLayout>
             <header class="bg-white">
                 <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-                    <h1 class="text-3xl font-bold tracking-tight text-gray-900">Schedules</h1>
+                    <h1 class="text-3xl font-bold tracking-tight text-gray-900">Schedules</h1>                                                     <!--FOR FILTERS, ONLY TEST WITH DEPT:SALES,CEO,HR-->
                 </div>
             </header>
 
             <main class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 grid grid-cols-12 gap-4">
                 <!-- Left column: Conditional Dropdowns based on role -->
-                
+
                 <!-- Role 1: Show both Department and Team filters -->
                 <div v-if="role === '1'" class="col-span-12 lg:col-span-3">
                     <div>
                         <label for="schedule-selector-department" class="block text-sm font-medium text-gray-700">Select Department:</label>
-                        <select id="schedule-selector-department" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        <select v-model="selectedDept" id="schedule-selector-department" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                             <option value="">Select a department</option>
-                            <option>Department 1</option>
-                            <option>Department 2</option>
-                            <option>Department 3</option>
+                            <option v-for="item in dept" :key="item" :value="item">{{ item }}</option>
                         </select>
                     </div>
                     <div class="mt-4">
                         <label for="schedule-selector-team" class="block text-sm font-medium text-gray-700">Select Team:</label>
-                        <select id="schedule-selector-team" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        <select v-model="selectedTeam" id="schedule-selector-team" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                             <option value="">Select a team</option>
-                            <option>Team 1</option>
-                            <option>Team 2</option>
-                            <option>Team 3</option>
+                            <option v-for="item in filteredTeams" :key="item">Team {{ item }}</option>
                         </select>
                     </div>
                     <!-- Search Button -->
                     <div class="mt-6">
-                        <button id="search-button" class="bg-indigo-500 text-white px-4 py-2 rounded-md shadow-sm hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50">
+                        <button id="search-button" @click="search" class="bg-indigo-500 text-white px-4 py-2 rounded-md shadow-sm hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50">
                             Search
                         </button>
                     </div>
@@ -125,23 +159,21 @@ export default {
                 <div v-if="role === '3'" class="col-span-12 lg:col-span-3">
                     <div>
                         <label for="schedule-selector-team" class="block text-sm font-medium text-gray-700">Select Team:</label>
-                        <select id="schedule-selector-team" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        <select v-model="selectedTeam" id="schedule-selector-team" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                             <option value="">Select a team</option>
-                            <option>Team 1</option>
-                            <option>Team 2</option>
-                            <option>Team 3</option>
+                            <option v-for="item in team" :key="item">Team {{ item }}</option>
                         </select>
                     </div>
                     <!-- Search Button -->
                     <div class="mt-6">
-                        <button id="search-button" class="bg-indigo-500 text-white px-4 py-2 rounded-md shadow-sm hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50">
+                        <button id="search-button" @click="search" class="bg-indigo-500 text-white px-4 py-2 rounded-md shadow-sm hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50">
                             Search
                         </button>
                     </div>
                 </div>
 
                 <!-- Middle column: VueCal Calendar for HR and Manager -->
-                <div v-if="role !=2"class="col-span-12 lg:col-span-6">
+                <div v-if="role != 2" class="col-span-12 lg:col-span-6">
                     <VueCal class="vuecal--blue-theme" style="height: 500px;" :events="events" :hide-weekends="true" events-count-on-year-view :on-event-click="onEventClick" :time-from="9 * 60" :time-to="18 * 60">
                         <template #cell-content="{ cell, view, goNarrower, events }">
                             <span class="vuecalcell-date" :class="view.id" @click="goNarrower">
@@ -165,148 +197,25 @@ export default {
                                 <v-spacer />
                             </v-card-title>
                             <v-card-text>
-                                <ul v-for="employee in selectedEvent.nameList" :key="employee.ID">
-                                    <li>
-                                        {{ employee.ID }} - {{ employee.name }}
-                                    </li>
+                                <ul v-for="employee in selectedEvent.nameList" :key="employee.staff_id">
+                                    <li>{{ employee.staff_id }} - {{ employee.name }}</li>
                                 </ul>
                             </v-card-text>
-                        </v-card>
-                    </v-dialog>
-                </div>
-
-                <!-- Middle column: VueCal Calendar for NORMAL STAFF -->
-                <div v-if="role == 2" class="col-span-12 lg:col-span-6">
-                    <div class="col-span-12 lg:col-span-3"></div>
-
-                    <VueCal class="vuecal--blue-theme" style="height: 500px;" :events="events" :hide-weekends="true" events-count-on-year-view :on-event-click="onEventClick" :time-from="9 * 60" :time-to="18 * 60">
-                        <template #cell-content="{ cell, view, goNarrower, events }">
-                            <span class="vuecalcell-date" :class="view.id" @click="goNarrower">
-                                <span class="clickable">{{ cell.content }}</span>
-                            </span>
-                            <span class="vuecalcell-events-count" v-if="['years', 'year', 'month'].includes(view.id) && events.length">
-                                <span class="am-count">{{ AMCount(events) }}</span>&nbsp;
-                                <span class="pm-count">{{ PMCount(events) }}</span>
-                            </span>
-                            <span class="vuecal__no-event" v-if="['week', 'day'].includes(view.id) && !events.length">
-                                No WFH 👌
-                            </span>
-                        </template>
-                    </VueCal>
-
-                    <!-- Event Dialog -->
-                    <v-dialog v-model="showDialog">
-                        <v-card class="mycard">
-                            <v-card-title style="background-color:#68B5C7;color:white;">
-                                <strong>Employee List (ID - name)</strong>
+                            <v-card-actions>
                                 <v-spacer />
-                            </v-card-title>
-                            <v-card-text>
-                                <ul v-for="employee in selectedEvent.nameList" :key="employee.ID">
-                                    <li>
-                                        {{ employee.ID }} - {{ employee.name }}
-                                    </li>
-                                </ul>
-                            </v-card-text>
+                                <v-btn text @click="showDialog = false">Close</v-btn>
+                            </v-card-actions>
                         </v-card>
                     </v-dialog>
-                </div>
-
-                <!-- Right column: Legend -->
-                <div class="col-span-12 lg:col-span-3">
-                    <h2 class="text-lg font-semibold text-gray-900">Legend</h2>
-                    <ul class="mt-2 space-y-1">
-                        <li class="flex items-center">
-                            <span class="inline-block h-4 w-4 rounded-full mr-2" style="background-color:#FFA500;"></span> AM
-                        </li>
-                        <li class="flex items-center">
-                            <span class="inline-block h-4 w-4 rounded-full mr-2" style="background-color:#9C27B0;"></span> PM
-                        </li>
-                    </ul>
                 </div>
             </main>
         </MainLayout>
     </div>
 </template>
+
 <style scoped>
-#app {
-    margin: 30px auto;
-    max-width: 580px;
-    height: 350px;
-}
-
-.vuecalevent {
-    background-color: rgba(173, 216, 230, 0.5);
-}
-
-.vuecalbody .clickable {
-    color: #4682b4;
-    text-decoration: underline;
-}
-
-.vuecal__cell-date {
-    display: inline-block;
-}
-
-.am-count {
-    background-color: #FFA500;
-    height: 100%;
-    min-width: 12px;
-    padding: 0 3px;
-    border-radius: 12px;
-    display: inline;
-    color: white;
-}
-
-.pm-count {
-    background-color: #9C27B0;
-    height: 100%;
-    min-width: 12px;
-    padding: 0 3px;
-    border-radius: 12px;
-    display: inline;
-    color: white;
-}
-
-.vuecal__cell-events-count {
-    background: transparent;
-}
-
 .mycard {
-    margin:auto;
-}
-</style>
-<style>
-.vuecal__event.AM {
-    background-color: #FFA500;
-    border: 1px solid rgb(233, 136, 46);
-    color: #fff;
-}
-
-.vuecal__event.PM {
-    background-color: #9C27B0;
-    border: 1px solid #801f91;
-    color: #fff;
-}
-
-.vuecal__event {
-    cursor: pointer;
-}
-
-.vuecal__event-title {
-    font-size: 1.2em;
-    font-weight: bold;
-    margin: 4px 0 8px;
-}
-
-.vuecal__event-time {
-    display: inline-block;
-    margin-bottom: 12px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.2);
-}
-
-.vuecal__event-content {
-    font-style: italic;
+    min-width: 300px;
+    max-width: 400px;
 }
 </style>

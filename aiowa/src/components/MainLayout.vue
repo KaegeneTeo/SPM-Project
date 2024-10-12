@@ -251,6 +251,8 @@ async function handleSignOut() {
         localStorage.removeItem("user_email");
         localStorage.removeItem("staff_id");
         localStorage.removeItem("role");
+        localStorage.removeItem("dept");
+        localStorage.removeItem("team");
 
         // Log the sign-out action and navigate to the login page
         console.log("Signed out!");
