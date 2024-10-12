@@ -35,12 +35,9 @@ def calculate_recurring_dates(approved_dates):
 
 def create_schedule_entries(staff_id, dates, time_slot):
     # Create schedule entries for each date in the provided list
-    # Placeholder value to test, need set auto increment in our db
-    schedule_id = 6
 
     for date in dates:
         response = supabase.table("schedule").insert({
-            "schedule_id": schedule_id,
             "staff_id": staff_id,
             "date": date,
             "time_slot": time_slot
@@ -48,8 +45,6 @@ def create_schedule_entries(staff_id, dates, time_slot):
 
         if response == None:
             app.logger.error("Failed to create schedule entry for date %s: %s", date, response)
-
-        schedule_id += 1
 
 # Routes
 @app.route("/")
@@ -83,7 +78,7 @@ def get_teams():
 
 @app.route("/schedules", methods=['GET'])
 def get_schedules():
-    data = request.json
+    data = request.args
     print(data)
     keys = list(data.keys())
     dict1 = {}

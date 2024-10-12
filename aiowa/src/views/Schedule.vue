@@ -86,10 +86,10 @@ export default {
         search() {
             let params = {};
             if (this.role === '1') {
-                params = { dept: this.selectedDept, team: this.selectedTeam };
+                params = { dept: this.selectedDept, team: this.selectedTeam.replace('Team ', '') };
                 console.log(params);
             } else if (this.role === '3') {
-                params = { team: this.selectedTeam };
+                params = { dept: localStorage.getItem('dept'),team: this.selectedTeam.replace('Team ', '') };
                 console.log(params);
             }
 
