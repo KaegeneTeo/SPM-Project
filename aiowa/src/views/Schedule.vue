@@ -16,6 +16,7 @@ export default {
             selectedDept: "",   // Stores the currently selected department
             selectedTeam: "",   // Stores the currently selected team
             dept: ["CEO", "Consultancy", "Engineering", "Finance", "HR", "IT", "Sales", "Solutioning"],
+            staff_id: null,
             filteredTeams: [],  // Initialize filteredTeams to hold teams for the selected department
             events: [
                 {
@@ -60,6 +61,7 @@ export default {
         this.role = localStorage.getItem('role');
         const teamData = localStorage.getItem('team');
         this.team = teamData ? JSON.parse(teamData).sort() : [];
+        this.staff_id = localStorage.getItem('staff_id');
     },
     watch: {
         selectedDept(newDept) {
@@ -86,11 +88,13 @@ export default {
         search() {
             let params = {};
             if (this.role === '1') {
-                params = { dept: this.selectedDept, team: this.selectedTeam.replace('Team ', '') };
+                params = { role: this.role, dept: this.selectedDept, team: this.selectedTeam.replace('Team ', '') };
                 console.log(params);
             } else if (this.role === '3') {
-                params = { dept: localStorage.getItem('dept'),team: this.selectedTeam.replace('Team ', '') };
+                params = { role: this.role, dept: localStorage.getItem('dept'),team: this.selectedTeam.replace('Team ', '') };
                 console.log(params);
+            } else if (this.role === '2'){
+                params = {role: this.role, staff_id}
             }
 
             axios.get('http://127.0.0.1:5000/schedules', { params })
@@ -173,7 +177,7 @@ export default {
                 </div>
 
                 <!-- Middle column: VueCal Calendar for HR and Manager -->
-                <div v-if="role != 2" class="col-span-12 lg:col-span-6">
+                <div class="col-span-12 lg:col-span-6">
                     <VueCal class="vuecal--blue-theme" style="height: 500px;" :events="events" :hide-weekends="true" events-count-on-year-view :on-event-click="onEventClick" :time-from="9 * 60" :time-to="18 * 60">
                         <template #cell-content="{ cell, view, goNarrower, events }">
                             <span class="vuecalcell-date" :class="view.id" @click="goNarrower">

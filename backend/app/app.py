@@ -85,6 +85,8 @@ def get_teams():
 @app.route("/schedules", methods=['GET'])
 def get_schedules():
     data = request.args
+    print(data)
+
     keys = list(data.keys())
     dict1 = {}
     if "Staff_ID" in keys:
@@ -136,6 +138,7 @@ def get_schedules():
             }
             
         return jsonify({"schedules": dict2, "allnames": allnames.data})
+
 
 @app.route("/employees", methods=['GET'])
 def get_employees():
