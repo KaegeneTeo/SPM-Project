@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, Blueprint, request, abort
+from flask import Flask, jsonify, Blueprint, request, abort, current_app
 from supabase import create_client, Client
 
 schedules = Blueprint("schedules", __name__)
