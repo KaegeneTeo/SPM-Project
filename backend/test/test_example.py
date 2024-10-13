@@ -4,8 +4,8 @@ import sys
 sys.path.append('./backend/app')
 import app
 
-class TestApp(flask_unittest.ClientTestCase):
-    app = app
-    def test_home(self, client):
-        rv = client.get('/')
-        self.assertInResponse(rv, 'Hello world!')
+class TestApp(flask_unittest.AppTestCase):
+    def test_home(self, app):
+        with app.test_client() as client:
+            rv = client.get('/')
+            self.assertInResponse(rv, 'Hello world!')
