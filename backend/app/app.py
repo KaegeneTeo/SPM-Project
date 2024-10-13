@@ -129,35 +129,37 @@ def get_teams_by_reporting_manager():
         "teams": result  # Include the structured team info
     }), 200
 
-
-
 @app.route("/schedules", methods=['GET'])
 def get_schedules():
+
+    #getting CEO for director tram filter cuz director is a cross dept team while all other teams are within dept so this needs special logic, also did you know that you can put emojis in comments and variable names? 😁
+    CEO = int(supabase.from_('Employee').select('Staff_ID').eq("Position", "MD").execute().data[0]["Staff_ID"])
+
+    #get data & print for debug
     data = request.args
     print(data)
-    keys = list(data.keys())
-    dict1 = {}
-    if "staff_id" in keys:
-        if data["staff_id"] == "all":
-            allnames = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName').execute()
-            response = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, schedule!inner(schedule_id, staff_id, date, time_slot)').execute()
-        else:
-            allnames = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName').eq("Staff_ID", data["staff_id"]).execute()
-            response = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, schedule!inner(schedule_id, staff_id, date, time_slot)').eq("Staff_ID", data["staff_id"]).execute()
-    elif "dept" in keys:
-        if data["dept"] == "all":
-            allnames = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName').execute()
-            response = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, schedule!inner(schedule_id, staff_id, date, time_slot)').execute()
-        else:
-            allnames = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName').eq("Dept", data["dept"]).execute()
-            response = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, schedule!inner(schedule_id, staff_id, date, time_slot)').eq("Dept", data["dept"]).execute()
-    elif "team" in keys:
-        if data["team"] == "all":
-            allnames = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, team!inner(staff_id, team_id)').execute()
-            response = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, schedule!inner(schedule_id, staff_id, date, time_slot), team!inner(staff_id, team_id)').execute()
-        else:
-            allnames = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, team!inner(staff_id, team_id)').eq("team_id", data["team"]).execute()
-            response = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, schedule!inner(schedule_id, staff_id, date, time_slot), team!inner(staff_id, team_id)').eq("team_id", data["team"]).execute()  
+    
+    #filters
+
+    #filter for all depts
+    if data["dept"] == "all":
+        allnames = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName').execute()
+        response = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, schedule!inner(schedule_id, staff_id, date, time_slot)').execute()
+    #filter for all teams in dept
+    elif data["reporting_manager"] == "all":
+        allnames = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName').eq("Dept", data["dept"]).execute()
+        response = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, schedule!inner(schedule_id, staff_id, date, time_slot)').eq("Dept", data["dept"]).execute()
+    
+    #get director team (special logic mentioned earlier)
+    elif int(data["role"]) == 1 and int(data['reporting_manager']) == CEO:
+        response = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, schedule!inner(schedule_id, staff_id, date, time_slot)').eq("Reporting_Manager", data["reporting_manager"]).execute()
+    
+    #filter for dept and team
+    else:
+        allnames = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName').eq("Dept", data["dept"]).eq("Reporting_Manager", int(data["reporting_manager"])).execute()
+        response = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, schedule!inner(schedule_id, staff_id, date, time_slot)').eq("Dept", data["dept"]).eq("Reporting_Manager", int(data["reporting_manager"])).execute()
+    
+    #I forgor💀 what this is for but assumedly I ran into a bug at some point with bad output from db, unsure if it still exists but better safe than sorry
     try:
         responselist = list(response.data)
     except:
@@ -177,6 +179,7 @@ def get_schedules():
                     "time_slot" : responselist[i]["schedule"][j]["time_slot"],
                     "staff_id" : responselist[i]["Staff_ID"]
                 })
+    #compressing list of schedules to create NameList of wfh for each datetime, aka changing keys from staff_id to timeslot & date 
         dict1 = {}
         for i in range(0, len(schedulelist)):
             temp = {
@@ -188,11 +191,11 @@ def get_schedules():
                 dict1[(schedulelist[i]["date"], schedulelist[i]["time_slot"])] = temp
             else:
                 dict1[(schedulelist[i]["date"], schedulelist[i]["time_slot"])]["Name_List"].append(str(schedulelist[i]["staff_id"]) + " - " + schedulelist[i]["staff_fname"] + " " + schedulelist[i]["staff_lname"])
+    #converting data into final return format to work with vuecal + appending inOffice list for display using allnames list 
         returnlist = []
         allnamelist = [str(employee["Staff_ID"]) + " - " + employee["Staff_FName"] + " " + employee["Staff_LName"] for employee in list(allnames.data)]
         for key in list(dict1.keys()):
             if dict1[key]["Time_Slot"] == 1:
-                print(dict1[key]["Name_List"])
                 returnlist.append({
                 "start": str(dict1[key]["Date"]) + " 09:00",
                 "end": str(dict1[key]["Date"]) + " 13:00",
@@ -212,8 +215,7 @@ def get_schedules():
                 "title": len(dict1[key]["Name_List"]),
                 "inOffice" : [employee for employee in allnamelist if employee not in dict1[key]["Name_List"]]
                 })
-
-        print(returnlist)
+    #return in json
         return jsonify({"schedules": returnlist})
 
 
