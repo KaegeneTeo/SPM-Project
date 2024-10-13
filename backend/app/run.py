@@ -1,3 +1,5 @@
-from flaskapp.createapp import createapp
+import sys
+sys.path.append("./")
+from flaskapp import create_app
 
-app = createapp()
+app = create_app()
