@@ -19,6 +19,9 @@ jobs:
                     - "3.13"
         name: Test
         runs-on: ${{ matrix.os }}
+        env:
+            SUPABASE_URL: ${{secrets.SUPABASE_URL}}
+            SUPABASE_KEY: ${{secrets.SUPABASE_KEY}}
 
         steps:
             - name: Checkout Code

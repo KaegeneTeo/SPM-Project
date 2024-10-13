@@ -12,9 +12,9 @@ class AppTestCase(unittest.TestCase):
         self.ctx.pop()
 
     def test_home(self):
-        response = self.client.post("/", data={"content": "hello world"})
+        response = self.client.get("/")
         assert response.status_code == 200
-        assert "POST method called" == response.get_data(as_text=True)
+        assert response.get_data(as_text=True) == "Hello world"
 
 if __name__ == "__main__":
     unittest.main()
