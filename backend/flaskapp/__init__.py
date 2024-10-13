@@ -4,8 +4,8 @@ from supabase import create_client, Client
 from flask import request, abort
 from flask_cors import CORS
 from datetime import datetime, timedelta
-from .schedules import schedules
-from .app import main
+from flaskapp.schedules import schedules
+from flaskapp.app import main
 
 def create_app():
     app = Flask(__name__)
@@ -52,7 +52,7 @@ def create_app():
 
     app.register_blueprint(schedules)
     app.register_blueprint(main)
-    
+
     return app
 
 
