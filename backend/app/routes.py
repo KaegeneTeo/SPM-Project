@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import jsonify
 import os
 from supabase import create_client, Client
 from flask import request, abort, Blueprint

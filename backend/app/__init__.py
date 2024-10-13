@@ -1,6 +1,6 @@
 from flask import Flask
 from flask_cors import CORS
-from .app import main
+from .routes import main
 
 def create_app():
     app = Flask(__name__)
