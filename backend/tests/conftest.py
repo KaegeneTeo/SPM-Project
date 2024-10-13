@@ -1,11 +1,10 @@
 import pytest
-from app import create_app
 import os
 from supabase import create_client, Client
 import json
 import sys
 sys.path.append("./backend/")
-from flaskapp import create_app
+from flaskapp.app import create_app
 
 @pytest.fixture()
 def app():

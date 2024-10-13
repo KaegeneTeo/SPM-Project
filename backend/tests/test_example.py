@@ -1,4 +1,4 @@
-from app.app import create_app
+from flaskapp.app import createapp
 
 def test_hello(client):
     response = client.get("/")
