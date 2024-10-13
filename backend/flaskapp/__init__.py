@@ -5,8 +5,8 @@ import os
 from supabase import create_client, Client
 from flask_cors import CORS
 from datetime import datetime, timedelta
-from flaskapp.schedules import schedules
-from flaskapp.app import main
+from flaskapp import schedules
+from flaskapp import main
 
 def create_app():
     app = Flask(__name__)
