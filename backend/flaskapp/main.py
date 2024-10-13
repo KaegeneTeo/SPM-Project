@@ -6,6 +6,39 @@ supabase_extension = Supabase()
 
 mainapp = Blueprint("mainapp", __name__)
 
+def calculate_recurring_dates(approved_dates):
+    if not approved_dates:
+        return []
+    # Given a list of approved dates, calculate all recurring dates for the next year
+    date_list = []
+    earliest_date = min([datetime.strptime(date, '%Y-%m-%d') for date in approved_dates])
+    print(earliest_date)
+    end_date = earliest_date + timedelta(days=365)
+
+    # Determine the days of the week for the approved dates
+    approved_weekdays = [date.weekday() for date in [datetime.strptime(date, '%Y-%m-%d') for date in approved_dates]]
+
+    current_date = earliest_date
+    while current_date <= end_date:
+        if current_date.weekday() in approved_weekdays:
+            date_list.append(current_date.strftime('%Y-%m-%d'))
+        current_date += timedelta(days=1)
+
+    return date_list
+
+def create_schedule_entries(staff_id, dates, time_slot):
+    # Create schedule entries for each date in the provided list
+
+    for date in dates:
+        response = supabase_extension.client.from_("schedule").insert({
+            "staff_id": staff_id,
+            "date": date,
+            "time_slot": time_slot
+        }).execute()
+
+        if response == None:
+            current_app.logger.error("Failed to create schedule entry for date %s: %s", date, response)
+
 # Routes
 @mainapp.route("/") 
 def test():
@@ -309,13 +342,13 @@ def create_request():
         # Check for errors in the response
 
         if response == None:
-            app.logger.error("Database insert error: %s", response.status_code)
+            current_app.logger.error("Database insert error: %s", response.status_code)
             return jsonify({"error": "Failed to insert data into the database"}), 500
 
         # If everything is fine, return the inserted request with a 201 status
         return jsonify(response.data[0]), 201
     except Exception as e:
-        app.logger.error("An error occurred: %s", str(e))
+        current_app.logger.error("An error occurred: %s", str(e))
         return jsonify({"error": str(e)}), 500
     
 @mainapp.route("/requests/<int:staff_id>", methods=['GET'])
@@ -326,7 +359,7 @@ def get_requests_by_staff(staff_id: int):
         print(response)
         # Check for errors in the response
         if response == None:
-            app.logger.error("Database query error: %s", response["error"]["message"])
+            current_app.logger.error("Database query error: %s", response["error"]["message"])
             return jsonify({"error": response["error"]["message"]}), 500
         
         # If no requests found, return a 404
@@ -337,5 +370,5 @@ def get_requests_by_staff(staff_id: int):
         return jsonify(response.data), 200
 
     except Exception as e:
-        app.logger.error("An error occurred: %s", str(e))
+        current_app.logger.error("An error occurred: %s", str(e))
         return jsonify({"error": str(e)}), 500
