@@ -7,9 +7,6 @@ from app import app as app
 
 @pytest.fixture()
 def app():
-    app.config.update({
-        "TESTING": True,
-    })
 
     # other setup can go here
     url: str = os.getenv("SUPABASE_URL")
