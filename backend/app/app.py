@@ -4,7 +4,9 @@ from supabase import create_client, Client
 from flask import request, abort
 from flask_cors import CORS
 from datetime import datetime, timedelta
-app = Flask(__name__)
+from app import create_app
+
+app = create_app()
 CORS(app, credentials=True ,resources={r"/*": {
     "origins": "http://localhost:5173", "allow_headers": ["Authorization", "Content-Type", "X-Staff-ID", "X-Role", "X-Dept"]}})  # Enable CORS for frontend origin
 
