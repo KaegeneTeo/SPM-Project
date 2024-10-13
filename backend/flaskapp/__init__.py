@@ -5,8 +5,8 @@ import os
 from supabase import create_client, Client
 from flask_cors import CORS
 from datetime import datetime, timedelta
-from schedules import schedules
-from main import main
+from .schedules import schedule
+from .main import mainapp
 
 def create_app():
     app = Flask(__name__)
@@ -51,8 +51,8 @@ def create_app():
             if response == None:
                 app.logger.error("Failed to create schedule entry for date %s: %s", date, response)
 
-    app.register_blueprint(schedules)
-    app.register_blueprint(main)
+    app.register_blueprint(schedule)
+    app.register_blueprint(mainapp)
 
     return app
 

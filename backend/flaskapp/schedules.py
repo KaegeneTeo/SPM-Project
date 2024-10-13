@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, Blueprint, request, abort, current_app
 from supabase import create_client, Client
 
-schedules = Blueprint("schedules", __name__)
+schedule = Blueprint("schedule", __name__)
 
 
 @schedules.route("/schedules", methods=['GET'])

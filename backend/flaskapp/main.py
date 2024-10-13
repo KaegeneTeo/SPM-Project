@@ -2,7 +2,7 @@ from flask import Flask, jsonify, Blueprint, request, abort, current_app
 from supabase import create_client, Client
 from datetime import datetime, timedelta
 
-main = Blueprint("main", __name__)
+mainapp = Blueprint("mainapp", __name__)
 
 # Routes
 main.route("/") 
