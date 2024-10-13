@@ -1,11 +1,13 @@
-import flask_unittest
-import flask.globals
+import unittest
 import sys
 sys.path.append('./backend/app')
 import app
 
-class TestApp(flask_unittest.ClientTestCase):
-    app = app
-    def test_home(self, client):
-        rv = client.get('/')
-        self.assertInResponse(rv, 'Hello world!')
+class TestApp(unittest.TestCase):
+    def test_home(self):
+        with app.test_client() as client:
+            rv = client.get('/')
+            self.assertInResponse(rv, 'Hello world!')
+
+if __name__ == '__main__':
+    unittest.main()
