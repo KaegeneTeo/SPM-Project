@@ -2,6 +2,7 @@ import pytest
 from app import create_app
 import os
 from supabase import create_client, Client
+import json
 
 @pytest.fixture()
 def app():
