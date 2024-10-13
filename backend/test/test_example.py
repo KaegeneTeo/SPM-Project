@@ -1,6 +1,7 @@
 import unittest
-
-from ..app import app
+import sys
+sys.path.append('./backend/app')
+import app
 
 class AppTestCase(unittest.TestCase):
     def setUp(self):
