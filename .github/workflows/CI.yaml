@@ -39,4 +39,5 @@ jobs:
                 python -m pip install -r ./backend/requirements.txt 
             
             - name: Run tests
-              run: coverage run -m pytest
+              run: |
+                coverage run -m pytest
