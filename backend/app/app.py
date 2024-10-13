@@ -1,14 +1,12 @@
 from flask import Flask, jsonify
 import os
 from supabase import create_client, Client
-from flask import request, abort
+from flask import request, abort, Blueprint
 from flask_cors import CORS
 from datetime import datetime, timedelta
 from app import create_app
 
-app = create_app()
-CORS(app, credentials=True ,resources={r"/*": {
-    "origins": "http://localhost:5173", "allow_headers": ["Authorization", "Content-Type", "X-Staff-ID", "X-Role", "X-Dept"]}})  # Enable CORS for frontend origin
+main = Blueprint("main", __name__)
 
 url: str = os.getenv("SUPABASE_URL")
 key: str = os.getenv("SUPABASE_KEY")
@@ -49,11 +47,11 @@ def create_schedule_entries(staff_id, dates, time_slot):
             app.logger.error("Failed to create schedule entry for date %s: %s", date, response)
 
 # Routes
-@app.route("/")
+@main.route("/")
 def test():
     return "Hello world", 200
 
-@app.route("/teams_by_reporting_manager", methods=['GET'])
+@main.route("/teams_by_reporting_manager", methods=['GET'])
 def get_teams_by_reporting_manager():
     department = request.args.get('department')
     
@@ -131,7 +129,7 @@ def get_teams_by_reporting_manager():
         "teams": result  # Include the structured team info
     }), 200
 
-@app.route("/schedules", methods=['GET'])
+@main.route("/schedules", methods=['GET'])
 def get_schedules():
 
     #getting CEO for director tram filter cuz director is a cross dept team while all other teams are within dept so this needs special logic, also did you know that you can put emojis in comments and variable names? 😁
@@ -227,16 +225,16 @@ def get_schedules():
         return jsonify({"schedules": returnlist})
 
 
-@app.route("/employees", methods=['GET'])
+@main.route("/employees", methods=['GET'])
 def get_employees():
     response = supabase.table('Employee').select("*").execute()
     return response.data
 
-@app.route("/employees", methods=['PUT'])
+@main.route("/employees", methods=['PUT'])
 def update_employee():
     form_data = request.form
 
-@app.route("/login", methods=['POST'])
+@main.route("/login", methods=['POST'])
 def login():
     form_data = request.json
     try: 
@@ -276,7 +274,7 @@ def login():
         }
         return jsonify(json_response), 400  # Use 400 for bad requests
     
-@app.route("/logout", methods=['POST'])
+@main.route("/logout", methods=['POST'])
 def logout():
     try:
         # Call Supabase to sign the user out
@@ -289,7 +287,7 @@ def logout():
         return jsonify(json), 400
     
 
-@app.route("/check_auth", methods=['POST'])
+@main.route("/check_auth", methods=['POST'])
 def check_auth():
     response = supabase.auth.get_user(request.form['access_token'])
     status_code = None
@@ -307,7 +305,7 @@ def check_auth():
     return json, status_code
 
 
-@app.route('/team/requests', methods=['GET'])
+@main.route('/team/requests', methods=['GET'])
 def get_team_requests():
     staff_id = request.headers.get('X-Staff-ID')
     access_token = request.headers.get('Authorization').split(' ')[1]  # Extract Bearer token
@@ -343,7 +341,7 @@ def get_team_requests():
     response.headers.add('Access-Control-Allow-Origin', '*')  # Allow requests from any origin
     return response
    
-@app.route("/request/<request_id>", methods=['GET'])
+@main.route("/request/<request_id>", methods=['GET'])
 def get_selected_request(request_id):
     access_token = request.headers.get('Authorization').split(' ')[1]  # Extract Bearer token
     print(access_token)
@@ -360,7 +358,7 @@ def get_selected_request(request_id):
     response.headers.add('Access-Control-Allow-Origin', '*')  # Allow requests from any origin
     return response
 
-@app.route("/request/<request_id>/approve", methods=['PUT', 'POST'])
+@main.route("/request/<request_id>/approve", methods=['PUT', 'POST'])
 def request_approve(request_id):
     access_token = request.headers.get('Authorization').split(' ')[1]
     result_reason = request.json.get('result_reason')  # Get result_reason from request body
@@ -403,7 +401,7 @@ def request_approve(request_id):
     response.headers.add('Access-Control-Allow-Origin', '*')  # Add CORS header
     return response
 
-@app.route("/request/<request_id>/reject", methods=['PUT'])
+@main.route("/request/<request_id>/reject", methods=['PUT'])
 def request_reject(request_id):
     access_token = request.headers.get('Authorization').split(' ')[1]
     result_reason = request.json.get('result_reason')  # Get result_reason from request body
@@ -419,13 +417,13 @@ def request_reject(request_id):
 
     return {"message": "Request rejected successfully"}
 
-@app.route("/getstaffid", methods=['GET'])
+@main.route("/getstaffid", methods=['GET'])
 def get_staff_id():
     staff_id = request.headers.get('X-Staff-ID')
     access_token = request.headers.get('Authorization').split(' ')[1]  # Extract Bearer token
     return {"message": "CORS is working", "staff_id": staff_id, "access_token": access_token}
 
-@app.route("/requests/", methods=['POST'])
+@main.route("/requests/", methods=['POST'])
 def create_request():
     form_data = request.json
     print(form_data)
@@ -455,7 +453,7 @@ def create_request():
         app.logger.error("An error occurred: %s", str(e))
         return jsonify({"error": str(e)}), 500
     
-@app.route("/requests/<int:staff_id>", methods=['GET'])
+@main.route("/requests/<int:staff_id>", methods=['GET'])
 def get_requests_by_staff(staff_id: int):
     try:
         # Retrieve requests for the specified staff_id from the Supabase database
