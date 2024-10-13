@@ -51,30 +51,85 @@ def create_schedule_entries(staff_id, dates, time_slot):
 def test():
     return "Hello world", 200
 
-@app.route("/teams_by_dept", methods=['GET'])
-def get_teams():
+@app.route("/teams_by_reporting_manager", methods=['GET'])
+def get_teams_by_reporting_manager():
     department = request.args.get('department')
     
-    staff_list = []
-    team_list = []
-    # Query the database
-    response = supabase.from_('Employee').select('Staff_ID').eq("Dept", department).execute()
+    # Initial query to get staff details
+    staff_query = supabase.from_('Employee').select('Staff_ID, Staff_FName, Dept, Position, Reporting_Manager')
+
+    # If department is 'CEO', filter by 'Director' position
+    if department == "CEO":
+        staff_query = staff_query.eq("Position", 'Director')
+        
+    # Filter based on department if specified (excluding CEO case)
+    elif department != "All":
+        staff_query = staff_query.eq("Dept", department)
+
+    # Execute the query
+    response = staff_query.execute()
+
+    if not response.data:
+        return jsonify({"error": "No staff found"}), 404
+
+    # Get unique positions in the department
+    positions_set = set(item['Position'] for item in response.data)
+    positions_list = list(positions_set)
+
+    # Group staff by reporting manager and position
+    teams_by_manager = {}
     for item in response.data:
-        staff_list.append(item['Staff_ID'])
+        manager_id = item['Reporting_Manager']
+        staff_id = item['Staff_ID']
+        staff_fname = item['Staff_FName']
+        position = item['Position']
 
-    for id in staff_list:
-        response = supabase.from_('team').select('team_id').eq('staff_id', id).execute()
-        for i in response.data:
-            if i['team_id'] not in team_list:
-                team_list.append(i['team_id'])
-    # Check if the query was successful and return the data
-    if team_list!=[]:
-        print(team_list)
-        return team_list  # Return the retrieved teams as JSON
-    else:    
-        return jsonify({"error: No teams found"}), 400  # Return error if query fails
+        # Get the manager's full name if not already retrieved
+        if manager_id not in teams_by_manager:
+            manager_response = supabase.from_('Employee').select('Staff_FName').eq('Staff_ID', manager_id).execute()
+            manager_name = manager_response.data[0]['Staff_FName'] if manager_response.data else "Unknown"
+            teams_by_manager[manager_id] = {
+                "manager_name": manager_name,
+                "teams": {}  # Initialize an empty dict to hold positions and their team members
+            }
 
-   
+        # Add staff member to the manager's team under the appropriate position
+        if position not in teams_by_manager[manager_id]["teams"]:
+            teams_by_manager[manager_id]["teams"][position] = []
+
+        teams_by_manager[manager_id]["teams"][position].append({
+            "staff_id": staff_id,
+            "staff_fname": staff_fname
+        })
+
+    # Format the results to send to the frontend
+    result = []
+    for manager_id, info in teams_by_manager.items():
+        manager_info = {
+            "manager_id": manager_id,
+            "manager_name": info["manager_name"],
+            "positions": []
+        }
+        for position, team in info["teams"].items():
+            manager_info["positions"].append({
+                "position": position,
+                "team": team
+            })
+        result.append(manager_info)
+
+    print(result)  # Print the structured result for debugging
+
+    # Check if result is empty and handle accordingly
+    if len(result) == 0:
+        return jsonify({"positions": positions_list, "teams": []}), 200
+
+    # Return the result in the desired format
+    return jsonify({
+        "positions": positions_list,  # Include the list of unique positions
+        "teams": result  # Include the structured team info
+    }), 200
+
+
 
 @app.route("/schedules", methods=['GET'])
 def get_schedules():
@@ -187,28 +242,22 @@ def login():
         }   
 
         # Fetch staff_id from the Employee table
-        staff_response = supabase.table("Employee").select("Staff_ID, Role, Dept").ilike("Email", json_response["email"]).execute()
+        staff_response = supabase.table("Employee").select("Staff_ID, Role, Dept, Reporting_Manager").ilike("Email", json_response["email"]).execute()
         
         if staff_response.data:
             # Fetch all team IDs associated with this staff ID
-            team_response = supabase.table("team").select("team_id").eq("staff_id", staff_response.data[0]["Staff_ID"]).execute()
             
             json_response["staff_id"] = staff_response.data[0]["Staff_ID"]
             json_response["role"] = staff_response.data[0]["Role"]
             json_response["dept"] = staff_response.data[0]["Dept"]
-
-            # Check if multiple teams are found
-            if team_response.data:
-                team_ids = [team["team_id"] for team in team_response.data] 
-                if team_ids:
-                    json_response["team"] = team_ids 
-                else:
-                    json_response["team"] = [None]   # Return empty list or None as needed
+            json_response["reporting_manager"] = staff_response.data[0]["Reporting_Manager"]
+            # print(reporting_manager_id)
+            
         else:
             json_response["staff_id"] = None  # Handle case if no staff data is found
             json_response["role"] = None
-
-        print(json_response)
+            json_response["dept"] = None
+            json_response["reporting_manager"] = None
         return jsonify(json_response), 200
 
     except Exception as e:

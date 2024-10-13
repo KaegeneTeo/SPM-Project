@@ -72,20 +72,57 @@ export default {
     },
     methods: {
         async fetchTeams(department) {
-            if (!department) {
-                this.filteredTeams = []; // Clear teams if no department is selected
-                return;
-            }
-            try {
-                const response = await axios.get(`http://127.0.0.1:5000/teams_by_dept`, {
-                    params: { department } // Pass department as a query parameter
-                });
+    if (!department) {
+        this.filteredTeams = []; // Clear teams if no department is selected
+        return;
+    }
+    
+    try {
+        // Check if the selected department is "CEO"
+        if (department === "CEO") {
+            // Make a request to fetch the CEO's team
+            const response = await axios.get(`http://127.0.0.1:5000/teams_by_reporting_manager`, {
+                params: { department }
+            });
 
-                this.filteredTeams = ["All", ...response.data];
-            } catch (error) {
-                console.error("Error fetching teams:", error);
+            // Assuming the response contains the CEO's information
+            console.log(response.data.teams[0].manager_name); // Access the first item in the response array
+
+            if (response) {
+                const ceoName = response.data.teams[0].manager_name; // Get CEO's name
+                console.log(ceoName)
+                const position = response.data.positions[0]; // Get CEO's position
+
+                // Create the team display string
+                this.filteredTeams = [`${ceoName}'s Team (${position})`];
+
+                // Optionally, you can append team members if needed
+                const teamMembers = response.data.positions[0].team.map(member => member.staff_fname);
+                this.filteredTeams.push(...teamMembers); // Add team members to the list
+            } else {
+                this.filteredTeams = []; // No teams available
             }
-        },
+        } else {
+            const response = await axios.get(`http://127.0.0.1:5000/teams_by_reporting_manager`, {
+                params: { department } // Pass department as a query parameter
+            });
+
+            // Initialize with "All"
+            this.filteredTeams = ['All'];
+
+            // Loop through the teams to build the formatted list, skipping the first item if needed
+            response.data.teams.slice(1).forEach(manager => { // Start from the second manager
+                const managerName = manager.manager_name;
+                manager.positions.forEach(positionGroup => {
+                    const position = positionGroup.position;
+                    this.filteredTeams.push(`${managerName}'s Team (${position})`); // Format team names
+                });
+            });
+        }
+    } catch (error) {
+        console.error("Error fetching teams:", error);
+    }
+},
         search() {
             let params = {};
             
@@ -162,7 +199,7 @@ export default {
                         <select v-model="selectedTeam" id="schedule-selector-team" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                             <option value="">Select a team</option>
                             <option v-for="item in filteredTeams" :key="item">
-                                {{ item === 'All' ? 'All' : 'Team ' + item }}
+                                {{ item === 'All' ? 'All' : item }}
                             </option>
                         </select>
                     </div>
@@ -184,7 +221,7 @@ export default {
                         <select v-model="selectedTeam" id="schedule-selector-team" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                             <option value="">Select a team</option>
                             <option value="All">All</option>
-                            <option v-for="item in team" :key="item">Team {{ item }}</option>
+                            <option v-for="item in team" :key="item">{{ item }}</option>
                         </select>
                     </div>
                     <!-- Search Button -->
