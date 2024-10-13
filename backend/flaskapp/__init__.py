@@ -1,4 +1,4 @@
-'''main app'''
+'''flaskapp'''
 
 from flask import Flask, jsonify, request, abort, Blueprint
 import os

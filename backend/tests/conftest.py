@@ -4,7 +4,7 @@ from supabase import create_client, Client
 import json
 import sys
 sys.path.append("./backend/")
-from flaskapp import create_app
+from flaskapp.__init__ import create_app
 
 @pytest.fixture()
 def app():
