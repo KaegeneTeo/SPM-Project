@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, Blueprint, request, abort, current_app
 from flask_supabase import Supabase
+supabase_extension = Supabase()
 
 schedule = Blueprint("schedule", __name__)
 

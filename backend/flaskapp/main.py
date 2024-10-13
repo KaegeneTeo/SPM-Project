@@ -2,6 +2,8 @@ from flask import Flask, jsonify, Blueprint, request, abort, current_app
 from flask_supabase import Supabase
 from datetime import datetime, timedelta
 
+supabase_extension = Supabase()
+
 mainapp = Blueprint("mainapp", __name__)
 
 # Routes
@@ -90,7 +92,7 @@ def get_teams_by_reporting_manager():
 
 @mainapp.route("/employees", methods=['GET'])
 def get_employees():
-    response = supabase.table('Employee').select("*").execute()
+    response = supabase_extension.client.from_('Employee').select("*").execute()
     return response.data
 
 @mainapp.route("/employees", methods=['PUT'])
@@ -101,7 +103,7 @@ def update_employee():
 def login():
     form_data = request.json
     try: 
-        response = supabase.auth.sign_in_with_password({
+        response = supabase_extension.client.auth.sign_in_with_password({
             "email": form_data['email'],
             "password": form_data['password']
         })
@@ -113,7 +115,7 @@ def login():
         }   
 
         # Fetch staff_id from the Employee table
-        staff_response = supabase.table("Employee").select("Staff_ID, Role, Dept, Reporting_Manager").ilike("Email", json_response["email"]).execute()
+        staff_response = supabase_extension.client.from_("Employee").select("Staff_ID, Role, Dept, Reporting_Manager").ilike("Email", json_response["email"]).execute()
         
         if staff_response.data:
             # Fetch all team IDs associated with this staff ID
@@ -141,7 +143,7 @@ def login():
 def logout():
     try:
         # Call Supabase to sign the user out
-        supabase.auth.sign_out()
+        supabase_extension.client.auth.sign_out()
         return jsonify({"message": "User signed out successfully."}), 200
     except Exception as e:
         json = {
@@ -152,7 +154,7 @@ def logout():
 
 @mainapp.route("/check_auth", methods=['POST'])
 def check_auth():
-    response = supabase.auth.get_user(request.form['access_token'])
+    response = supabase_extension.client.auth.get_user(request.form['access_token'])
     status_code = None
     if response != None:
         json = {
@@ -175,7 +177,7 @@ def get_team_requests():
     print(staff_id, access_token)
     
     # Retrieve Team_ID(s) of current logged in user and store in list
-    team_ids_response = supabase.table("team").select("team_id").eq("staff_id", staff_id).execute()
+    team_ids_response = supabase_extension.client.from_("team").select("team_id").eq("staff_id", staff_id).execute()
     team_ids = [team['team_id'] for team in team_ids_response.data]
     print("Retrieved team_ids:", team_ids)
 
@@ -184,7 +186,7 @@ def get_team_requests():
         abort(404, description="No team found for the logged-in user.")
 
     # Retrieve Staff_ID(s) of staff belonging to the team(s) of the current logged-in user
-    staff_ids_response = supabase.table("team").select("staff_id").in_("team_id", team_ids).neq("staff_id", staff_id).execute()
+    staff_ids_response = supabase_extension.client.from_("team").select("staff_id").in_("team_id", team_ids).neq("staff_id", staff_id).execute()
     
     staff_ids = [staff['staff_id'] for staff in staff_ids_response.data]
     print("Retrieved staff_ids:", staff_ids)
@@ -194,7 +196,7 @@ def get_team_requests():
         abort(404, description="No staff found for the provided team IDs.")
     
     # Retrieve all requests of staff belonging to team(s) of logged in user where status = 0
-    requests_response = supabase.table("request").select("*").in_("staff_id", staff_ids).eq("status", 0).execute()
+    requests_response = supabase_extension.client.from_("request").select("*").in_("staff_id", staff_ids).eq("status", 0).execute()
     
     requests = requests_response.data
     print("Retrieved requests:", requests)
@@ -210,7 +212,7 @@ def get_selected_request(request_id):
     print(access_token)
 
     # Retrieve selected request by request_id
-    request_response = supabase.table("request").select("*").eq("request_id", request_id).execute()
+    request_response = supabase_extension.client.from_("request").select("*").eq("request_id", request_id).execute()
     selected_request = request_response.data[0]
 
     if not request_response.data:
@@ -229,7 +231,7 @@ def request_approve(request_id):
     print(access_token, result_reason, approved_dates)
 
     # Retrieve the request to be approved
-    request_response = supabase.table("request").select("*").eq("request_id", request_id).execute()
+    request_response = supabase_extension.client.from_("request").select("*").eq("request_id", request_id).execute()
     print(request_response)
 
     if not request_response.data:
@@ -252,7 +254,7 @@ def request_approve(request_id):
     elif request_type == 1:
         create_schedule_entries(staff_id, approved_dates, time_slot)
 
-    response = supabase.table("request").update({
+    response = supabase_extension.client.from_("request").update({
         "status": 1,  # Approved status
         "result_reason": result_reason  # Store the result_reason
     }).eq("request_id", request_id).execute()
@@ -270,7 +272,7 @@ def request_reject(request_id):
     result_reason = request.json.get('result_reason')  # Get result_reason from request body
     print(access_token, result_reason)
 
-    response = supabase.table("request").update({
+    response = supabase_extension.client.from_("request").update({
         "status": -1,  # Rejected status
         "result_reason": result_reason  # Store the result_reason
     }).eq("request_id", request_id).execute()
@@ -295,7 +297,7 @@ def create_request():
         return jsonify({"error": "No request data provided"}), 400
     try:
         # Insert new request into the Supabase database
-        response = supabase.table("request").insert({
+        response = supabase_extension.client.from_("request").insert({
             "staff_id": form_data.get('staffid'),
             "reason": form_data.get("reason"),
             "status": form_data.get("status"),
@@ -320,7 +322,7 @@ def create_request():
 def get_requests_by_staff(staff_id: int):
     try:
         # Retrieve requests for the specified staff_id from the Supabase database
-        response = supabase.table("request").select("*").eq("staff_id", staff_id).execute()
+        response = supabase_extension.client.from_("request").select("*").eq("staff_id", staff_id).execute()
         print(response)
         # Check for errors in the response
         if response == None:
