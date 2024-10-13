@@ -34,4 +34,4 @@ jobs:
                 python -m pip install -r ./backend/requirements.txt 
             
             - name: Run tests
-              run: python -m unittest
+              run: python -m unittest -s ./backend/test
