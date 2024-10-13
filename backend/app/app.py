@@ -150,6 +150,10 @@ def get_schedules():
         allnames = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName').eq("Dept", data["dept"]).execute()
         response = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, schedule!inner(schedule_id, staff_id, date, time_slot)').eq("Dept", data["dept"]).execute()
     
+    #special logic for filtering by CEO dept
+    elif data["dept"] == "CEO":
+        response = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, schedule!inner(schedule_id, staff_id, date, time_slot)').eq("Dept", data["dept"]).execute()
+
     #get director team (special logic mentioned earlier)
     elif int(data["role"]) == 1 and int(data['reporting_manager']) == CEO:
         response = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, schedule!inner(schedule_id, staff_id, date, time_slot)').eq("Reporting_Manager", data["reporting_manager"]).execute()
