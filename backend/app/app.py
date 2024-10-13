@@ -44,7 +44,8 @@ def create_schedule_entries(staff_id, dates, time_slot):
         }).execute()
 
         if response == None:
-            app.logger.error("Failed to create schedule entry for date %s: %s", date, response)
+            #app.logger.error("Failed to create schedule entry for date %s: %s", date, response)
+            pass
 
 # Routes
 @main.route("/")
@@ -472,8 +473,5 @@ def get_requests_by_staff(staff_id: int):
         return jsonify(response.data), 200
 
     except Exception as e:
-        app.logger.error("An error occurred: %s", str(e))
+        #app.logger.error("An error occurred: %s", str(e))
         return jsonify({"error": str(e)}), 500
-
-if __name__ == '__main__':
-    app.run(host="0.0.0.0")
