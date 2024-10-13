@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, Blueprint, request, abort, current_app
-from supabase import create_client, Client
+from flask_supabase import Supabase
 
 schedule = Blueprint("schedule", __name__)
 
@@ -8,7 +8,7 @@ schedule = Blueprint("schedule", __name__)
 def get_schedules():
 
     #getting CEO for director tram filter cuz director is a cross dept team while all other teams are within dept so this needs special logic, also did you know that you can put emojis in comments and variable names? 😁
-    CEO = int(supabase.from_('Employee').select('Staff_ID').eq("Position", "MD").execute().data[0]["Staff_ID"])
+    CEO = int(supabase_extension.client.from_('Employee').select('Staff_ID').eq("Position", "MD").execute().data[0]["Staff_ID"])
 
     #get data & print for debug
     data = request.args
@@ -18,27 +18,27 @@ def get_schedules():
 
     #filter for all depts
     if data["dept"] == "all":
-        allnames = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName').execute()
-        response = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, schedule!inner(schedule_id, staff_id, date, time_slot)').execute()
+        allnames = supabase_extension.client.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName').execute()
+        response = supabase_extension.client.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, schedule!inner(schedule_id, staff_id, date, time_slot)').execute()
     #filter for all teams in dept
     elif data["reporting_manager"] == "all":
-        allnames = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName').eq("Dept", data["dept"]).execute()
-        response = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, schedule!inner(schedule_id, staff_id, date, time_slot)').eq("Dept", data["dept"]).execute()
+        allnames = supabase_extension.client.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName').eq("Dept", data["dept"]).execute()
+        response = supabase_extension.client.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, schedule!inner(schedule_id, staff_id, date, time_slot)').eq("Dept", data["dept"]).execute()
     
     #special logic for filtering by CEO dept
     elif data["dept"] == "CEO":
-        allnames = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName').eq("Dept", data["dept"]).execute()
-        response = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, schedule!inner(schedule_id, staff_id, date, time_slot)').eq("Dept", data["dept"]).execute()
+        allnames = supabase_extension.client.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName').eq("Dept", data["dept"]).execute()
+        response = supabase_extension.client.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, schedule!inner(schedule_id, staff_id, date, time_slot)').eq("Dept", data["dept"]).execute()
 
     #get director team (special logic mentioned earlier)
     elif int(data["role"]) == 1 and int(data['reporting_manager']) == CEO:
-        allnames = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName').eq("Dept", data["dept"]).neq("Dept", "CEO").execute()
-        response = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, schedule!inner(schedule_id, staff_id, date, time_slot)').eq("Reporting_Manager", data["reporting_manager"]).neq("Dept", "CEO").execute()
+        allnames = supabase_extension.client.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName').eq("Dept", data["dept"]).neq("Dept", "CEO").execute()
+        response = supabase_extension.client.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, schedule!inner(schedule_id, staff_id, date, time_slot)').eq("Reporting_Manager", data["reporting_manager"]).neq("Dept", "CEO").execute()
     
     #filter for dept and team
     else:
-        allnames = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName').eq("Dept", data["dept"]).eq("Reporting_Manager", int(data["reporting_manager"])).execute()
-        response = supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, schedule!inner(schedule_id, staff_id, date, time_slot)').eq("Dept", data["dept"]).eq("Reporting_Manager", int(data["reporting_manager"])).execute()
+        allnames = supabase_extension.client.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName').eq("Dept", data["dept"]).eq("Reporting_Manager", int(data["reporting_manager"])).execute()
+        response = supabase_extension.client.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, schedule!inner(schedule_id, staff_id, date, time_slot)').eq("Dept", data["dept"]).eq("Reporting_Manager", int(data["reporting_manager"])).execute()
     
     #I forgor💀 what this is for but assumedly I ran into a bug at some point with bad output from db, unsure if it still exists but better safe than sorry
     try:

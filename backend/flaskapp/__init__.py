@@ -2,20 +2,22 @@
 
 from flask import Flask, jsonify, request, abort, Blueprint
 import os
-from supabase import create_client, Client
+from flask_supabase import Supabase
 from flask_cors import CORS
 from datetime import datetime, timedelta
 from .schedules import schedule
 from .main import mainapp
+
+supabase_extension = Supabase()
 
 def create_app():
     app = Flask(__name__)
     CORS(app, credentials=True ,resources={r"/*": {
         "origins": "http://localhost:5173", "allow_headers": ["Authorization", "Content-Type", "X-Staff-ID", "X-Role", "X-Dept"]}})  # Enable CORS for frontend origin
 
-    url: str = os.getenv("SUPABASE_URL")
-    key: str = os.getenv("SUPABASE_KEY")
-    supabase: Client = create_client(url, key)
+    app.config['SUPABASE_URL'] = "https://hyleecccrdjecquwdjmq.supabase.co"
+    app.config['SUPABASE_KEY'] = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh5bGVlY2NjcmRqZWNxdXdkam1xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjcxNTk0MTUsImV4cCI6MjA0MjczNTQxNX0.mkQJXXnX_ET7X72dtdzQRYeTW3psQqREdjMpCGk77H8"
+    supabase_extension.init_app(app)
 
         # Methods
     def calculate_recurring_dates(approved_dates):

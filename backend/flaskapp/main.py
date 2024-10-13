@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, Blueprint, request, abort, current_app
-from supabase import create_client, Client
+from flask_supabase import Supabase
 from datetime import datetime, timedelta
 
 mainapp = Blueprint("mainapp", __name__)
@@ -14,7 +14,7 @@ def get_teams_by_reporting_manager():
     department = request.args.get('department')
     
     # Initial query to get staff details
-    staff_query = supabase.from_('Employee').select('Staff_ID, Staff_FName, Dept, Position, Reporting_Manager')
+    staff_query = supabase_extension.client.from_('Employee').select('Staff_ID, Staff_FName, Dept, Position, Reporting_Manager')
 
     # If department is 'CEO', filter by 'Director' position
     if department == "CEO":
@@ -44,7 +44,7 @@ def get_teams_by_reporting_manager():
 
         # Get the manager's full name if not already retrieved
         if manager_id not in teams_by_manager:
-            manager_response = supabase.from_('Employee').select('Staff_FName').eq('Staff_ID', manager_id).execute()
+            manager_response = supabase_extension.client.from_('Employee').select('Staff_FName').eq('Staff_ID', manager_id).execute()
             manager_name = manager_response.data[0]['Staff_FName'] if manager_response.data else "Unknown"
             teams_by_manager[manager_id] = {
                 "manager_name": manager_name,
