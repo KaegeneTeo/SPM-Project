@@ -1,7 +1,7 @@
 import pytest
 import sys
-sys.path.append('./backend/app')
-import create_app
+sys.path.append('./backend/')
+from app import create_app
 
 @pytest.fixture()
 def app():
