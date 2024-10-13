@@ -1,5 +1,7 @@
 import pytest
 from app import create_app
+import os
+from supabase import create_client, Client
 
 @pytest.fixture()
 def app():
@@ -9,6 +11,9 @@ def app():
     })
 
     # other setup can go here
+    url: str = os.getenv("SUPABASE_URL")
+    key: str = os.getenv("SUPABASE_KEY")
+    supabase: Client = create_client(url, key)
 
     yield app
 
