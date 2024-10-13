@@ -4,7 +4,7 @@ from supabase import create_client, Client
 schedule = Blueprint("schedule", __name__)
 
 
-@schedules.route("/schedules", methods=['GET'])
+@schedule.route("/schedules", methods=['GET'])
 def get_schedules():
 
     #getting CEO for director tram filter cuz director is a cross dept team while all other teams are within dept so this needs special logic, also did you know that you can put emojis in comments and variable names? 😁

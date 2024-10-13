@@ -5,11 +5,11 @@ from datetime import datetime, timedelta
 mainapp = Blueprint("mainapp", __name__)
 
 # Routes
-main.route("/") 
+@mainapp.route("/") 
 def test():
     return "Hello world", 200
 
-main.route("/teams_by_reporting_manager", methods=['GET'])
+@mainapp.route("/teams_by_reporting_manager", methods=['GET'])
 def get_teams_by_reporting_manager():
     department = request.args.get('department')
     
@@ -88,16 +88,16 @@ def get_teams_by_reporting_manager():
     }), 200
 
 
-main.route("/employees", methods=['GET'])
+@mainapp.route("/employees", methods=['GET'])
 def get_employees():
     response = supabase.table('Employee').select("*").execute()
     return response.data
 
-main.route("/employees", methods=['PUT'])
+@mainapp.route("/employees", methods=['PUT'])
 def update_employee():
     form_data = request.form
 
-main.route("/login", methods=['POST'])
+@mainapp.route("/login", methods=['POST'])
 def login():
     form_data = request.json
     try: 
@@ -137,7 +137,7 @@ def login():
         }
         return jsonify(json_response), 400  # Use 400 for bad requests
     
-main.route("/logout", methods=['POST'])
+@mainapp.route("/logout", methods=['POST'])
 def logout():
     try:
         # Call Supabase to sign the user out
@@ -150,7 +150,7 @@ def logout():
         return jsonify(json), 400
     
 
-main.route("/check_auth", methods=['POST'])
+@mainapp.route("/check_auth", methods=['POST'])
 def check_auth():
     response = supabase.auth.get_user(request.form['access_token'])
     status_code = None
@@ -168,7 +168,7 @@ def check_auth():
     return json, status_code
 
 
-main.route('/team/requests', methods=['GET'])
+@mainapp.route('/team/requests', methods=['GET'])
 def get_team_requests():
     staff_id = request.headers.get('X-Staff-ID')
     access_token = request.headers.get('Authorization').split(' ')[1]  # Extract Bearer token
@@ -204,7 +204,7 @@ def get_team_requests():
     response.headers.add('Access-Control-Allow-Origin', '*')  # Allow requests from any origin
     return response
 
-main.route("/request/<request_id>", methods=['GET'])
+@mainapp.route("/request/<request_id>", methods=['GET'])
 def get_selected_request(request_id):
     access_token = request.headers.get('Authorization').split(' ')[1]  # Extract Bearer token
     print(access_token)
@@ -221,7 +221,7 @@ def get_selected_request(request_id):
     response.headers.add('Access-Control-Allow-Origin', '*')  # Allow requests from any origin
     return response
 
-main.route("/request/<request_id>/approve", methods=['PUT', 'POST'])
+@mainapp.route("/request/<request_id>/approve", methods=['PUT', 'POST'])
 def request_approve(request_id):
     access_token = request.headers.get('Authorization').split(' ')[1]
     result_reason = request.json.get('result_reason')  # Get result_reason from request body
@@ -264,7 +264,7 @@ def request_approve(request_id):
     response.headers.add('Access-Control-Allow-Origin', '*')  # Add CORS header
     return response
 
-main.route("/request/<request_id>/reject", methods=['PUT'])
+@mainapp.route("/request/<request_id>/reject", methods=['PUT'])
 def request_reject(request_id):
     access_token = request.headers.get('Authorization').split(' ')[1]
     result_reason = request.json.get('result_reason')  # Get result_reason from request body
@@ -280,13 +280,13 @@ def request_reject(request_id):
 
     return {"message": "Request rejected successfully"}
 
-main.route("/getstaffid", methods=['GET'])
+@mainapp.route("/getstaffid", methods=['GET'])
 def get_staff_id():
     staff_id = request.headers.get('X-Staff-ID')
     access_token = request.headers.get('Authorization').split(' ')[1]  # Extract Bearer token
     return {"message": "CORS is working", "staff_id": staff_id, "access_token": access_token}
 
-main.route("/requests/", methods=['POST'])
+@mainapp.route("/requests/", methods=['POST'])
 def create_request():
     form_data = request.json
     print(form_data)
@@ -316,7 +316,7 @@ def create_request():
         app.logger.error("An error occurred: %s", str(e))
         return jsonify({"error": str(e)}), 500
     
-main.route("/requests/<int:staff_id>", methods=['GET'])
+@mainapp.route("/requests/<int:staff_id>", methods=['GET'])
 def get_requests_by_staff(staff_id: int):
     try:
         # Retrieve requests for the specified staff_id from the Supabase database
