@@ -3,7 +3,7 @@ from flask_supabase import Supabase
 from datetime import datetime, timedelta
 supabase_extension = Supabase()
 
-request_bp = Blueprint("request_bp", __name__)
+requests = Blueprint("requests", __name__)
 
 # Methods
 def calculate_recurring_dates(approved_dates):
@@ -40,7 +40,7 @@ def create_schedule_entries(staff_id, dates, time_slot):
             current_app.logger.error("Failed to create schedule entry for date %s: %s", date, response)
 
 # Routes
-@request_bp.route('/team/requests', methods=['GET'])
+@requests.route('/team/requests', methods=['GET'])
 def get_team_requests():
     # Retrieve current logged-in user's staff ID
     staff_id = request.headers.get('X-Staff-ID')
@@ -94,7 +94,7 @@ def get_team_requests():
         # If the user is not authorized, return an empty list instead of an error
         return jsonify([]), 200
 
-@request_bp.route("/request/<request_id>", methods=['GET'])
+@requests.route("/request/<request_id>", methods=['GET'])
 def get_selected_request(request_id):
     access_token = request.headers.get('Authorization').split(' ')[1]  # Extract Bearer token
     print(access_token)
@@ -111,7 +111,7 @@ def get_selected_request(request_id):
     response.headers.add('Access-Control-Allow-Origin', '*')  # Allow requests from any origin
     return response
 
-@request_bp.route("/request/<request_id>/approve", methods=['PUT', 'POST'])
+@requests.route("/request/<request_id>/approve", methods=['PUT', 'POST'])
 def request_approve(request_id):
     access_token = request.headers.get('Authorization').split(' ')[1]
     result_reason = request.json.get('result_reason')  # Get result_reason from request body
@@ -154,7 +154,7 @@ def request_approve(request_id):
     response.headers.add('Access-Control-Allow-Origin', '*')  # Add CORS header
     return response
 
-@request_bp.route("/request/<request_id>/reject", methods=['PUT'])
+@requests.route("/request/<request_id>/reject", methods=['PUT'])
 def request_reject(request_id):
     access_token = request.headers.get('Authorization').split(' ')[1]
     result_reason = request.json.get('result_reason')  # Get result_reason from request body
@@ -170,13 +170,13 @@ def request_reject(request_id):
 
     return {"message": "Request rejected successfully"}
 
-@request_bp.route("/getstaffid", methods=['GET'])
+@requests.route("/getstaffid", methods=['GET'])
 def get_staff_id():
     staff_id = request.headers.get('X-Staff-ID')
     access_token = request.headers.get('Authorization').split(' ')[1]  # Extract Bearer token
     return {"message": "CORS is working", "staff_id": staff_id, "access_token": access_token}
 
-@request_bp.route("/requests/", methods=['POST'])
+@requests.route("/requests/", methods=['POST'])
 def create_request():
     form_data = request.json
     print(form_data)
@@ -206,7 +206,7 @@ def create_request():
         current_app.logger.error("An error occurred: %s", str(e))
         return jsonify({"error": str(e)}), 500
     
-@request_bp.route("/requests/<int:staff_id>", methods=['GET'])
+@requests.route("/requests/<int:staff_id>", methods=['GET'])
 def get_requests_by_staff(staff_id: int):
     try:
         # Retrieve requests for the specified staff_id from the Supabase database
