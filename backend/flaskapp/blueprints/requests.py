@@ -1,10 +1,11 @@
 from flask import Flask, jsonify, Blueprint, request, abort, current_app
-from datetime import datetime, timedelta
 from flask_supabase import Supabase
+from datetime import datetime, timedelta
 supabase_extension = Supabase()
-requests = Blueprint("requests", __name__)
 
+request_bp = Blueprint("request_bp", __name__)
 
+# Methods
 def calculate_recurring_dates(approved_dates):
     if not approved_dates:
         return []
@@ -38,11 +39,62 @@ def create_schedule_entries(staff_id, dates, time_slot):
         if response == None:
             current_app.logger.error("Failed to create schedule entry for date %s: %s", date, response)
 
-@requests.route("/", methods=["GET"])
-def test():
-    return jsonify("Hello world")
+# Routes
+@request_bp.route('/team/requests', methods=['GET'])
+def get_team_requests():
+    # Retrieve current logged-in user's staff ID
+    staff_id = request.headers.get('X-Staff-ID')
+    access_token = request.headers.get('Authorization').split(' ')[1]  # Extract Bearer token
 
-@requests.route("/request/<request_id>", methods=['GET'])
+    # Query for the current user's role and position based on staff_id
+    user_response = supabase_extension.client.from_('Employee').select('Role, Position').eq('Staff_ID', staff_id).execute()
+
+    # Check if user_response has data
+    if not user_response.data:
+        return jsonify({"error": "User not found"}), 404
+    
+    current_user = user_response.data[0]  # Access the first item in the list
+    role = current_user['Role']  # Access Role directly
+    position = current_user['Position'].lower()  # Access Position directly
+
+    print(staff_id, access_token, role, position)
+
+    # Check if the user is eligible to view team requests (Role 1 or Role 3 + Manager/Director)
+    if (role == 1 or role == 3) and (
+        'manager' in position.lower() or 'director' in position.lower()):
+
+        # Fetch the staff members who report to this Manager/Director from the Employee table in Supabase
+        response = supabase_extension.client.from_('Employee').select('Staff_ID').eq('Reporting_Manager', staff_id).execute()
+        print(response)
+
+        if response.data:
+            # Store all the staff_ids belonging to logged-in user's team(s) in a list
+            team_member_ids = [member['Staff_ID'] for member in response.data]
+            print(team_member_ids)
+
+            if team_member_ids:
+                # Retrieve all requests of staff belonging to team(s) of logged in user where status = 0
+                requests_response = supabase_extension.client.from_("request").select("*").in_("staff_id", team_member_ids).eq("status", 0).execute()
+                print(requests_response)
+
+                requests = requests_response.data
+                print("Retrieved requests:", requests)
+                
+                # Create the response and add CORS headers manually
+                response = jsonify(requests)
+                response.headers.add('Access-Control-Allow-Origin', '*')  # Allow requests from any origin
+                return response
+            else:
+                # Return an empty list if no team members found
+                return jsonify([]), 200
+        else:
+            # If no team members are found in the Employee table, return an empty list
+            return jsonify([]), 200
+    else:
+        # If the user is not authorized, return an empty list instead of an error
+        return jsonify([]), 200
+
+@request_bp.route("/request/<request_id>", methods=['GET'])
 def get_selected_request(request_id):
     access_token = request.headers.get('Authorization').split(' ')[1]  # Extract Bearer token
     print(access_token)
@@ -59,7 +111,7 @@ def get_selected_request(request_id):
     response.headers.add('Access-Control-Allow-Origin', '*')  # Allow requests from any origin
     return response
 
-@requests.route("/request/<request_id>/approve", methods=['PUT', 'POST'])
+@request_bp.route("/request/<request_id>/approve", methods=['PUT', 'POST'])
 def request_approve(request_id):
     access_token = request.headers.get('Authorization').split(' ')[1]
     result_reason = request.json.get('result_reason')  # Get result_reason from request body
@@ -102,7 +154,7 @@ def request_approve(request_id):
     response.headers.add('Access-Control-Allow-Origin', '*')  # Add CORS header
     return response
 
-@requests.route("/request/<request_id>/reject", methods=['PUT'])
+@request_bp.route("/request/<request_id>/reject", methods=['PUT'])
 def request_reject(request_id):
     access_token = request.headers.get('Authorization').split(' ')[1]
     result_reason = request.json.get('result_reason')  # Get result_reason from request body
@@ -118,7 +170,13 @@ def request_reject(request_id):
 
     return {"message": "Request rejected successfully"}
 
-@requests.route("/requests/", methods=['POST'])
+@request_bp.route("/getstaffid", methods=['GET'])
+def get_staff_id():
+    staff_id = request.headers.get('X-Staff-ID')
+    access_token = request.headers.get('Authorization').split(' ')[1]  # Extract Bearer token
+    return {"message": "CORS is working", "staff_id": staff_id, "access_token": access_token}
+
+@request_bp.route("/requests/", methods=['POST'])
 def create_request():
     form_data = request.json
     print(form_data)
@@ -148,7 +206,7 @@ def create_request():
         current_app.logger.error("An error occurred: %s", str(e))
         return jsonify({"error": str(e)}), 500
     
-@requests.route("/requests/<int:staff_id>", methods=['GET'])
+@request_bp.route("/requests/<int:staff_id>", methods=['GET'])
 def get_requests_by_staff(staff_id: int):
     try:
         # Retrieve requests for the specified staff_id from the Supabase database

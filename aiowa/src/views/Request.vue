@@ -123,8 +123,6 @@ export default {
       resultReason: '', // Store the result_reason entered by the user
       affectedDates: [], // Store the list of all affected dates
       selectedDates: [], // Store the selected dates for approval
-      position:"",
-      role: null
     };
   },
   computed: {
