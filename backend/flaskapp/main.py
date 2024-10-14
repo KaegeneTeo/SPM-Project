@@ -3,11 +3,11 @@ from flask_supabase import Supabase
 from datetime import datetime, timedelta
 import os
 from flask_cors import CORS
-from blueprints.schedules import schedule
-from blueprints.employees import employee
-from blueprints.requests import request
-from blueprints.teams import team
-from blueprints.authentication import auth
+from blueprints.schedules import schedules
+from blueprints.employees import employees
+from blueprints.requests import requests
+from blueprints.teams import teams
+from blueprints.authentication import authentication
 
 supabase_extension = Supabase()
 
@@ -22,11 +22,11 @@ def create_app():
 
         # Methods
 
-    app.register_blueprint(schedule)
-    app.register_blueprint(employee)
-    app.register_blueprint(request)
-    app.register_blueprint(team)
-    app.register_blueprint(auth)
+    app.register_blueprint(schedules)
+    app.register_blueprint(employees)
+    app.register_blueprint(requests)
+    app.register_blueprint(teams)
+    app.register_blueprint(authentication)
     return app
 
 app = create_app()

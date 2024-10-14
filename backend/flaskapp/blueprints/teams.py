@@ -2,14 +2,14 @@ from flask import Flask, jsonify, Blueprint, request, abort, current_app
 from datetime import datetime, timedelta
 from flask_supabase import Supabase
 supabase_extension = Supabase()
-team = Blueprint("team", __name__)
+teams = Blueprint("teams", __name__)
 
-@team.route("/teams", methods=['GET'])
+@teams.route("/teams", methods=['GET'])
 def check_online():
     return "Hello teams", 200
 
 
-@team.route("/teams_by_reporting_manager", methods=['GET'])
+@teams.route("/teams_by_reporting_manager", methods=['GET'])
 def get_teams_by_reporting_manager():
     department = request.args.get('department')
     
@@ -88,7 +88,7 @@ def get_teams_by_reporting_manager():
     }), 200
 
 
-@team.route('/team/requests', methods=['GET'])
+@teams.route('/team/requests', methods=['GET'])
 def get_team_requests():
     staff_id = request.headers.get('X-Staff-ID')
     access_token = request.headers.get('Authorization').split(' ')[1]  # Extract Bearer token

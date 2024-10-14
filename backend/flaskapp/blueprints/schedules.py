@@ -2,9 +2,9 @@ from flask import Flask, jsonify, Blueprint, request, abort, current_app
 from flask_supabase import Supabase
 supabase_extension = Supabase()
 
-schedule = Blueprint("schedule", __name__)
+schedules = Blueprint("schedules", __name__)
 
-@schedule.route("/team_details", methods = ['GET'])
+@schedules.route("/team_details", methods = ['GET'])
 def get_team_detail():
     manager_name = request.args.get('m_name')
     manager_fname = manager_name.split(" ")[0]
@@ -17,7 +17,7 @@ def get_team_detail():
     else:
         return jsonify({"error": "No or wrong params received"}), 404
 
-@schedule.route("/teams_by_reporting_manager", methods=['GET'])
+@schedules.route("/teams_by_reporting_manager", methods=['GET'])
 def get_teams_by_reporting_manager():
     department = request.args.get('department')
     
@@ -96,7 +96,7 @@ def get_teams_by_reporting_manager():
     }), 200
 
 
-@schedule.route("/schedules", methods=['GET'])
+@schedules.route("/schedules", methods=['GET'])
 def get_schedules():
 
     #getting CEO for director tram filter cuz director is a cross dept team while all other teams are within dept so this needs special logic, also did you know that you can put emojis in comments and variable names? 😁

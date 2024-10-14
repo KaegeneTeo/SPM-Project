@@ -3,14 +3,14 @@ from datetime import datetime, timedelta
 from flask_supabase import Supabase
 supabase_extension = Supabase()
 
-auth = Blueprint("auth", __name__)
+authentication = Blueprint("authentication", __name__)
 
 
-@auth.route("/auth", methods=['GET'])
+@authentication.route("/auth", methods=['GET'])
 def check_online():
     return "Hello authentication", 200
 
-@auth.route("/login", methods=['POST'])
+@authentication.route("/login", methods=['POST'])
 def login():
     form_data = request.json
     try: 
@@ -50,7 +50,7 @@ def login():
         }
         return jsonify(json_response), 400  # Use 400 for bad requests
     
-@auth.route("/logout", methods=['POST'])
+@authentication.route("/logout", methods=['POST'])
 def logout():
     try:
         # Call Supabase to sign the user out
@@ -63,7 +63,7 @@ def logout():
         return jsonify(json), 400
     
 
-@auth.route("/check_auth", methods=['POST'])
+@authentication.route("/check_auth", methods=['POST'])
 def check_auth():
     response = supabase_extension.client.auth.get_user(request.form['access_token'])
     status_code = None

@@ -2,7 +2,7 @@ from flask import Flask, jsonify, Blueprint, request, abort, current_app
 from datetime import datetime, timedelta
 from flask_supabase import Supabase
 supabase_extension = Supabase()
-request = Blueprint("request", __name__)
+requests = Blueprint("requests", __name__)
 
 
 def calculate_recurring_dates(approved_dates):
@@ -38,11 +38,11 @@ def create_schedule_entries(staff_id, dates, time_slot):
         if response == None:
             current_app.logger.error("Failed to create schedule entry for date %s: %s", date, response)
 
-@request.route("/", methods=["GET"])
+@requests.route("/", methods=["GET"])
 def test():
     return jsonify("Hello world")
 
-@request.route("/request/<request_id>", methods=['GET'])
+@requests.route("/request/<request_id>", methods=['GET'])
 def get_selected_request(request_id):
     access_token = request.headers.get('Authorization').split(' ')[1]  # Extract Bearer token
     print(access_token)
@@ -59,7 +59,7 @@ def get_selected_request(request_id):
     response.headers.add('Access-Control-Allow-Origin', '*')  # Allow requests from any origin
     return response
 
-@request.route("/request/<request_id>/approve", methods=['PUT', 'POST'])
+@requests.route("/request/<request_id>/approve", methods=['PUT', 'POST'])
 def request_approve(request_id):
     access_token = request.headers.get('Authorization').split(' ')[1]
     result_reason = request.json.get('result_reason')  # Get result_reason from request body
@@ -102,7 +102,7 @@ def request_approve(request_id):
     response.headers.add('Access-Control-Allow-Origin', '*')  # Add CORS header
     return response
 
-@request.route("/request/<request_id>/reject", methods=['PUT'])
+@requests.route("/request/<request_id>/reject", methods=['PUT'])
 def request_reject(request_id):
     access_token = request.headers.get('Authorization').split(' ')[1]
     result_reason = request.json.get('result_reason')  # Get result_reason from request body
@@ -118,7 +118,7 @@ def request_reject(request_id):
 
     return {"message": "Request rejected successfully"}
 
-@request.route("/requests/", methods=['POST'])
+@requests.route("/requests/", methods=['POST'])
 def create_request():
     form_data = request.json
     print(form_data)
@@ -148,7 +148,7 @@ def create_request():
         current_app.logger.error("An error occurred: %s", str(e))
         return jsonify({"error": str(e)}), 500
     
-@request.route("/requests/<int:staff_id>", methods=['GET'])
+@requests.route("/requests/<int:staff_id>", methods=['GET'])
 def get_requests_by_staff(staff_id: int):
     try:
         # Retrieve requests for the specified staff_id from the Supabase database
