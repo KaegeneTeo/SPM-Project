@@ -4,6 +4,97 @@ supabase_extension = Supabase()
 
 schedule = Blueprint("schedule", __name__)
 
+@schedule.route("/team_details", methods = ['GET'])
+def get_team_detail():
+    manager_name = request.args.get('m_name')
+    manager_fname = manager_name.split(" ")[0]
+    manager_lname = manager_name.split(" ")[1]
+    dept = request.args.get('dept')
+    response = supabase_extension.client.from_('Employee').select('Staff_ID').eq("Staff_FName", manager_fname).eq("Staff_LName", manager_lname).eq("Dept", dept ).execute()
+    # print(response.data[0]["Staff_ID"])
+    if manager_name and dept:
+        return jsonify({"staff_id": response.data[0]["Staff_ID"]})
+    else:
+        return jsonify({"error": "No or wrong params received"}), 404
+
+@schedule.route("/teams_by_reporting_manager", methods=['GET'])
+def get_teams_by_reporting_manager():
+    department = request.args.get('department')
+    
+    # Initial query to get staff details
+    staff_query = supabase_extension.client.from_('Employee').select('Staff_ID, Staff_FName, Dept, Position, Reporting_Manager')
+
+    # If department is 'CEO', filter by 'Director' position
+    if department == "CEO":
+        staff_query = staff_query.eq("Position", 'Director')
+        
+    # Filter based on department if specified (excluding CEO case)
+    elif department != "All":
+        staff_query = staff_query.eq("Dept", department)
+
+    # Execute the query
+    response = staff_query.execute()
+
+    if not response.data:
+        return jsonify({"error": "No staff found"}), 404
+
+    # Get unique positions in the department
+    positions_set = set(item['Position'] for item in response.data)
+    positions_list = list(positions_set)
+
+    # Group staff by reporting manager and position
+    teams_by_manager = {}
+    for item in response.data:
+        manager_id = item['Reporting_Manager']
+        staff_id = item['Staff_ID']
+        staff_fname = item['Staff_FName']
+        position = item['Position']
+
+        # Get the manager's full name if not already retrieved
+        if manager_id not in teams_by_manager:
+            manager_response = supabase_extension.client.from_('Employee').select('Staff_FName').eq('Staff_ID', manager_id).execute()
+            manager_name = manager_response.data[0]['Staff_FName'] if manager_response.data else "Unknown"
+            teams_by_manager[manager_id] = {
+                "manager_name": manager_name,
+                "teams": {}  # Initialize an empty dict to hold positions and their team members
+            }
+
+        # Add staff member to the manager's team under the appropriate position
+        if position not in teams_by_manager[manager_id]["teams"]:
+            teams_by_manager[manager_id]["teams"][position] = []
+
+        teams_by_manager[manager_id]["teams"][position].append({
+            "staff_id": staff_id,
+            "staff_fname": staff_fname
+        })
+
+    # Format the results to send to the frontend
+    result = []
+    for manager_id, info in teams_by_manager.items():
+        manager_info = {
+            "manager_id": manager_id,
+            "manager_name": info["manager_name"],
+            "positions": []
+        }
+        for position, team in info["teams"].items():
+            manager_info["positions"].append({
+                "position": position,
+                "team": team
+            })
+        result.append(manager_info)
+
+    print(result)  # Print the structured result for debugging
+
+    # Check if result is empty and handle accordingly
+    if len(result) == 0:
+        return jsonify({"positions": positions_list, "teams": []}), 200
+
+    # Return the result in the desired format
+    return jsonify({
+        "positions": positions_list,  # Include the list of unique positions
+        "teams": result  # Include the structured team info
+    }), 200
+
 
 @schedule.route("/schedules", methods=['GET'])
 def get_schedules():
