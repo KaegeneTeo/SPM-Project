@@ -4,6 +4,10 @@ supabase_extension = Supabase()
 
 schedules = Blueprint("schedules", __name__)
 
+@schedules.route("/")
+def test():
+    return jsonify("Hello world")
+
 @schedules.route("/team_details", methods = ['GET'])
 def get_team_detail():
     manager_name = request.args.get('m_name')
