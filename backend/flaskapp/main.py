@@ -44,6 +44,19 @@ def create_schedule_entries(staff_id, dates, time_slot):
 def test():
     return "Hello world", 200
 
+@mainapp.route("/team_details", methods = ['GET'])
+def get_team_detail():
+    manager_name = request.args.get('m_name')
+    manager_fname = manager_name.split(" ")[0]
+    manager_lname = manager_name.split(" ")[1]
+    dept = request.args.get('dept')
+    response = supabase_extension.client.from_('Employee').select('Staff_ID').eq("Staff_FName", manager_fname).eq("Staff_LName", manager_lname).eq("Dept", dept ).execute()
+    # print(response.data[0]["Staff_ID"])
+    if manager_name and dept:
+        return jsonify({"staff_id": response.data[0]["Staff_ID"]})
+    else:
+        return jsonify({"error": "No or wrong params received"}), 404
+
 @mainapp.route("/teams_by_reporting_manager", methods=['GET'])
 def get_teams_by_reporting_manager():
     department = request.args.get('department')
