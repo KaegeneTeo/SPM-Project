@@ -16,7 +16,11 @@ export default {
             role: null,
             selectedDept: "",   // Stores the currently selected department
             selectedTeam: "",   // Stores the currently selected team
-            dept: ["All", "CEO", "Consultancy", "Engineering", "Finance", "HR", "IT", "Sales", "Solutioning"],
+            selectedPosition: "",
+            selectedReportingManager: "",
+            managername: "",
+            position:"",
+            dept: ["CEO", "Consultancy", "Engineering", "Finance", "HR", "IT", "Sales", "Solutioning"],
             staff_id: null,
             filteredTeams: [],  // Initialize filteredTeams to hold teams for the selected department
             events: [
@@ -63,93 +67,135 @@ export default {
         const teamData = localStorage.getItem('team');
         this.team = teamData ? JSON.parse(teamData).sort() : [];
         this.staff_id = localStorage.getItem('staff_id');
+        this.position = localStorage.getItem('position');
+        if(this.role === '2'){
+            this.search()
+        }
+
     },
     watch: {
         selectedDept(newDept) {
             this.fetchTeams(newDept); // Fetch teams whenever the department changes
             this.selectedTeam = "";    // Reset the selected team
-        }
+        },
+        selectedTeam(newTeam){
+            this.fetchTeamDetails(newTeam);
+            
+        }        
     },
     methods: {
-        async fetchTeams(department) {
-    if (!department) {
-        this.filteredTeams = []; // Clear teams if no department is selected
-        return;
-    }
-    
-    try {
-        // Check if the selected department is "CEO"
-        if (department === "CEO") {
-            // Make a request to fetch the CEO's team
-            const response = await axios.get(`http://127.0.0.1:5000/teams_by_reporting_manager`, {
-                params: { department }
-            });
-
-            // Assuming the response contains the CEO's information
-            console.log(response.data.teams[0].manager_name); // Access the first item in the response array
-
-            if (response) {
-                const ceoName = response.data.teams[0].manager_name; // Get CEO's name
-                console.log(ceoName)
-                const position = response.data.positions[0]; // Get CEO's position
-
-                // Create the team display string
-                this.filteredTeams = [`${ceoName}'s Team (${position})`];
-
-                // Optionally, you can append team members if needed
-                const teamMembers = response.data.positions[0].team.map(member => member.staff_fname);
-                this.filteredTeams.push(...teamMembers); // Add team members to the list
-            } else {
-                this.filteredTeams = []; // No teams available
+        async fetchTeamDetails(team) {
+            if(!team){
+                return;
             }
-        } else {
-            const response = await axios.get(`http://127.0.0.1:5000/teams_by_reporting_manager`, {
-                params: { department } // Pass department as a query parameter
-            });
+            if(this.role == '1'){    
+                if(team == 'all'){
+                    this.selectedReportingManager = 'all'
+                    return
+                }
+                this.managername = team.split("'")[0];
+                // this.pos = team.split('(')[1].replace(")", "");
 
-            // Initialize with "All"
-            this.filteredTeams = ['All'];
-
-            // Loop through the teams to build the formatted list, skipping the first item if needed
-            response.data.teams.slice(1).forEach(manager => { // Start from the second manager
-                const managerName = manager.manager_name;
-                manager.positions.forEach(positionGroup => {
-                    const position = positionGroup.position;
-                    this.filteredTeams.push(`${managerName}'s Team (${position})`); // Format team names
+                const response = await axios.get(`http://127.0.0.1:5000/team_details`, {
+                    params: {m_name : this.managername, dept : this.selectedDept}
                 });
-            });
-        }
-    } catch (error) {
-        console.error("Error fetching teams:", error);
-    }
-},
+                this.selectedReportingManager = response.data["staff_id"]
+                // console.log(this.selectedReportingManager)
+            }
+            else if(this.role == '3'){
+                if(team == 'all'){
+                    this.selectedReportingManager = this.staff_id
+                    
+                    // console.log(this.selectedReportingManager)
+                }
+                else if (team == 'my team'){
+                    this.selectedReportingManager = localStorage.getItem('reporting_manager')
+                    // console.log(this.selectedReportingManager)
+                }
+                
+            }
+            
+        },
+        async fetchTeams(department) {
+            if (!department) {
+                this.filteredTeams = []; // Clear teams if no department is selected
+                return;
+            }
+            
+            try {
+                // Check if the selected department is "CEO"
+                if (department === "CEO") {
+                    // Make a request to fetch the CEO's team
+                    const response = await axios.get(`http://127.0.0.1:5000/teams_by_reporting_manager`, {
+                        params: { department }
+                    });
+
+                    // Assuming the response contains the CEO's information
+                    console.log(response.data.teams[0].manager_name); // Access the first item in the response array
+
+                    if (response) {
+                        const ceoName = response.data.teams[0].manager_name; // Get CEO's name
+                        console.log(ceoName)
+                        const position = response.data.positions[0]; // Get CEO's position
+
+                        // Create the team display string
+                        this.filteredTeams = [`${ceoName}'s Team (${position})`];
+
+                        // Optionally, you can append team members if needed
+                        const teamMembers = response.data.positions[0].team.map(member => member.staff_fname);
+                        this.filteredTeams.push(...teamMembers); // Add team members to the list
+                    } else {
+                        this.filteredTeams = []; // No teams available
+                    }
+
+                } else {
+                    const response = await axios.get(`http://127.0.0.1:5000/teams_by_reporting_manager`, {
+                        params: { department } // Pass department as a query parameter
+                    });
+
+                    // Initialize with "All"
+                    this.filteredTeams = [];
+
+                    // Loop through the teams to build the formatted list, skipping the first item if needed
+                    response.data.teams.slice(1).forEach(manager => { // Start from the second manager
+                        const managerName = manager.manager_name;
+                        manager.positions.forEach(positionGroup => {
+                            const position = positionGroup.position;
+                            this.filteredTeams.push(`${managerName}'s Team (${position})`); // Format team names
+                        });
+                    });
+                }
+            } catch (error) {
+                console.error("Error fetching teams:", error);
+            }
+        },
         search() {
             let params = {};
             
             if (this.role === '1') {
-                if (this.selectedTeam == 'All'){
-                    params = {dept: this.selectedDept}
-                    console.log(params)
+                if (this.selectedTeam == 'all' && this.selectedDept == 'all'){
+                    params = {dept: 'all', reporting_manager: 'all', position :this.position, role: this.role}
+                    // console.log(params)
                 }
                 else {
-                    params = { team: this.selectedTeam.replace('Team ', '') };
-                    console.log(params);
+                    params = {dept: this.selectedDept, role: this.role, reporting_manager: this.selectedReportingManager, position: this.position}
+                    // console.log(params);
                 }
                 
-            } else if (this.role === '3') {
-                if (this.selectedTeam == 'All'){
-                    params = {dept: localStorage.getItem('dept')}
-                    console.log(params)
-                }
-                else {
-                    params = { team: this.selectedTeam.replace('Team ', '') };
-                    console.log(params);
-                }
-            } else if (this.role === '2'){
-                params = {team: this.selectedTeam.replace('Team ', '')}
-                console.log(params)
             }
-
+            if (this.role === '3') {
+                if (this.selectedTeam == 'all'){
+                    params = {dept: localStorage.getItem('dept'), role: localStorage.getItem('role'), reporting_manager: this.selectedReportingManager, position: localStorage.getItem('position')}
+                    // console.log(params)
+                }
+                else if (this.selectedTeam == 'my team'){
+                    params = {dept: localStorage.getItem('dept'), role: this.role, reporting_manager: this.selectedReportingManager, position: this.position}
+                    // console.log(params)
+                }
+            }
+            if (this.role === '2'){
+                params = {dept:localStorage.getItem('dept'), role : '3', position: 'Sales Manager', reporting_manager: localStorage.getItem('reporting_manager')}
+            }    
             axios.get('http://127.0.0.1:5000/schedules', { params })
                 .then(response => {
                     this.events = response.data.schedules;
@@ -191,6 +237,7 @@ export default {
                         <label for="schedule-selector-department" class="block text-sm font-medium text-gray-700">Select Department:</label>
                         <select v-model="selectedDept" id="schedule-selector-department" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                             <option value="">Select a department</option>
+                            <option value="all">All</option>
                             <option v-for="item in dept" :key="item" :value="item">{{ item }}</option>
                         </select>
                     </div>
@@ -198,8 +245,9 @@ export default {
                         <label for="schedule-selector-team" class="block text-sm font-medium text-gray-700">Select Team:</label>
                         <select v-model="selectedTeam" id="schedule-selector-team" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                             <option value="">Select a team</option>
+                            <option value="all">All</option>
                             <option v-for="item in filteredTeams" :key="item">
-                                {{ item === 'All' ? 'All' : item }}
+                                {{ item }}
                             </option>
                         </select>
                     </div>
@@ -220,8 +268,9 @@ export default {
                         <label for="schedule-selector-team" class="block text-sm font-medium text-gray-700">Select Team:</label>
                         <select v-model="selectedTeam" id="schedule-selector-team" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                             <option value="">Select a team</option>
-                            <option value="All">All</option>
-                            <option v-for="item in team" :key="item">{{ item }}</option>
+                            <option value="all">All</option>
+                            <option value="my team">My Team</option>
+                            
                         </select>
                     </div>
                     <!-- Search Button -->
