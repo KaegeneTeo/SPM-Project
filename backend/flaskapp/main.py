@@ -3,11 +3,11 @@ from flask_supabase import Supabase
 from datetime import datetime, timedelta
 import os
 from flask_cors import CORS
-from blueprints.schedules import schedules
-from blueprints.employees import employees
-from blueprints.requests import requests
-from blueprints.teams import teams
-from blueprints.authentication import authentication
+from .blueprints.schedules import schedules
+from .blueprints.employees import employees
+from .blueprints.requests import requests
+from .blueprints.teams import teams
+from .blueprints.authentication import authentication
 
 supabase_extension = Supabase()
 
