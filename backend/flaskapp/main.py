@@ -3,11 +3,11 @@ from flask_supabase import Supabase
 from datetime import datetime, timedelta
 import os
 from flask_cors import CORS
-from .schedules import schedule
-from .employees import employee
-from .requests import request
-from .teams import team
-from .authentication import auth
+from schedules import schedule
+from employees import employee
+from requests import request
+from teams import team
+from authentication import auth
 
 supabase_extension = Supabase()
 
