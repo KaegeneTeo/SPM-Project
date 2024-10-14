@@ -122,7 +122,9 @@ export default {
       feedbackType: '', // Message type: 'success' or 'error'
       resultReason: '', // Store the result_reason entered by the user
       affectedDates: [], // Store the list of all affected dates
-      selectedDates: [] // Store the selected dates for approval
+      selectedDates: [], // Store the selected dates for approval
+      position:"",
+      role: null
     };
   },
   computed: {
@@ -163,7 +165,7 @@ export default {
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${this.access_token}`,  // Include the access token here
-            'X-Staff-ID': this.staff_id          // Include the staff ID here 
+            'X-Staff-ID': this.staff_id         // Include the staff ID here
           }
       })
         .then(response => {

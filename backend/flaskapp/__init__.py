@@ -7,6 +7,7 @@ from flask_cors import CORS
 from datetime import datetime, timedelta
 from .schedules import schedule
 from .main import mainapp
+from .requests import request_bp
 
 supabase_extension = Supabase()
 
@@ -23,6 +24,7 @@ def create_app():
 
     app.register_blueprint(schedule)
     app.register_blueprint(mainapp)
+    app.register_blueprint(request_bp)
 
     return app
 
