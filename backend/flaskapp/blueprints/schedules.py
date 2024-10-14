@@ -2,9 +2,9 @@ from flask import Flask, jsonify, Blueprint, request, abort, current_app
 from flask_supabase import Supabase
 supabase_extension = Supabase()
 
-schedule = Blueprint("schedule", __name__)
+schedules = Blueprint("schedules", __name__)
 
-@schedule.route("/team_details", methods = ['GET'])
+@schedules.route("/team_details", methods = ['GET'])
 def get_team_detail():
     manager_name = request.args.get('m_name')
     manager_fname = manager_name.split(" ")[0]
@@ -17,12 +17,12 @@ def get_team_detail():
     else:
         return jsonify({"error": "No or wrong params received"}), 404
 
-@schedule.route("/teams_by_reporting_manager", methods=['GET'])
+@schedules.route("/teams_by_reporting_manager", methods=['GET'])
 def get_teams_by_reporting_manager():
     department = request.args.get('department')
     
     # Initial query to get staff details
-    staff_query = supabase_extension.client.from_('Employee').select('Staff_ID, Staff_FName, Dept, Position, Reporting_Manager')
+    staff_query = supabase_extension.client.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, Position, Reporting_Manager')
 
     # If department is 'CEO', filter by 'Director' position
     if department == "CEO":
@@ -48,12 +48,19 @@ def get_teams_by_reporting_manager():
         manager_id = item['Reporting_Manager']
         staff_id = item['Staff_ID']
         staff_fname = item['Staff_FName']
+        staff_lname = item['Staff_LName']
         position = item['Position']
 
         # Get the manager's full name if not already retrieved
         if manager_id not in teams_by_manager:
-            manager_response = supabase_extension.client.from_('Employee').select('Staff_FName').eq('Staff_ID', manager_id).execute()
-            manager_name = manager_response.data[0]['Staff_FName'] if manager_response.data else "Unknown"
+            manager_response = supabase_extension.client.from_('Employee').select('Staff_FName, Staff_LName').eq('Staff_ID', manager_id).execute()
+            if manager_response.data:
+                manager_fname = manager_response.data[0]['Staff_FName']
+                manager_lname = manager_response.data[0]['Staff_LName']
+                manager_name = f"{manager_fname} {manager_lname}"
+            else:
+                manager_name = "Unknown"
+                
             teams_by_manager[manager_id] = {
                 "manager_name": manager_name,
                 "teams": {}  # Initialize an empty dict to hold positions and their team members
@@ -65,7 +72,8 @@ def get_teams_by_reporting_manager():
 
         teams_by_manager[manager_id]["teams"][position].append({
             "staff_id": staff_id,
-            "staff_fname": staff_fname
+            "staff_fname": staff_fname,
+            "staff_lname": staff_lname
         })
 
     # Format the results to send to the frontend
@@ -89,14 +97,23 @@ def get_teams_by_reporting_manager():
     if len(result) == 0:
         return jsonify({"positions": positions_list, "teams": []}), 200
 
+    # Prepare the dropdown values
+    dropdown_values = []
+    for manager in result:
+        for position in manager["positions"]:
+            # Format the dropdown value as "Manager's Team (Position)"
+            dropdown_value = f"{manager['manager_name']}'s Team ({position['position']})"
+            dropdown_values.append(dropdown_value)
+
     # Return the result in the desired format
     return jsonify({
         "positions": positions_list,  # Include the list of unique positions
-        "teams": result  # Include the structured team info
+        "teams": result,              # Include the structured team info
+        "dropdown_values": dropdown_values  # Include the formatted dropdown values
     }), 200
 
 
-@schedule.route("/schedules", methods=['GET'])
+@schedules.route("/schedules", methods=['GET'])
 def get_schedules():
 
     #getting CEO for director tram filter cuz director is a cross dept team while all other teams are within dept so this needs special logic, also did you know that you can put emojis in comments and variable names? 😁
