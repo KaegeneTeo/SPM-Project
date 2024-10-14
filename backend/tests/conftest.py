@@ -1,10 +1,5 @@
 import pytest
-import os
-from supabase import create_client, Client
-import json
-import sys
-sys.path.append("./backend/")
-from flaskapp.__init__ import create_app
+from flaskapp.main import create_app
 
 @pytest.fixture()
 def app():
@@ -14,7 +9,6 @@ def app():
     yield app
 
     # clean up / reset resources here
-
 
 @pytest.fixture()
 def client(app):

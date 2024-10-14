@@ -4,7 +4,7 @@ supabase_extension = Supabase()
 
 schedule = Blueprint("schedule", __name__)
 
-
+#?dept=Sales&role=1&position=Director&reporting_manager=all
 @schedule.route("/schedules", methods=['GET'])
 def get_schedules():
 
