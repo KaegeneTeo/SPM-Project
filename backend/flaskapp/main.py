@@ -4,10 +4,10 @@ from datetime import datetime, timedelta
 import os
 from flask_cors import CORS
 from .schedules import schedule
-from .employees import employees
-from .requests import requests
-from .teams import teams
-from .authentication import authentication
+from .employees import employee
+from .requests import request
+from .teams import team
+from .authentication import auth
 
 supabase_extension = Supabase()
 
@@ -23,10 +23,10 @@ def create_app():
         # Methods
 
     app.register_blueprint(schedule)
-    app.register_blueprint(employees)
-    app.register_blueprint(requests)
-    app.register_blueprint(teams)
-    app.register_blueprint(authentication)
+    app.register_blueprint(employee)
+    app.register_blueprint(request)
+    app.register_blueprint(team)
+    app.register_blueprint(auth)
     return app
 
 app = create_app()
