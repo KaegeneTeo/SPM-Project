@@ -11,6 +11,10 @@ employees_service = EmployeesService(supabase)
 employees_controller = EmployeesController(employees_service)
 
 # Define routes
+@employees_blueprint.route("/", methods=['GET'])
+def test():
+    return "Hello employees", 200
+
 @employees_blueprint.route("/employees", methods=['GET'])
 def get_employees():
     return employees_controller.get_employees()

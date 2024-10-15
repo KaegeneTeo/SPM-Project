@@ -7,7 +7,7 @@ from .blueprints.schedules import schedules
 from .blueprints.employees_routes import employees_blueprint
 from .blueprints.requests import requests
 from .blueprints.teams_routes import teams_blueprint
-from .blueprints.authentication import authentication
+from .blueprints.auth_routes import auth_blueprint
 
 def create_app():
     app = Flask(__name__)
@@ -18,10 +18,10 @@ def create_app():
     app.register_blueprint(employees_blueprint)
     app.register_blueprint(requests)
     app.register_blueprint(teams_blueprint)
-    app.register_blueprint(authentication)
+    app.register_blueprint(auth_blueprint)
     return app
 
+app = create_app()
 
 if __name__ == '__main__': 
-    app = create_app()
     app.run(debug=True, host="0.0.0.0")

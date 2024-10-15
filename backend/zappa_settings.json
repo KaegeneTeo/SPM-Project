@@ -12,6 +12,6 @@
         "profile_name": "default",
         "project_name": "backend",
         "runtime": "python3.12",
-        "s3_bucket": "zappa-dc6emohi0"
+        "s3_bucket": "zappa-g73k2w9to"
     }
 }
