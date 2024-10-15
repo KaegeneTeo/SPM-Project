@@ -6,7 +6,7 @@ from flask_cors import CORS
 from .blueprints.schedules import schedules
 from .blueprints.employees import employees
 from .blueprints.requests import requests
-from .blueprints.teams import teams
+from .blueprints.teams_routes import teams_blueprint
 from .blueprints.authentication import authentication
 
 supabase_extension = Supabase()
@@ -26,7 +26,7 @@ def create_app():
     app.register_blueprint(schedules)
     app.register_blueprint(employees)
     app.register_blueprint(requests)
-    app.register_blueprint(teams)
+    app.register_blueprint(teams_blueprint)
     app.register_blueprint(authentication)
     return app
 
