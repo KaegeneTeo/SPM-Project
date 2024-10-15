@@ -19,32 +19,26 @@
                 </div>
                 <!-- Mobile navigation links -->
                 <nav class="mt-8 px-4 space-y-4">
+                    
                     <a
-                        @click.prevent="handleLinkClick('Dashboard')"
-                        class="block text-white text-lg font-medium"
-                        href="#"
-                        >Dashboard</a
-                    >
-                    <a @click.prevent="handleLinkClick('Team')" class="block text-white text-lg font-medium" href="#"
-                        >Team</a
-                    >
-                    <a
-                        @click.prevent="handleLinkClick('Schedules')"
+                        @click.prevent="handleLinkClick('Schedules'); toggleMobileMenu()"
                         class="block text-white text-lg font-medium"
                         href="#"
                         >Schedules</a
                     >
+                    
                     <a
-                        @click.prevent="handleLinkClick('Calendar')"
-                        class="block text-white text-lg font-medium"
-                        href="#"
-                        >Calendar</a
-                    >
-                    <a
-                        @click.prevent="handleLinkClick('Requests')"
+                        @click.prevent="handleLinkClick('Requests'); toggleMobileMenu()"
                         class="block text-white text-lg font-medium"
                         href="#"
                         >Requests</a
+                    >
+                        
+                    <a
+                        @click.prevent="handleLinkClick('Login'); toggleMobileMenu()"
+                        class="block text-white text-lg font-medium"
+                        href="#"
+                        >Sign Out</a
                     >
                 </nav>
             </div>
@@ -84,30 +78,15 @@
                     <!-- Navigation links -->
                     <div class="hidden md:block">
                         <div class="ml-10 flex items-baseline space-x-4">
-                            <a
-                                @click.prevent="handleLinkClick('Dashboard')"
-                                href="#"
-                                class="rounded-md text-gray-300 hover:bg-gray-700 px-3 py-2 text-sm font-medium text-white"
-                                >Dashboard</a
-                            >
-                            <a
-                                @click.prevent="handleLinkClick('Team')"
-                                href="#"
-                                class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
-                                >Team</a
-                            >
+                            
+                            
                             <a
                                 @click.prevent="handleLinkClick('Schedules')"
                                 href="#"
                                 class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
                                 >Schedules</a
                             >
-                            <a
-                                @click.prevent="handleLinkClick('Calendar')"
-                                href="#"
-                                class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
-                                >Calendar</a
-                            >
+                
                             <a
                                 @click.prevent="handleLinkClick('Requests')"
                                 href="#"
