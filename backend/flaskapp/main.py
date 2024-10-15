@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 import os
 from flask_cors import CORS
 from .blueprints.schedules import schedules
-from .blueprints.employees import employees
+from .blueprints.employees_routes import employees_blueprint
 from .blueprints.requests import requests
 from .blueprints.teams_routes import teams_blueprint
 from .blueprints.authentication import authentication
@@ -24,7 +24,7 @@ def create_app():
         # Methods
 
     app.register_blueprint(schedules)
-    app.register_blueprint(employees)
+    app.register_blueprint(employees_blueprint)
     app.register_blueprint(requests)
     app.register_blueprint(teams_blueprint)
     app.register_blueprint(authentication)

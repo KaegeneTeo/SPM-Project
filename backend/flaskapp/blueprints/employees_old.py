@@ -6,10 +6,6 @@ employees = Blueprint("employees", __name__)
 
 
 @employees.route("/employees", methods=['GET'])
-def check_online():
-    return "Hello employees", 200
-
-@employees.route("/employees", methods=['GET'])
 def get_employees():
     response = supabase_extension.client.from_('Employee').select("*").execute()
     return response.data

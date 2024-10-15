@@ -22,7 +22,3 @@ def client(app):
 def runner(app):
     return app.test_cli_runner()
 
-@pytest.fixture(autouse=True)
-def mock_env(monkeypatch):
-    monkeypatch.setenv("SUPABASE_URL", "https://mocked.supabase.co")
-    monkeypatch.setenv("SUPABASE_KEY", "mocked_key")
