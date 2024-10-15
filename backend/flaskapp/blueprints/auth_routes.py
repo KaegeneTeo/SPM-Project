@@ -7,10 +7,6 @@ from ..extensions import supabase  # Assuming supabase is initialized here
 auth_blueprint = Blueprint("auth", __name__)
 auth_service = AuthService(supabase)
 
-@auth_blueprint.route("/auth", methods=['GET'])
-def check_online():
-    return "Hello authentication", 200
-
 @auth_blueprint.route("/login", methods=['POST'])
 def login():
     form_data = request.json

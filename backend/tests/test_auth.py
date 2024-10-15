@@ -67,16 +67,15 @@ def test_check_auth_failure(client):
     assert status_code == 400
     assert 'message' in response
     assert 'invalid JWT' in response['message']
+
 # Test logout
 def test_logout_success(client):
     auth_service = AuthService(supabase)
-
-    response, status_code = auth_service.logout()
+    with patch('flaskapp.extensions.supabase.auth.sign_out', return_value=Response(status=200)):
+        response, status_code = auth_service.logout()
 
     assert status_code == 200
     assert response['message'] == "User signed out successfully."
-
-
 
 def test_login_route(client):
     response = client.post('/login', json={
@@ -101,31 +100,64 @@ def test_login_route_failure(client):
     assert 'message' in data
     assert 'Invalid login credentials' in data['message']
 
-#def test_check_auth_route(client):
-#    # Use a valid access token from your test database
-#    mock_user_data = {
-#        "user": {
-#            "email": "test@example.com",
-#            "role": "admin",
-#            "access_token": "mocked_token",
-#            "refresh_token": "mocked_token"
-#        }
-#    }
-#    with patch('flaskapp.extensions.supabase.auth.get_user', return_value=mock_user_data):
-#        
-#        # Simulate a POST request to the check_auth route
-#        response = client.post('/check_auth', data={'access_token': 'mocked_token'})
-#        
-#        assert response.status_code == 200
-#        data = response.get_json()
-#        assert data['email'] == "test@example.com"
-#        assert data['role'] == "admin"
+def test_check_auth_route(client):
+   # Use a valid access token from your test database
+    mock_user_data = {
+        "user": {
+            "email": "test@example.com",
+            "role": "admin",
+        },
+        "session": {
+            "access_token": "mocked_token",
+            "refresh_token": "mocked_token"
+        }
+    }
+    with patch('flaskapp.extensions.supabase.auth.get_user', return_value=mock_user_data):
+        
+        # Simulate a POST request to the check_auth route
+        response = client.post('/check_auth', data={'access_token': 'mocked_token'})
+        
+        assert response.status_code == 200
+        data = response.get_json()
+        assert data['email'] == "test@example.com"
+        assert data['role'] == "admin"
+
+def test_check_auth_route_none(client):
+   # Use a valid access token from your test database
+    mock_user_data = {
+        "user": {
+            "email": "test@example.com",
+            "role": "admin",
+        },
+        "session": {
+            "access_token": "mocked_token",
+            "refresh_token": "mocked_token"
+        }
+    }
+    with patch('flaskapp.extensions.supabase.auth.get_user', return_value=None):
+        
+        # Simulate a POST request to the check_auth route
+        response = client.post('/check_auth', data={'access_token': 'mocked_token'})
+        
+        assert response.status_code == 404
+        data = response.get_json()
+        assert data == {}
 
 def test_logout_route(client):
-    response = client.post('/logout')
+    with patch('flaskapp.extensions.supabase.auth.sign_out', return_value=Response(status=200)):
+        response = client.post('/logout')
 
     assert response.status_code == 200
     data = response.get_json()
     assert 'message' in data
     assert data['message'] == "User signed out successfully."
 
+def test_logout_route_fail(client):
+
+    with patch('flaskapp.extensions.supabase.auth.sign_out', return_value=Response(status=400)):
+        response = client.post('/logout')
+
+        assert response.status_code == 400
+        data = response.get_json()
+        assert 'message' in data
+        assert 'Failed to sign out user' in data['message']

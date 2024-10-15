@@ -41,7 +41,10 @@ class EmployeesController:
 
     def get_staff_id(self):
         staff_id = request.headers.get('X-Staff-ID')
-        access_token = request.headers.get('Authorization').split(' ')[1]  # Extract Bearer token
+        
+        access_token = request.headers.get('Authorization') # Extract Bearer token
+        if access_token:
+            access_token = access_token.split(' ')[1]
         if not staff_id or not access_token:
             return jsonify({"error": "Staff ID and token are required"}), 400
         

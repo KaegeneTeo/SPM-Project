@@ -21,16 +21,16 @@ class AuthService:
             # Fetch staff_id, role, dept, reporting_manager from Employee table
             staff_response = self.supabase.from_("Employee").select("Staff_ID, Role, Dept, Reporting_Manager").ilike("Email", json_response["email"]).execute()
 
+            json_response["staff_id"] = None
+            json_response["role"] = None
+            json_response["dept"] = None
+            json_response["reporting_manager"] = None
+
             if staff_response.data:
                 json_response["staff_id"] = staff_response.data[0]["Staff_ID"]
                 json_response["role"] = staff_response.data[0]["Role"]
                 json_response["dept"] = staff_response.data[0]["Dept"]
                 json_response["reporting_manager"] = staff_response.data[0]["Reporting_Manager"]
-            else:
-                json_response["staff_id"] = None
-                json_response["role"] = None
-                json_response["dept"] = None
-                json_response["reporting_manager"] = None
 
             return json_response, 200
 
@@ -40,8 +40,10 @@ class AuthService:
     def logout(self):
         try:
             # Sign out using Supabase Auth
-            self.supabase.auth.sign_out()
-            return {"message": "User signed out successfully."}, 200
+            if self.supabase.auth.sign_out().status_code == 200:
+                return {"message": "User signed out successfully."}, 200
+            else:
+                raise Exception("Failed to sign out user")
         except Exception as e:
             return {"message": str(e)}, 400
 
@@ -61,5 +63,4 @@ class AuthService:
                 return {}, 404
 
         except Exception as e:
-            print(e)
             return {"message": str(e)}, 400
