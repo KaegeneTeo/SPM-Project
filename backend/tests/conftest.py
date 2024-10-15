@@ -1,8 +1,6 @@
 import pytest
 from flaskapp.main import create_app
 from supabase import create_client
-pytest_plugins = ['pytest_mock']
-
 
 @pytest.fixture
 def client():

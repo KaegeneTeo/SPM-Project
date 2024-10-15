@@ -4,6 +4,11 @@ from unittest.mock import patch
 from flask import Response
 import json
 
+def test_root_route(client):
+    response = client.get('/')
+    assert response.status_code == 200
+    assert response.data == b'Hello world'
+    
 # Test login success
 def test_login_success(client):
     auth_service = AuthService(supabase)
