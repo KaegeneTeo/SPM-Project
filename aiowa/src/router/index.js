@@ -47,12 +47,6 @@ const router = createRouter({
       name: 'team',
       // component: Team,
       meta: { requiresAuth: true }
-    },
-    {
-      path: '/calendar',
-      name: 'calendar',
-      // component: Calendar,
-      meta: { requiresAuth: true }
     }
   ]
 })

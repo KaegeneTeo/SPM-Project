@@ -7,6 +7,7 @@ import { compile, DeprecationTypes } from "vue";
 import { ENDPOINT_URL } from "../config/config.js";
 
 
+
 export default {
     components: {
         VueCal // Registering the component
@@ -159,7 +160,7 @@ export default {
                     const response = await axios.get(`${ENDPOINT_URL}/teams_by_reporting_manager`, {
                         params: { department } // Pass department as a query parameter
                     });
-
+                    console.log(response.data)
                     // Initialize with "All"
                     this.filteredTeams = [];
 
