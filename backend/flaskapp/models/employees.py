@@ -1,21 +1,25 @@
-from flask import jsonify, request
+from flask import jsonify, request, current_app
+
 
 class EmployeesService:
     def __init__(self, supabase_client):
         self.supabase = supabase_client
 
     def get_all_employees(self):
-        response = self.supabase.from_('Employee').select("*").execute()
-        return response.data
+        with current_app.app_context():
+            response = self.supabase.from_('Employee').select("*").execute()
+            return response.data
 
     def update_employee(self, employee_id, form_data):
-        response = self.supabase.from_('Employee').update(form_data).eq('Staff_ID', employee_id).execute()
-        return response
+        with current_app.app_context():
+            response = self.supabase.from_('Employee').update(form_data).eq('Staff_ID', employee_id).execute()
+            return response
 
     def get_staff_id_from_headers(self, staff_id):
         # Fetch the employee details from the database based on staff ID
-        response = self.supabase.from_('Employee').select('*').eq('Staff_ID', staff_id).execute()
-        return response.data
+        with current_app.app_context():
+            response = self.supabase.from_('Employee').select('*').eq('Staff_ID', staff_id).execute()
+            return response.data
 
 class EmployeesController:
     def __init__(self, employees_service):

@@ -18,6 +18,10 @@ class TeamsService:
         if manager_response.data:
             return manager_response.data[0]['Staff_FName']
         return "Unknown"
+    def get_team_by_manager_dept(self, manager_fname, manager_lname, dept):
+        response = self.supabase.from_('Employee').select('Staff_ID').eq("Staff_FName", manager_fname).eq("Staff_LName", manager_lname).eq("Dept", dept ).execute()
+        return response.data
+    
 
     def get_team_ids_for_staff(self, staff_id):
         team_ids_response = self.supabase.from_("team").select("team_id").eq("staff_id", staff_id).execute()
@@ -38,6 +42,18 @@ class TeamsController:
 
     def check_online(self):
         return "Hello teams", 200
+
+    def get_team_details(self):
+        manager_name = request.args.get('m_name')
+        manager_fname = manager_name.split(" ")[0]
+        manager_lname = manager_name.split(" ")[1]
+        dept = request.args.get('dept')
+        response = self.teams_service.get_team_by_manager_dept(manager_fname, manager_lname, dept)
+        # print(response.data[0]["Staff_ID"])
+        if manager_name and dept:
+            return jsonify({"staff_id": response.data[0]["Staff_ID"]})
+        else:
+            return jsonify({"error": "No or wrong params received"}), 404
 
     def get_teams_by_reporting_manager(self):
         department = request.args.get('department')

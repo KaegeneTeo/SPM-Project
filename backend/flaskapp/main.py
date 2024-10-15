@@ -9,19 +9,10 @@ from .blueprints.requests import requests
 from .blueprints.teams_routes import teams_blueprint
 from .blueprints.authentication import authentication
 
-supabase_extension = Supabase()
-
 def create_app():
     app = Flask(__name__)
     CORS(app, credentials=True ,resources={r"/*": {
         "origins": "http://localhost:5173", "allow_headers": ["Authorization", "Content-Type", "X-Staff-ID", "X-Role", "X-Dept"]}})  # Enable CORS for frontend origin
-
-    app.config['SUPABASE_URL'] = os.getenv("SUPABASE_URL")
-    app.config['SUPABASE_KEY'] = os.getenv("SUPABASE_KEY")
-    
-    supabase_extension.init_app(app)
-
-        # Methods
 
     app.register_blueprint(schedules)
     app.register_blueprint(employees_blueprint)

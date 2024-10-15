@@ -1,15 +1,13 @@
 # employees_routes.py
 from flask import Blueprint
 from flaskapp.models.employees import EmployeesService, EmployeesController
-from flask_supabase import Supabase
-
-supabase_extension = Supabase()
+from ..extensions import supabase
 
 # Initialize Blueprint
 employees_blueprint = Blueprint("employees", __name__)
 
 # Initialize Service and Controller
-employees_service = EmployeesService(supabase_extension)
+employees_service = EmployeesService(supabase)
 employees_controller = EmployeesController(employees_service)
 
 # Define routes
