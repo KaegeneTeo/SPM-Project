@@ -18,6 +18,7 @@ def create_app():
 
     app.config['SUPABASE_URL'] = os.getenv("SUPABASE_URL")
     app.config['SUPABASE_KEY'] = os.getenv("SUPABASE_KEY")
+    
     supabase_extension.init_app(app)
 
         # Methods
@@ -29,6 +30,7 @@ def create_app():
     app.register_blueprint(authentication)
     return app
 
-app = create_app()
+
 if __name__ == '__main__': 
+    app = create_app()
     app.run(debug=True, host="0.0.0.0")

@@ -3,13 +3,6 @@ from flaskapp.main import create_app
 from supabase import create_client
 pytest_plugins = ['pytest_mock']
 
-# Mock the Supabase client
-@pytest.fixture(scope='module')
-def supabase_mock(mocker):
-    # Mock the create_client function and return a mocked instance
-    mock_supabase_client = mocker.Mock()
-    mocker.patch('supabase.create_client', return_value=mock_supabase_client)
-    return mock_supabase_client
 
 @pytest.fixture(scope='module')
 def app():
