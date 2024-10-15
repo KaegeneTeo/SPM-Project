@@ -4,21 +4,11 @@ from supabase import create_client
 pytest_plugins = ['pytest_mock']
 
 
-@pytest.fixture(scope='module')
-def app():
+@pytest.fixture
+def client():
     app = create_app()
-    # other setup can go here
+    app.config['TESTING'] = True
 
-    yield app
-
-    # clean up / reset resources here
-
-@pytest.fixture(scope='module')
-def client(app):
     with app.test_client() as client:
         yield client
-
-@pytest.fixture()
-def runner(app):
-    return app.test_cli_runner()
 

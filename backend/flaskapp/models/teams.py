@@ -18,6 +18,7 @@ class TeamsService:
         if manager_response.data:
             return manager_response.data[0]['Staff_FName']
         return "Unknown"
+    
     def get_team_by_manager_dept(self, manager_fname, manager_lname, dept):
         response = self.supabase.from_('Employee').select('Staff_ID').eq("Staff_FName", manager_fname).eq("Staff_LName", manager_lname).eq("Dept", dept ).execute()
         return response.data

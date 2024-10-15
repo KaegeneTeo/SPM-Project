@@ -49,17 +49,17 @@ class AuthService:
         try:
             # Validate the token
             response = self.supabase.auth.get_user(access_token)
-
             if response is not None:
                 json = {
-                    "email": response.user.email,
-                    "role": response.user.role,
+                    "email": response['user']['email'],
+                    "role": response['user']['role'],
                     "access_token": access_token,
-                    "refresh_token": response.session.refresh_token,
+                    "refresh_token": response['session']['refresh_token'],
                 }
                 return json, 200
             else:
                 return {}, 404
 
         except Exception as e:
+            print(e)
             return {"message": str(e)}, 400
