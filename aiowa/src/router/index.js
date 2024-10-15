@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import axios from 'axios';
-import Dashboard from '../views/Dashboard.vue'
 import Login from '../views/Login.vue'
 import Schedule from '../views/Schedule.vue'
 import Request from '../views/Request.vue'
@@ -13,12 +12,6 @@ const router = createRouter({
     {
       path: '/',
       redirect: '/login'
-    },
-    {
-      path: '/dashboard',
-      name: 'dashboard',
-      component: Dashboard,
-      meta: { requiresAuth: true } // Restricted route
     },
     {
       path: '/login',
