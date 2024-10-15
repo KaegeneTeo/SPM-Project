@@ -1,17 +1,11 @@
 {
     "dev": {
         "app_function": "flaskapp.main.app",
-        "aws_region": "us-east-1",
-        "exclude": [
-            "boto3",
-            "dateutil",
-            "botocore",
-            "s3transfer",
-            "concurrent"
-        ],
+        "aws_region": "ap-southeast-1",
+        "exclude": ["boto3", "dateutil", "botocore", "s3transfer", "concurrent"],
         "profile_name": "default",
         "project_name": "backend",
         "runtime": "python3.12",
-        "s3_bucket": "zappa-g73k2w9to"
+        "s3_bucket": "zappa-t93ch6zqq"
     }
 }

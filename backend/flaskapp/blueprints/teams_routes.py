@@ -1,6 +1,6 @@
 # teams_routes.py
 from flask import Blueprint
-from flaskapp.models.teams import TeamsService, TeamsController
+from ..models.teams import TeamsService, TeamsController
 from flask_supabase import Supabase
 from ..extensions import supabase
 

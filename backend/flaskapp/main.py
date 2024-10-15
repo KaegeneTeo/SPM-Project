@@ -3,7 +3,7 @@ from flask_supabase import Supabase
 from datetime import datetime, timedelta
 import os
 from flask_cors import CORS
-from .blueprints.schedules import schedules
+from .blueprints.schedules_routes import schedules_blueprint
 from .blueprints.employees_routes import employees_blueprint
 from .blueprints.requests import requests
 from .blueprints.teams_routes import teams_blueprint
@@ -14,7 +14,7 @@ def create_app():
     CORS(app, credentials=True ,resources={r"/*": {
         "origins": "http://localhost:5173", "allow_headers": ["Authorization", "Content-Type", "X-Staff-ID", "X-Role", "X-Dept"]}})  # Enable CORS for frontend origin
 
-    app.register_blueprint(schedules)
+    app.register_blueprint(schedules_blueprint)
     app.register_blueprint(employees_blueprint)
     app.register_blueprint(requests)
     app.register_blueprint(teams_blueprint)
