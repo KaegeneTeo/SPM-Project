@@ -109,7 +109,7 @@
 
 <script>
 import axios from 'axios';
-
+import { ENDPOINT_URL } from "../config/config.js";
 
 // console.log(staff_id)
 export default {

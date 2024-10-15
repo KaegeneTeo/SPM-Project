@@ -84,6 +84,7 @@
 import { ref } from "vue";
 import axios from "axios";
 import { useRouter } from "vue-router"; // Import the router
+import { ENDPOINT_URL } from "../config/config.js";
 
 export default {
     setup() {
@@ -94,7 +95,8 @@ export default {
 
         const handleLogin = async () => {
             try {
-                const response = await axios.post("http://127.0.0.1:5000/login", {
+                
+                const response = await axios.post(`${ENDPOINT_URL}/login`, {
                     email: email.value,
                     password: password.value,
                 });

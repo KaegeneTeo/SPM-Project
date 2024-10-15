@@ -42,7 +42,7 @@
 
 <script>
 import axios from "axios";
-
+import { ENDPOINT_URL } from "../config/config.js";
 export default {
   data() {
     return {

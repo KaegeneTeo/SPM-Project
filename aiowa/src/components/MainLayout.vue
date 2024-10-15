@@ -171,7 +171,7 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios"; // Import axios
-
+import { ENDPOINT_URL } from "../config/config.js";
 
 
 // Routing
@@ -207,7 +207,7 @@ function handleLinkClick(linkName) {
 async function handleSignOut() {
     try {
         // Call your endpoint to clear the session on the server
-        await axios.post("http://127.0.0.1:5000/logout", {
+        await axios.post(`${ENDPOINT_URL}/logout`, {
             access_token: localStorage.getItem("access_token"),
         });
 

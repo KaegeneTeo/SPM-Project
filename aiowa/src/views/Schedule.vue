@@ -4,6 +4,8 @@ import VueCal from 'vue-cal'
 import 'vue-cal/dist/vuecal.css'
 import axios from "axios";
 import { compile, DeprecationTypes } from "vue";
+import { ENDPOINT_URL } from "../config/config.js";
+
 
 export default {
     components: {
@@ -96,7 +98,7 @@ export default {
                 this.managername = team.split("'")[0];
                 // this.pos = team.split('(')[1].replace(")", "");
 
-                const response = await axios.get(`http://127.0.0.1:5000/team_details`, {
+                const response = await axios.get(`${ENDPOINT_URL}/team_details`, {
                     params: {m_name : this.managername, dept : this.selectedDept}
                 });
                 this.selectedReportingManager = response.data["staff_id"]
@@ -131,7 +133,7 @@ export default {
                 // Check if the selected department is "CEO"
                 if (department === "CEO") {
                     // Make a request to fetch the CEO's team
-                    const response = await axios.get(`http://127.0.0.1:5000/teams_by_reporting_manager`, {
+                    const response = await axios.get(`${ENDPOINT_URL}/teams_by_reporting_manager`, {
                         params: { department }
                     });
 
@@ -154,7 +156,7 @@ export default {
                     }
 
                 } else {
-                    const response = await axios.get(`http://127.0.0.1:5000/teams_by_reporting_manager`, {
+                    const response = await axios.get(`${ENDPOINT_URL}/teams_by_reporting_manager`, {
                         params: { department } // Pass department as a query parameter
                     });
 
@@ -201,7 +203,7 @@ export default {
             if (this.role === '2'){
                 params = {dept:localStorage.getItem('dept'), role : '3', position: 'Sales Manager', reporting_manager: localStorage.getItem('reporting_manager')}
             }    
-            axios.get('http://127.0.0.1:5000/schedules', { params })
+            axios.get(`${ENDPOINT_URL}/schedules`, { params })
                 .then(response => {
                     this.events = response.data.schedules;
                 })
