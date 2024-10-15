@@ -3,7 +3,7 @@ import MainLayout from "../components/MainLayout.vue"
 import VueCal from 'vue-cal'
 import 'vue-cal/dist/vuecal.css'
 import axios from "axios";
-import { compile } from "vue";
+import { compile, DeprecationTypes } from "vue";
 
 export default {
     components: {
@@ -119,6 +119,11 @@ export default {
         async fetchTeams(department) {
             if (!department) {
                 this.filteredTeams = []; // Clear teams if no department is selected
+                return;
+            }
+            if(department == 'all'){
+                
+                this.selectedDept = 'all'
                 return;
             }
             
