@@ -1,6 +1,6 @@
 # SPM-Project
 
-![CI Pipeline](https://github.com/bokiex/SPM-Project/blob/dev/.github/workflows/CI.yaml/badge.svg)
+[![codecov](https://codecov.io/github/bokiex/SPM-Project/branch/dev/graph/badge.svg?token=GP2GB88CHB)](https://codecov.io/github/bokiex/SPM-Project)
 
 To run locally
 
