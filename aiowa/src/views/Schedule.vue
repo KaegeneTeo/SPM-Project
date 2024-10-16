@@ -352,8 +352,84 @@ export default {
 </template>
 
 <style scoped>
+#app {
+    margin: 30px auto;
+    max-width: 580px;
+    height: 350px;
+}
+
+.vuecalevent {
+    background-color: rgba(173, 216, 230, 0.5);
+}
+
+.vuecalbody .clickable {
+    color: #4682b4;
+    text-decoration: underline;
+}
+
+.vuecal__cell-date {
+    display: inline-block;
+}
+
+.am-count {
+    background-color: #FFA500;
+    height: 100%;
+    min-width: 12px;
+    padding: 0 3px;
+    border-radius: 12px;
+    display: inline;
+    color: white;
+}
+
+.pm-count {
+    background-color: #9C27B0;
+    height: 100%;
+    min-width: 12px;
+    padding: 0 3px;
+    border-radius: 12px;
+    display: inline;
+    color: white;
+}
+
+.vuecal__cell-events-count {
+    background: transparent;
+}
+
 .mycard {
-    min-width: 300px;
-    max-width: 400px;
+    margin: auto;
+}
+</style>
+<style>
+.vuecal__event.AM {
+    background-color: #FFA500;
+    border: 1px solid rgb(233, 136, 46);
+    color: #fff;
+}
+
+.vuecal__event.PM {
+    background-color: #9C27B0;
+    border: 1px solid #801f91;
+    color: #fff;
+}
+
+.vuecal__event {
+    cursor: pointer;
+}
+
+.vuecal__event-title {
+    font-size: 1.2em;
+    font-weight: bold;
+    margin: 4px 0 8px;
+}
+
+.vuecal__event-time {
+    display: inline-block;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+.vuecal__event-content {
+    font-style: italic;
 }
 </style>
