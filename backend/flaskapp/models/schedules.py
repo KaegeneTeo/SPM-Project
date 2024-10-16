@@ -2,30 +2,39 @@ class SchedulesService:
     def __init__(self, supabase):
         self.supabase = supabase
 
+    #for special logic for CEO and directors
     def get_ceo(self):
-        # Fetch CEO ID for filtering director team
         return int(self.supabase.from_('Employee').select('Staff_ID').eq("Position", "MD").execute().data[0]["Staff_ID"])
 
+    #for all depts filter
     def get_all_employees(self):
-        # Fetch all employees
         return self.supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName').execute()
 
     def get_schedules_for_all_depts(self):
-        # Fetch all schedules for all departments
         return self.supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, schedule!inner(schedule_id, staff_id, date, time_slot)').execute()
 
+    #for dept specified, all teams filter
+    def get_all_employees_by_dept(self, dept):
+        return self.supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName').eq("Dept", dept).execute()
+    
     def get_schedules_by_dept(self, dept):
-        # Fetch schedules for a specific department
         return self.supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, schedule!inner(schedule_id, staff_id, date, time_slot)').eq("Dept", dept).execute()
 
+    #for teams filter
     def get_schedules_by_reporting_manager(self, dept, reporting_manager):
-        # Fetch schedules for a specific department and reporting manager
         return self.supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, schedule!inner(schedule_id, staff_id, date, time_slot)').eq("Dept", dept).eq("Reporting_Manager", reporting_manager).execute()
 
-    def get_all_employees_by_dept(self, dept):
-        # Fetch all employees in a department
-        return self.supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName').eq("Dept", dept).execute()
-
+    def get_all_employees_by_reporting_manager(self, dept, reporting_manager):
+        return self.supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName').eq("Dept", dept).eq("Reporting_Manager", reporting_manager).execute()
+    
+    #for directors team
+    def get_all_directors(self, reporting_manager):
+        return self.supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName').eq("Reporting_Manager", reporting_manager).neq("Postion", "MD").execute()
+    
+    def get_directors_schedules(self, reporting_manager):
+        return self.supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, schedule!inner(schedule_id, staff_id, date, time_slot)').eq("Reporting_Manager", reporting_manager).neq("Postion", "MD").execute()
+    
+    #for data transform
     def format_schedules(self, response, allnames):
         try:
             responselist = list(response.data)

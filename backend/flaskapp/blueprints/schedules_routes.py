@@ -19,8 +19,18 @@ def get_schedules():
 
     CEO = schedules_service.get_ceo()
 
+    # Special case for CEO department
+    if data["dept"] == "CEO":
+        allnames = schedules_service.get_all_employees_by_dept(data["dept"])
+        response = schedules_service.get_schedules_by_dept(data["dept"])
+
+    # Director team (special logic)
+    elif int(data["role"]) == 1 and int(data["reporting_manager"]) == CEO:
+        allnames = schedules_service.get_all_directors(data["reporting_manager"])
+        response = schedules_service.get_directors_schedules(data["dept"], data["reporting_manager"])
+
     # Filter for all departments
-    if data["dept"] == "all":
+    elif data["dept"] == "all":
         allnames = schedules_service.get_all_employees()
         response = schedules_service.get_schedules_for_all_depts()
 
@@ -29,19 +39,9 @@ def get_schedules():
         allnames = schedules_service.get_all_employees_by_dept(data["dept"])
         response = schedules_service.get_schedules_by_dept(data["dept"])
 
-    # Special case for CEO department
-    elif data["dept"] == "CEO":
-        allnames = schedules_service.get_all_employees_by_dept(data["dept"])
-        response = schedules_service.get_schedules_by_dept(data["dept"])
-
-    # Director team (special logic)
-    elif int(data["role"]) == 1 and int(data["reporting_manager"]) == CEO:
-        allnames = schedules_service.get_all_employees_by_dept(data["dept"])
-        response = schedules_service.get_schedules_by_reporting_manager(data["dept"], data["reporting_manager"])
-
     # Filter by department and reporting manager
     else:
-        allnames = schedules_service.get_all_employees_by_dept(data["dept"])
+        allnames = schedules_service.get_all_employees_by_reporting_manager(data["dept"], int(data["reporting_manager"]))
         response = schedules_service.get_schedules_by_reporting_manager(data["dept"], int(data["reporting_manager"]))
 
     # Format and return the schedule data
