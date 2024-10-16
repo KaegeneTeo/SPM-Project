@@ -5,4 +5,4 @@ zappa
 setuptools
 flask-supabase
 python-dotenv
-
+pytest-cov

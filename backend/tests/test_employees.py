@@ -5,15 +5,6 @@ from flaskapp.models.employees import EmployeesService, EmployeesController
 from unittest.mock import patch, Mock
 
 @pytest.fixture
-def app():
-    app = Flask(__name__)
-    return app
-
-@pytest.fixture
-def client(app):
-    return app.test_client()
-
-@pytest.fixture
 def supabase_mock():
     return MagicMock()
 
@@ -66,13 +57,13 @@ def test_get_employees(client, employees_controller):
     # Mock only the service call
     mock_response = [{"Staff_ID": 1, "Name": "John Doe"}]
     
-    with patch.object(employees_controller.employees_service, 'get_all_employees', return_value=mock_response):
+    with patch('flaskapp.models.employees.EmployeesService.get_all_employees', return_value=mock_response):
         # Execute the controller method
-        with client.application.test_request_context():
-            response, status_code = employees_controller.get_employees()
+        
+        response = client.get('/employees')
         
     # Assertions (this ensures the logic is executed)
-    assert status_code == 200
+    assert response.status_code == 200
     assert response.get_json() == mock_response
 
 def test_update_employee_success(client, employees_controller):
@@ -80,14 +71,13 @@ def test_update_employee_success(client, employees_controller):
     mock_response = Mock()
     mock_response.status_code = 200
 
-    with patch.object(employees_controller.employees_service, 'update_employee', return_value=mock_response):
+    with patch('flaskapp.models.employees.EmployeesService.update_employee', return_value=mock_response):
+
         headers = {'X-Staff-ID': '1'}
         form_data = {'Name': 'John Doe Updated'}
-        
-        with client.application.test_request_context(headers=headers, data=form_data):
-            response, status_code = employees_controller.update_employee()
+        response = client.put('/employees', headers=headers, data=form_data)
 
-    assert status_code == 200
+    assert response.status_code == 200
     assert response.get_json() == {"message": "Employee updated successfully"}
 
 def test_update_employee_failure(client, employees_controller):
@@ -95,27 +85,40 @@ def test_update_employee_failure(client, employees_controller):
     mock_response = Mock()
     mock_response.status_code = 500
 
-    with patch.object(employees_controller.employees_service, 'update_employee', return_value=mock_response):
+    with patch('flaskapp.models.employees.EmployeesService.update_employee', return_value=mock_response):
+
         headers = {'X-Staff-ID': '1'}
         form_data = {'Name': 'John Doe Updated'}
+        response = client.put('/employees', headers=headers, data=form_data)
 
-        with client.application.test_request_context(headers=headers, data=form_data):
-            response, status_code = employees_controller.update_employee()
-
-    assert status_code == 500
+    assert response.status_code == 500
     assert response.get_json() == {"error": "Failed to update employee"}
+
+def test_update_employee_no_staff_id(client, employees_controller):
+    # Mocking failure case
+
+    headers = {'X-Staff-ID': ''}
+    form_data = {'Name': 'John Doe Updated'}
+    response = client.put('/employees', headers=headers, data=form_data)
+
+    assert response.status_code == 400
+    assert response.get_json() == {"error": "Staff ID is required"}
 
 def test_get_staff_id_success(client, employees_controller):
     # Mocking successful token and staff ID retrieval
     mock_staff_details = [{"Staff_ID": 1, "Name": "John Doe"}]
     
-    with patch.object(employees_controller.employees_service, 'get_staff_id_from_headers', return_value=mock_staff_details):
-        headers = {'X-Staff-ID': '1', 'Authorization': 'Bearer valid_token'}
+    with patch('flaskapp.models.employees.EmployeesService.get_staff_id_from_headers', return_value=mock_staff_details):
+        headers = {
+            'X-Staff-ID': '1', 
+            'Authorization': 'Bearer valid_token'
+        }
 
-        with client.application.test_request_context(headers=headers):
-            response, status_code = employees_controller.get_staff_id()
+        # Use the test client to make a GET request to the /getstaffid endpoint
+        response = client.get('/getstaffid', headers=headers)
 
-    assert status_code == 200
+    # Check that the response is as expected
+    assert response.status_code == 200
     assert response.get_json() == {
         "message": "CORS is working",
         "staff_id": '1',
