@@ -18,6 +18,7 @@ def login():
 def logout():
     # Delegate to the service
     json_response, status_code = auth_service.logout()
+    
     return jsonify(json_response), status_code
 
 @auth_blueprint.route("/check_auth", methods=['POST'])
@@ -25,5 +26,4 @@ def check_auth():
     access_token = request.form.get('access_token')
     # Delegate to the service
     json_response, status_code = auth_service.check_auth(access_token)
-    print(json_response, status_code)
     return jsonify(json_response), status_code

@@ -41,11 +41,11 @@ class AuthService:
         try:
             # Sign out using Supabase Auth
             signout = self.supabase.auth.sign_out()
-            
-            if signout:
+            print(signout)
+            if signout == None:
                 return {"message": "User signed out successfully."}, 200
-            
-            raise Exception("Failed to sign out user")
+            else:
+                raise Exception("Failed to sign out user.")
         except Exception as e:
             return {"message": str(e)}, 400
 

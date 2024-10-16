@@ -71,8 +71,8 @@ def test_check_auth_failure(client):
 # Test logout
 def test_logout_success(client):
     auth_service = AuthService(supabase)
-    with patch('flaskapp.extensions.supabase.auth.sign_out', return_value=Response(status=200)):
-        response, status_code = auth_service.logout()
+    
+    response, status_code = auth_service.logout()
 
     assert status_code == 200
     assert response['message'] == "User signed out successfully."
@@ -144,8 +144,8 @@ def test_check_auth_route_none(client):
         assert data == {}
 
 def test_logout_route(client):
-    with patch('flaskapp.extensions.supabase.auth.sign_out', return_value=Response(status=200)):
-        response = client.post('/logout')
+    
+    response = client.post('/logout')
 
     assert response.status_code == 200
     data = response.get_json()

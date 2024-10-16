@@ -19,23 +19,31 @@
                 </div>
                 <!-- Mobile navigation links -->
                 <nav class="mt-8 px-4 space-y-4">
-                    
                     <a
-                        @click.prevent="handleLinkClick('Schedules'); toggleMobileMenu()"
+                        @click.prevent="
+                            handleLinkClick('Schedules');
+                            toggleMobileMenu();
+                        "
                         class="block text-white text-lg font-medium"
                         href="#"
                         >Schedules</a
                     >
-                    
+
                     <a
-                        @click.prevent="handleLinkClick('Requests'); toggleMobileMenu()"
+                        @click.prevent="
+                            handleLinkClick('Requests');
+                            toggleMobileMenu();
+                        "
                         class="block text-white text-lg font-medium"
                         href="#"
                         >Requests</a
                     >
-                        
+
                     <a
-                        @click.prevent="handleLinkClick('Login'); toggleMobileMenu()"
+                        @click.prevent="
+                            handleLinkClick('Login');
+                            toggleMobileMenu();
+                        "
                         class="block text-white text-lg font-medium"
                         href="#"
                         >Sign Out</a
@@ -77,15 +85,13 @@
                     <!-- Navigation links -->
                     <div class="hidden md:block">
                         <div class="ml-10 flex items-baseline space-x-4">
-                            
-                            
                             <a
                                 @click.prevent="handleLinkClick('Schedules')"
                                 href="#"
                                 class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
                                 >Schedules</a
                             >
-                
+
                             <a
                                 @click.prevent="handleLinkClick('Requests')"
                                 href="#"
@@ -99,7 +105,9 @@
                         <div class="ml-4 flex items-center md:ml-6">
                             <!-- User's Details -->
                             <div>
-                                <span class="px-3 py-2 text-sm font-medium text-gray-300">Welcome back, {{ username }}</span>   
+                                <span class="px-3 py-2 text-sm font-medium text-gray-300"
+                                    >Welcome back, {{ username }}</span
+                                >
                             </div>
                             <!-- Profile dropdown -->
                             <div class="relative ml-3">
@@ -171,7 +179,7 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios"; // Import axios
-const   VITE_AWS_URL = import.meta.env.VITE_AWS_URL
+const VITE_AWS_URL = import.meta.env.VITE_AWS_URL;
 
 // Routing
 const router = useRouter();
@@ -187,7 +195,10 @@ const props = defineProps({
 // Reactive states
 const showDropdown = ref(false);
 const mobileMenuOpen = ref(false);
-const username = ref(localStorage.getItem('user_email').split('.')[0][0].toUpperCase()+localStorage.getItem('user_email').split('.')[0].slice(1))
+const username = ref(
+    localStorage.getItem("user_email").split(".")[0][0].toUpperCase() +
+        localStorage.getItem("user_email").split(".")[0].slice(1)
+);
 
 // Methods
 function toggleDropdown() {
