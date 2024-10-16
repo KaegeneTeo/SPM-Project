@@ -40,10 +40,12 @@ class AuthService:
     def logout(self):
         try:
             # Sign out using Supabase Auth
-            if self.supabase.auth.sign_out().status_code == 200:
+            signout = self.supabase.auth.sign_out()
+            
+            if signout:
                 return {"message": "User signed out successfully."}, 200
-            else:
-                raise Exception("Failed to sign out user")
+            
+            raise Exception("Failed to sign out user")
         except Exception as e:
             return {"message": str(e)}, 400
 
