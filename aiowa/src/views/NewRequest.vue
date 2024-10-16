@@ -172,12 +172,14 @@ export default {
       }
 
       try {
-        const response = axios.post( `http://127.0.0.1:5000/requests/`, this.form);
-        this.message = "Request created successfully!";
+        const response = await axios.post( `http://127.0.0.1:5000/requests/`, this.form);
+        alert("Request created successfully!");
         console.log(response.data);
+        this.$router.push({ name: 'requests' })
       } catch (error) {
         if (error.response) {
-          this.message = `Error: ${error.response.data.detail}`;
+          console.error(error.response.data);
+          this.message = `Error: ${error.response.data.error}`;
         } else {
           this.message = "An error occurred. Please try again.";
         }

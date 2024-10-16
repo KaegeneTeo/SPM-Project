@@ -1,10 +1,6 @@
 <template>
   <div>
     <h1><strong>My Requests</strong></h1>
-    <br>
-    
-    
-    <button @click="fetchRequests">Fetch Requests</button>
     
     <div v-if="error" class="error">{{ error }}</div>
     
@@ -20,6 +16,7 @@
             <th>End Date</th>
             <th>Time Slot</th>
             <th>Request Type</th>
+            <th>Action</th> <!-- New Column for Button -->
           </tr>
         </thead>
         <tbody>
@@ -31,6 +28,10 @@
             <td>{{ request.enddate }}</td>
             <td>{{ getTimeSlotLabel(request.time_slot) }}</td>
             <td>{{ getRequestTypeLabel(request.request_type) }}</td>
+            <td>
+              <button v-if="request.status === 1" @click="cancelRequest(request.request_id)">Cancel</button>
+              <button v-if="request.status === 0" @click="withdrawRequest(request.request_id)">Withdraw</button>
+            </td> <!-- Conditional rendering of buttons -->
           </tr>
         </tbody>
       </table>
@@ -128,12 +129,24 @@ export default {
         default:
           return "Error";
       }
-    }
+    },getButtonLabel(status) {
+      switch (status) {
+        case 0:
+          return "Withdraw";
+        case 1:
+          return "Cancel";
+        case -1:
+          return "Rejected";
+        default:
+          return "Error";
+      }
+    },
   },
   mounted() {
     this.staff_id = localStorage.getItem('staff_id');
     this.access_token = localStorage.getItem('access_token');
     this.getStaffId();
+    this.fetchRequests()
   }
 };
 </script>

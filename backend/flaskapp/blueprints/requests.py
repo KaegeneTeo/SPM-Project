@@ -3,6 +3,14 @@ from flask_supabase import Supabase
 from datetime import datetime, timedelta
 supabase_extension = Supabase()
 
+# auth_controller.py
+from flask import Blueprint, jsonify, request
+from ..models.requests import RequestService
+from ..extensions import supabase  # Assuming supabase is initialized here
+# Initialize the Blueprint and the AuthService
+req_blueprint = Blueprint("requests", __name__)
+req_service = RequestService(supabase)
+
 requests = Blueprint("requests", __name__)
 
 # Methods
@@ -180,50 +188,10 @@ def get_staff_id():
 def create_request():
     form_data = request.json
     print(form_data)
-    # Validate input
-    if not form_data:
-        return jsonify({"error": "No request data provided"}), 400
-    try:
-        # Insert new request into the Supabase database
-        response = supabase_extension.client.from_("request").insert({
-            "staff_id": form_data.get('staffid'),
-            "reason": form_data.get("reason"),
-            "status": form_data.get("status"),
-            "startdate": form_data.get("startdate"),
-            "enddate": form_data.get("enddate"),
-            "time_slot": form_data.get("time_slot"),
-            "request_type": form_data.get("request_type"),
-        }).execute()
-        # Check for errors in the response
-
-        if response == None:
-            current_app.logger.error("Database insert error: %s", response.status_code)
-            return jsonify({"error": "Failed to insert data into the database"}), 500
-
-        # If everything is fine, return the inserted request with a 201 status
-        return jsonify(response.data[0]), 201
-    except Exception as e:
-        current_app.logger.error("An error occurred: %s", str(e))
-        return jsonify({"error": str(e)}), 500
+    json_response, status_code = req_service.create_request(form_data)
+    return jsonify(json_response), status_code
     
 @requests.route("/requests/<int:staff_id>", methods=['GET'])
 def get_requests_by_staff(staff_id: int):
-    try:
-        # Retrieve requests for the specified staff_id from the Supabase database
-        response = supabase_extension.client.from_("request").select("*").eq("staff_id", staff_id).execute()
-        print(response)
-        # Check for errors in the response
-        if response == None:
-            current_app.logger.error("Database query error: %s", response["error"]["message"])
-            return jsonify({"error": response["error"]["message"]}), 500
-        
-        # If no requests found, return a 404
-        if response.data == []:
-            return jsonify({"error": "No requests found for this staff ID"}), 404
-
-        # Return the retrieved requests with a 200 status
-        return jsonify(response.data), 200
-
-    except Exception as e:
-        current_app.logger.error("An error occurred: %s", str(e))
-        return jsonify({"error": str(e)}), 500
+    json_response, status_code = req_service.get_requests_by_staff(staff_id)
+    return jsonify(json_response), status_code
