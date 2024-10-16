@@ -43,6 +43,8 @@
 <script>
 import axios from "axios";
 import { ENDPOINT_URL } from "../config/config.js";
+const   VITE_AWS_URL = import.meta.env.VITE_AWS_URL
+
 export default {
   data() {
     return {

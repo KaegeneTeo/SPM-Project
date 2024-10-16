@@ -52,7 +52,7 @@ class AuthService:
     def check_auth(self, access_token):
         try:
             # Validate the token
-            response = self.supabase.auth.get_user(access_token)
+            response = self.supabase.auth.get_user(access_token)    
             if response is not None:
                 json = {
                     "email": response['user']['email'],

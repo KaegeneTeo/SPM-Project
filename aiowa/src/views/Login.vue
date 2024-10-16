@@ -84,7 +84,7 @@
 import { ref } from "vue";
 import axios from "axios";
 import { useRouter } from "vue-router"; // Import the router
-import { ENDPOINT_URL } from "../config/config.js";
+const   VITE_AWS_URL = import.meta.env.VITE_AWS_URL
 
 export default {
     setup() {
@@ -96,7 +96,7 @@ export default {
         const handleLogin = async () => {
             try {
                 
-                const response = await axios.post(`${ENDPOINT_URL}/login`, {
+                const response = await axios.post(`${VITE_AWS_URL}/login`, {
                     email: email.value,
                     password: password.value,
                 });

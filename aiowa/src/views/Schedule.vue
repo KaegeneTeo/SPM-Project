@@ -4,7 +4,7 @@ import VueCal from 'vue-cal'
 import 'vue-cal/dist/vuecal.css'
 import axios from "axios";
 import { compile, DeprecationTypes } from "vue";
-import { ENDPOINT_URL } from "../config/config.js";
+const   VITE_AWS_URL = import.meta.env.VITE_AWS_URL
 
 
 
@@ -99,7 +99,7 @@ export default {
                 this.managername = team.split("'")[0];
                 // this.pos = team.split('(')[1].replace(")", "");
 
-                const response = await axios.get(`${ENDPOINT_URL}/team_details`, {
+                const response = await axios.get(`${VITE_AWS_URL}/team_details`, {
                     params: {m_name : this.managername, dept : this.selectedDept}
                 });
                 this.selectedReportingManager = response.data["staff_id"]
@@ -134,7 +134,7 @@ export default {
                 // Check if the selected department is "CEO"
                 if (department === "CEO") {
                     // Make a request to fetch the CEO's team
-                    const response = await axios.get(`${ENDPOINT_URL}/teams_by_reporting_manager`, {
+                    const response = await axios.get(`${VITE_AWS_URL}/teams_by_reporting_manager`, {
                         params: { department }
                     });
 
@@ -157,7 +157,7 @@ export default {
                     }
 
                 } else {
-                    const response = await axios.get(`${ENDPOINT_URL}/teams_by_reporting_manager`, {
+                    const response = await axios.get(`${VITE_AWS_URL}/teams_by_reporting_manager`, {
                         params: { department } // Pass department as a query parameter
                     });
                     console.log(response.data)

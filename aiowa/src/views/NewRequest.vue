@@ -55,6 +55,7 @@
 
 <script>
 import axios from "axios";
+const   VITE_AWS_URL = import.meta.env.VITE_AWS_URL;
 
 export default {
   data() {

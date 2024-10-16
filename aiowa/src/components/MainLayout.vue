@@ -171,8 +171,7 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios"; // Import axios
-import { ENDPOINT_URL } from "../config/config.js";
-
+const   VITE_AWS_URL = import.meta.env.VITE_AWS_URL
 
 // Routing
 const router = useRouter();
@@ -207,7 +206,7 @@ function handleLinkClick(linkName) {
 async function handleSignOut() {
     try {
         // Call your endpoint to clear the session on the server
-        await axios.post(`${ENDPOINT_URL}/logout`, {
+        await axios.post(`${VITE_AWS_URL}/logout`, {
             access_token: localStorage.getItem("access_token"),
         });
 
