@@ -5,7 +5,7 @@ class TeamsService:
         self.supabase = supabase_client
 
     def get_staff_by_department(self, department):
-        staff_query = self.supabase.from_('Employee').select('Staff_ID, Staff_FName, Dept, Position, Reporting_Manager')
+        staff_query = self.supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, Position, Reporting_Manager')
         if department == "CEO":
             staff_query = staff_query.eq("Position", 'Director')
         elif department != "All":
@@ -14,9 +14,13 @@ class TeamsService:
         return response.data
 
     def get_manager_name(self, manager_id):
-        manager_response = self.supabase.from_('Employee').select('Staff_FName').eq('Staff_ID', manager_id).execute()
+        manager_response = self.supabase.from_('Employee').select('Staff_FName, Staff_LName').eq('Staff_ID', manager_id).execute()
+        print(manager_response)
         if manager_response.data:
-            return manager_response.data[0]['Staff_FName']
+            manager_fname = manager_response.data[0]['Staff_FName']
+            manager_lname = manager_response.data[0]['Staff_LName']
+            manager_name = f"{manager_fname} {manager_lname}"
+            return manager_name
         return "Unknown"
     
     def get_team_by_manager_dept(self, manager_fname, manager_lname, dept):
@@ -62,12 +66,16 @@ class TeamsController:
         staff_data = self.teams_service.get_staff_by_department(department)
         if not staff_data:
             return jsonify({"error": "No staff found"}), 404
+        
+        positions_set = set(item['Position'] for item in staff_data)
+        positions_list = list(positions_set)
 
         teams_by_manager = {}
         for item in staff_data:
             manager_id = item['Reporting_Manager']
             staff_id = item['Staff_ID']
             staff_fname = item['Staff_FName']
+            staff_lname = item['Staff_LName']
             position = item['Position']
 
             if manager_id not in teams_by_manager:
@@ -82,7 +90,8 @@ class TeamsController:
 
             teams_by_manager[manager_id]["teams"][position].append({
                 "staff_id": staff_id,
-                "staff_fname": staff_fname
+                "staff_fname": staff_fname,
+                "staff_lname": staff_lname
             })
 
         result = []
@@ -99,9 +108,17 @@ class TeamsController:
                 })
             result.append(manager_info)
 
+        dropdown_values = []
+        for manager in result:
+            for position in manager["positions"]:
+                # Format the dropdown value as "Manager's Team (Position)"
+                dropdown_value = f"{manager['manager_name']}'s Team ({position['position']})"
+                dropdown_values.append(dropdown_value)
+
         return jsonify({
-            "positions": list(set(item['Position'] for item in staff_data)),
-            "teams": result
+            "positions": positions_list,  # Include the list of unique positions
+            "teams": result,              # Include the structured team info
+            "dropdown_values": dropdown_values
         }), 200
 
     def get_team_requests(self):
