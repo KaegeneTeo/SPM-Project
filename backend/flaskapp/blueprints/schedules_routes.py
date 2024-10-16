@@ -24,6 +24,11 @@ def get_schedules():
         allnames = schedules_service.get_all_employees_by_dept(data["dept"])
         response = schedules_service.get_schedules_by_dept(data["dept"])
 
+    # Director team (special logic)
+    # elif int(data["role"]) == 1 and int(data["reporting_manager"]) == CEO:
+    #     allnames = schedules_service.get_all_directors(data["reporting_manager"])
+    #     response = schedules_service.get_directors_schedules(data["dept"], data["reporting_manager"])
+
     # Filter for all departments
     elif data["dept"] == "all" and data["reporting_manager"] == "all":
         allnames = schedules_service.get_all_employees()
@@ -45,4 +50,5 @@ def get_schedules():
         response = schedules_service.get_schedules_by_reporting_manager(data["dept"], int(data["reporting_manager"]))
 
     # Format and return the schedule data
-    return jsonify(schedules_service.format_schedules(response, allnames))
+    # print(schedules_service.format_schedules(response, allnames)[0])
+    return jsonify(schedules_service.format_schedules(response, allnames)[0])

@@ -127,6 +127,7 @@ export default {
             if(department == 'all'){
                 
                 this.selectedDept = 'all'
+                this.filteredTeams = []
                 return;
             }
             
@@ -177,7 +178,7 @@ export default {
                 console.error("Error fetching teams:", error);
             }
         },
-        search() {
+        async search() {
             let params = {};
             
             if (this.role === '1') {
@@ -206,7 +207,8 @@ export default {
             }    
             axios.get(`${VITE_AWS_URL}/schedules`, { params })
                 .then(response => {
-                    this.events = response.data.schedules;
+                    this.events = response.data['schedules'];
+                    console.log(this.events)
                 })
                 .catch(error => {
                     console.error("Error fetching schedules: ", error);
