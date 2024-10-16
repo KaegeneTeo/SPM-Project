@@ -98,7 +98,7 @@ export default {
                 }
                 this.managername = team.split("'")[0];
                 // this.pos = team.split('(')[1].replace(")", "");
-
+                
                 const response = await axios.get(`${VITE_AWS_URL}/team_details`, {
                     params: {m_name : this.managername, dept : this.selectedDept}
                 });
@@ -204,7 +204,7 @@ export default {
             if (this.role === '2'){
                 params = {dept:localStorage.getItem('dept'), role : '3', position: 'Sales Manager', reporting_manager: localStorage.getItem('reporting_manager')}
             }    
-            axios.get(`${ENDPOINT_URL}/schedules`, { params })
+            axios.get(`${VITE_AWS_URL}/schedules`, { params })
                 .then(response => {
                     this.events = response.data.schedules;
                 })
