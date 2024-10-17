@@ -5,7 +5,7 @@ import os
 from flask_cors import CORS
 from .blueprints.schedules_routes import schedules_blueprint
 from .blueprints.employees_routes import employees_blueprint
-from .blueprints.requests import requests
+from .blueprints.requests_routes import requests_blueprint
 from .blueprints.teams_routes import teams_blueprint
 from .blueprints.auth_routes import auth_blueprint
 
@@ -16,7 +16,7 @@ def create_app():
 
     app.register_blueprint(schedules_blueprint)
     app.register_blueprint(employees_blueprint)
-    app.register_blueprint(requests)
+    app.register_blueprint(requests_blueprint)
     app.register_blueprint(teams_blueprint)
     app.register_blueprint(auth_blueprint)
     return app
