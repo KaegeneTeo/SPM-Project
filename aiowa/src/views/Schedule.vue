@@ -203,12 +203,17 @@ export default {
                 }
             }
             if (this.role === '2'){
-                params = {dept:localStorage.getItem('dept'), role : '3', position: 'Sales Manager', reporting_manager: localStorage.getItem('reporting_manager')}
+                params = {dept:localStorage.getItem('dept'), role : '3', position: '', reporting_manager: localStorage.getItem('reporting_manager')}
             }    
             axios.get(`${VITE_AWS_URL}/schedules`, { params })
                 .then(response => {
                     this.events = response.data['schedules'];
-                    console.log(this.events)
+                    if (this.events.length === 0) {
+                        // Show a popup when schedules are empty
+                        alert("There are no schedules for this selection.");
+                    } else {
+                        console.log(this.events);
+                    }
                 })
                 .catch(error => {
                     console.error("Error fetching schedules: ", error);
