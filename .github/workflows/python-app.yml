@@ -5,7 +5,7 @@ name: CD Pipeline With Zappa
 
 on:
     push:
-        branches: ["dev"]
+        branches: ["dev", "main"]
         #paths:
         #    - app/**
         #    - requirements.txt
@@ -18,7 +18,7 @@ jobs:
         env:
             AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-            AWS_REGION: us-east-1
+            AWS_REGION: ap-southeast-1
 
         steps:
             - uses: actions/checkout@v4
@@ -33,12 +33,6 @@ jobs:
                   source env/bin/activate
                   python -m pip install --upgrade pip
                   pip install -r requirements.txt
-
-            - name: Debug environment variables
-              run: |
-                  echo "AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}"
-                  echo "AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}"
-                  echo "AWS_REGION=${AWS_REGION}"
 
             - name: Deploy to AWS with Zappa
               working-directory: ./backend
