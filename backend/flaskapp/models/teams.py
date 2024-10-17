@@ -124,15 +124,14 @@ class TeamsController:
     def get_team_requests(self):
         staff_id = request.headers.get('X-Staff-ID')
         if not staff_id:
-            abort(400, description="Staff ID is required")
-        
+            return jsonify({"error": "Staff ID is required"}), 400
         team_ids = self.teams_service.get_team_ids_for_staff(staff_id)
         if not team_ids:
-            abort(404, description="No team found for the logged-in user.")
+            return jsonify({"error": "No teams found for the provided staff ID"}), 404
         
         staff_ids = self.teams_service.get_staff_in_teams(team_ids, staff_id)
         if not staff_ids:
-            abort(404, description="No staff found for the provided team IDs.")
+            return jsonify({"error": "No staff found in the teams"}), 404
         
         requests = self.teams_service.get_requests_for_staff(staff_ids)
         return jsonify(requests), 200

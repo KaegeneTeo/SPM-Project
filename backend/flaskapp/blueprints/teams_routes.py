@@ -12,10 +12,6 @@ teams_service = TeamsService(supabase)
 teams_controller = TeamsController(teams_service)
 
 # Define routes
-@teams_blueprint.route("/teams", methods=['GET'])
-def check_online():
-    return teams_controller.check_online()
-
 @teams_blueprint.route("/teams_by_reporting_manager", methods=['GET'])
 def get_teams_by_reporting_manager():
     return teams_controller.get_teams_by_reporting_manager()
