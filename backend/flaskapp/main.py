@@ -12,7 +12,7 @@ from .blueprints.auth_routes import auth_blueprint
 def create_app():
     app = Flask(__name__)
     CORS(app, credentials=True ,resources={r"/*": {
-        "origins": "*", "allow_headers": ["Authorization", "Content-Type", "X-Staff-ID", "X-Role", "X-Dept"]}})  # Enable CORS for frontend origin
+        "origins": "https://spm-project-five.vercel.app", "allow_headers": ["Authorization", "Content-Type", "X-Staff-ID", "X-Role", "X-Dept"]}})  # Enable CORS for frontend origin
 
     app.register_blueprint(schedules_blueprint)
     app.register_blueprint(employees_blueprint)
