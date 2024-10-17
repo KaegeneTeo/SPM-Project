@@ -45,5 +45,5 @@ def get_schedules():
         response = schedules_service.get_schedules_by_reporting_manager(data["dept"], int(data["reporting_manager"]))
 
     # Format and return the schedule data
-    # print(schedules_service.format_schedules(response, allnames)[0])
+    print(schedules_service.format_schedules(response, allnames)[0])
     return jsonify(schedules_service.format_schedules(response, allnames)[0])

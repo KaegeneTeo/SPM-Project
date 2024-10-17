@@ -208,6 +208,7 @@ export default {
             axios.get(`${VITE_AWS_URL}/schedules`, { params })
                 .then(response => {
                     this.events = response.data['schedules'];
+                    
                     if (this.events.length === 0) {
                         // Show a popup when schedules are empty
                         alert("There are no schedules for this selection.");
