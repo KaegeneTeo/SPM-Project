@@ -106,12 +106,10 @@
   </div>
 </template>
 
-
 <script>
 import axios from 'axios';
-const   VITE_AWS_URL = import.meta.env.VITE_AWS_URL
+const VITE_AWS_URL = import.meta.env.VITE_AWS_URL
 
-// console.log(staff_id)
 export default {
   data() {
     return {
@@ -155,105 +153,101 @@ export default {
     goToViewRequestStaffPage() {
       this.$router.push({ name: 'viewrequeststaff' });
     },
-    fetchRequestData() {
+    async fetchRequestData() {
       console.log('Fetching requests...');
-      console.log(this.access_token,this.staff_id)
+      console.log(this.access_token, this.staff_id);
       // Fetch request data for all of current user's team members
-      axios.get('http://localhost:5000/team/requests', {
+      try {
+        const response = await axios.get(`${VITE_AWS_URL}/team/requests`, {
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${this.access_token}`,  // Include the access token here
             'X-Staff-ID': this.staff_id         // Include the staff ID here
           }
-      })
-        .then(response => {
-          console.log('Request data received:', response.data);
-          this.requests = response.data; // Store the list of requests
-        })
-        .catch(error => {
-          console.error("There was an error fetching the request data:", error);
         });
+        console.log('Request data received:', response.data);
+        this.requests = response.data; // Store the list of requests
+      } catch (error) {
+        console.error("There was an error fetching the request data:", error);
+      }
     },
-    openRequestDetails(requestId) {
+    async openRequestDetails(requestId) {
       console.log(`Fetching details for request ID: ${requestId}`);
       // Fetch the details of the selected request from the server
-      axios.get(`http://localhost:5000/request/${requestId}`, {
-        headers: {
+      try {
+        const response = await axios.get(`${VITE_AWS_URL}/request/${requestId}`, {
+          headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${this.access_token}`,  // Include the access token here
           }
-      })
-        .then(response => {
-          this.selectedRequest = response.data;
-          this.affectedDates = this.calculateAffectedDates(this.selectedRequest.startdate, this.selectedRequest.enddate);
-          this.selectedDates = []; // Reset selected dates for each request
-          this.showModal = true; // Show the modal with request details
-        })
-        .catch(error => {
-          console.error("There was an error fetching the request details:", error);
         });
+        this.selectedRequest = response.data;
+        this.affectedDates = this.calculateAffectedDates(this.selectedRequest.startdate, this.selectedRequest.enddate);
+        this.selectedDates = []; // Reset selected dates for each request
+        this.showModal = true; // Show the modal with request details
+      } catch (error) {
+        console.error("There was an error fetching the request details:", error);
+      }
     },
     closeModal() {
       this.showModal = false; // Hide the modal
     },
-    approveRequest() {
+    async approveRequest() {
       if (!this.isApproveEnabled) {
         console.error('Approve button should not be enabled when conditions are not met.');
         return; // Should not reach this point due to the disabled button
       }
       console.log(`Approving request ID: ${this.selectedRequest.request_id}`);
       // API Call to method for approval in backend
-      axios.put(`http://localhost:5000/request/${this.selectedRequest.request_id}/approve`, {
-        result_reason: this.resultReason,
-        approved_dates: this.selectedDates
-      }, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.access_token}`
-        }
-      })
-        .then(response => {
-          console.log('Request approved:', response.data);
-          this.showModal = false;
-          this.feedbackMessage = 'Request approved successfully!';
-          this.feedbackType = 'success';
-          this.refreshRequests();
-          setTimeout(() => this.feedbackMessage = '', 3000);
-        })
-        .catch(error => {
-          console.error('Failed to approve request:', error);
-          this.feedbackMessage = 'Failed to approve the request. Please try again.';
-          this.feedbackType = 'error';
+      try {
+        const response = await axios.put(`${VITE_AWS_URL}/request/${this.selectedRequest.request_id}/approve`, {
+          result_reason: this.resultReason,
+          approved_dates: this.selectedDates
+        }, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${this.access_token}`
+          }
         });
+        console.log('Request approved:', response.data);
+        this.showModal = false;
+        this.feedbackMessage = 'Request approved successfully!';
+        this.feedbackType = 'success';
+        this.refreshRequests();
+        setTimeout(() => this.feedbackMessage = '', 3000);
+      } catch (error) {
+        console.error('Failed to approve request:', error);
+        this.feedbackMessage = 'Failed to approve the request. Please try again.';
+        this.feedbackType = 'error';
+      }
     },
-    rejectRequest() {
+    async rejectRequest() {
       if (!this.isRejectEnabled) {
         console.error('Reject button should not be enabled when conditions are not met.');
         return; // Should not reach this point due to the disabled button
       }
       console.log(`Rejecting request ID: ${this.selectedRequest.request_id}`);
       // Send the result_reason with the rejection
-      axios.put(`http://localhost:5000/request/${this.selectedRequest.request_id}/reject`, {
-        result_reason: this.resultReason
-      }, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.access_token}`
-        }
-      })
-        .then(response => {
-          console.log('Request rejected:', response.data);
-          this.showModal = false;
-          this.feedbackMessage = 'Request rejected successfully!';
-          this.feedbackType = 'success';
-          this.refreshRequests();
-          setTimeout(() => this.feedbackMessage = '', 3000);
-        })
-        .catch(error => {
-          console.error('Failed to reject request:', error);
-          this.feedbackMessage = 'Failed to reject the request. Please try again.';
-          this.feedbackType = 'error';
+      try {
+        const response = await axios.put(`${VITE_AWS_URL}/request/${this.selectedRequest.request_id}/reject`, {
+          result_reason: this.resultReason
+        }, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${this.access_token}`
+          }
         });
+        console.log('Request rejected:', response.data);
+        this.showModal = false;
+        this.feedbackMessage = 'Request rejected successfully!';
+        this.feedbackType = 'success';
+        this.refreshRequests();
+        setTimeout(() => this.feedbackMessage = '', 3000);
+      } catch (error) {
+        console.error('Failed to reject request:', error);
+        this.feedbackMessage = 'Failed to reject the request. Please try again.';
+        this.feedbackType = 'error';
+      }
     },
     refreshRequests() {
       // Fetch the latest list of requests after approval/rejection
@@ -297,9 +291,7 @@ export default {
     this.fetchRequestData();
   }
 };
-
 </script>
-
 
 <style scoped>
 button {
