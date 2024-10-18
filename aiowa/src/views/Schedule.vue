@@ -89,7 +89,7 @@ export default {
     methods: {
         async fetchTeamDetails(team) {
             if(team == ""){
-                alert("Please select a team!")
+                // alert("Please select a team!")
                 return;
             }
             if(this.role == '1'){    
@@ -123,7 +123,7 @@ export default {
         async fetchTeams(department) {
             if (department == "") {
                 this.filteredTeams = [];
-                alert("Please select a department!") // Clear teams if no department is selected
+                // alert("Please select a department!") // Clear teams if no department is selected
                 return;
             }
             if(department == 'all'){
@@ -182,6 +182,10 @@ export default {
         },
         async search() {
             let params = {};
+
+            if(this.selectedDept == "" || this.selectedTeam == ""){
+                alert("Please ensure that department and team are selected!")
+            }
             
             if (this.role === '1') {
                 if (this.selectedTeam == 'all' && this.selectedDept == 'all'){
