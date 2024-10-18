@@ -224,7 +224,7 @@ export default {
                     
                     if (this.events.length === 0) {
                         // Show a popup when schedules are empty
-                        alert("There are no schedules for this selection.");
+                        alert("There are no schedules found.");
                     } else {
                         console.log(this.events);
                     }
