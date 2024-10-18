@@ -89,6 +89,7 @@ export default {
     methods: {
         async fetchTeamDetails(team) {
             if(!team){
+                alert("Please select a team!")
                 return;
             }
             if(this.role == '1'){    
@@ -121,7 +122,8 @@ export default {
         },
         async fetchTeams(department) {
             if (!department) {
-                this.filteredTeams = []; // Clear teams if no department is selected
+                this.filteredTeams = [];
+                alert("Please select a department!") // Clear teams if no department is selected
                 return;
             }
             if(department == 'all'){
