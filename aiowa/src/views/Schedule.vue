@@ -88,7 +88,7 @@ export default {
     },
     methods: {
         async fetchTeamDetails(team) {
-            if(!team){
+            if(team == ""){
                 alert("Please select a team!")
                 return;
             }
@@ -121,7 +121,7 @@ export default {
             
         },
         async fetchTeams(department) {
-            if (!department) {
+            if (department == "") {
                 this.filteredTeams = [];
                 alert("Please select a department!") // Clear teams if no department is selected
                 return;
