@@ -79,6 +79,7 @@ export default {
   },
   methods: {
     getStaffId() {
+      //axios.get(`http://127.0.0.1:5000/getstaffid`, {
       axios.get(`${VITE_AWS_URL}/getstaffid`, {
           headers: {
             'Content-Type': 'application/json',
@@ -174,6 +175,7 @@ export default {
       }
 
       try {
+        //const response = await axios.post(`http://127.0.0.1:5000/requests/`, this.form, {
         const response = await axios.post(`${VITE_AWS_URL}/requests/`, this.form, {
           headers: {
             'Authorization': `Bearer ${this.access_token}`,  // Include the access token
@@ -182,7 +184,7 @@ export default {
         });
         alert("Request created successfully!");
         console.log(response.data);
-        this.$router.push({ name: 'requests' });
+        this.$router.push({ name: 'viewrequeststaff' });
       } catch (error) {
         if (error.response) {
           console.error(error.response.data);

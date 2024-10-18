@@ -4,7 +4,33 @@ from datetime import datetime, timedelta
 class RequestService:
     def __init__(self, supabase):
         self.supabase = supabase
-        
+    
+    def withdraw_request(self, request_id):
+        try:
+            response = self.supabase.from_("request").delete().eq("request_id", request_id).execute()
+
+            if not response.data:
+                abort(404, description="Request not found.")
+
+            return {"message": "Request withdrawn successfully"}, 200
+
+        except Exception as e:
+            return {"error": str(e)}, 500
+
+    def cancel_request(self, request_id):
+        try:
+            response = self.supabase.from_("request").delete().eq("request_id", request_id).execute()
+            response2 = self.supabase.from_("schedule").delete().eq("request_id", request_id).execute()
+            
+
+            if not response.data or not response2.data:
+                abort(404, description="Request not found.")
+
+            return {"message": "Request withdrawn successfully"}, 200
+
+        except Exception as e:
+            return {"error": str(e)}, 500
+
     def get_staff_id(self):
         staff_id = request.headers.get('X-Staff-ID')
         access_token = request.headers.get('Authorization').split(' ')[1]  # Extract Bearer token
@@ -117,12 +143,13 @@ class RequestService:
 
         return date_list
 
-    def create_schedule_entries(self, staff_id, dates, time_slot):
+    def create_schedule_entries(self, staff_id, dates, time_slot, request_id):
         for date in dates:
             response = self.supabase.from_("schedule").insert({
                 "staff_id": staff_id,
                 "date": date,
-                "time_slot": time_slot
+                "time_slot": time_slot,
+                "request_id": request_id
             }).execute()
 
             if response is None:
@@ -140,12 +167,13 @@ class RequestService:
             staff_id = request_data['staff_id']
             request_type = request_data['request_type']
             time_slot = request_data['time_slot']
+            requestId = request_data['request_id']
 
             if request_type == 2:  # Recurring
                 recurring_dates = self.calculate_recurring_dates(approved_dates)
-                self.create_schedule_entries(staff_id, recurring_dates, time_slot)
+                self.create_schedule_entries(staff_id, recurring_dates, time_slot, requestId)
             elif request_type == 1:  # Ad-hoc
-                self.create_schedule_entries(staff_id, approved_dates, time_slot)
+                self.create_schedule_entries(staff_id, approved_dates, time_slot, requestId)
 
             self.supabase.from_("request").update({
                 "status": 1,  # Approved status
@@ -177,6 +205,14 @@ class RequestService:
 class RequestController:
     def __init__(self, request_service):
         self.request_service = request_service
+
+    def withdraw_request(self, request_id):
+        response_data = self.request_service.withdraw_request(request_id)
+        return jsonify(response_data)
+    
+    def cancel_request(self, request_id):
+        response_data = self.request_service.cancel_request(request_id)
+        return jsonify(response_data)
     
     def get_staff_id(self):
         response_data = self.request_service.get_staff_id()

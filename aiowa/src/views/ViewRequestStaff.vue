@@ -17,6 +17,7 @@
             <th>Time Slot</th>
             <th>Request Type</th>
             <th>Action</th> <!-- New Column for Button -->
+            <th>W/C Reason</th>
           </tr>
         </thead>
         <tbody>
@@ -32,6 +33,7 @@
               <button v-if="request.status === 1" @click="cancelRequest(request.request_id)">Cancel</button>
               <button v-if="request.status === 0" @click="withdrawRequest(request.request_id)">Withdraw</button>
             </td> <!-- Conditional rendering of buttons -->
+            <td><input type="text"></td>
           </tr>
         </tbody>
       </table>
@@ -56,6 +58,7 @@ export default {
   },
   methods: {
     getStaffId() {
+      //axios.get(`http://127.0.0.1:5000/getstaffid`, {
       axios.get(`${VITE_AWS_URL}/getstaffid`, {
         headers: {
           'Content-Type': 'application/json',
@@ -82,7 +85,7 @@ export default {
       try {
         this.error = null;
         this.showNoRecords = false;  // Reset flag before fetching
-
+        //const response = await axios.get(`http://127.0.0.1:5000/requests/${this.staffId}`, {
         const response = await axios.get(`${VITE_AWS_URL}/requests/${this.staffId}`, {
           headers: {
             'Authorization': `Bearer ${this.access_token}`,  // Include the access token
@@ -155,6 +158,32 @@ export default {
           return "Error";
       }
     },
+    withdrawRequest(request_id){
+      axios.delete(`${VITE_AWS_URL}/withdraw_request/${request_id}`)
+      //axios.delete(`http://127.0.0.1:5000/withdraw_request/${request_id}`)
+    .then(response => {
+      console.log('Request withdrawn successfully:', response.data);
+      alert('Request withdrawn successfully');
+      location.reload()
+    })
+    .catch(error => {
+      console.error('Error withdrawing request:', error);
+      alert('Error withdrawing request');
+    });
+    },
+    cancelRequest(request_id){
+      axios.delete(`${VITE_AWS_URL}/cancel_request/${request_id}`)
+      //axios.delete(`http://127.0.0.1:5000/cancel_request/${request_id}`)
+    .then(response => {
+      console.log('Request cancelled successfully:', response.data);
+      alert('Request cancelled successfully');
+      location.reload()
+    })
+    .catch(error => {
+      console.error('Error cancelling request:', error);
+      alert('Error cancelling request');
+    });
+    }
   },
   mounted() {
     this.staff_id = localStorage.getItem('staff_id');
@@ -198,5 +227,9 @@ textarea {
   box-sizing: border-box;
   margin-top: 4px;
   margin-bottom: 10px;
+}
+input[type="text"] {
+  border: 2px solid black;
+  border-radius: 4px;
 }
 </style>

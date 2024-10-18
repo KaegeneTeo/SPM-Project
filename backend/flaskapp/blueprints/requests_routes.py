@@ -9,6 +9,14 @@ request_service = RequestService(supabase)
 request_controller = RequestController(request_service)
 
 # Define routes
+@requests_blueprint.route("/withdraw_request/<int:request_id>", methods=['DELETE'])
+def withdraw_request(request_id: int):
+    return request_controller.withdraw_request(request_id)
+
+@requests_blueprint.route("/cancel_request/<int:request_id>", methods=['DELETE'])
+def cancel_request(request_id: int):
+    return request_controller.cancel_request(request_id)
+
 @requests_blueprint.route("/getstaffid", methods=['GET'])
 def get_staff_id():
     return request_controller.get_staff_id()
