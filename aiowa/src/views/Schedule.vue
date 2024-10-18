@@ -185,6 +185,7 @@ export default {
 
             if(this.selectedDept == "" || this.selectedTeam == ""){
                 alert("Please ensure that department and team are selected!")
+                return;
             }
             
             if (this.role === '1') {
