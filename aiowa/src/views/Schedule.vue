@@ -183,12 +183,14 @@ export default {
         async search() {
             let params = {};
 
-            if(this.selectedDept == "" || this.selectedTeam == ""){
-                alert("Please ensure that department and team are selected!")
-                return;
-            }
+            
             
             if (this.role === '1') {
+
+                if(this.selectedDept == "" || this.selectedTeam == ""){
+                    alert("Please ensure that department and team are selected!")
+                    return;
+                }
                 if (this.selectedTeam == 'all' && this.selectedDept == 'all'){
                     params = {dept: 'all', reporting_manager: 'all', position :this.position, role: this.role}
                     // console.log(params)
@@ -200,6 +202,10 @@ export default {
                 
             }
             if (this.role === '3') {
+                if(this.selectedTeam == ""){
+                    alert("Please ensure that team is selected!")
+                    return;
+                }
                 if (this.selectedTeam == 'all'){
                     params = {dept: localStorage.getItem('dept'), role: localStorage.getItem('role'), reporting_manager: this.selectedReportingManager, position: localStorage.getItem('position')}
                     // console.log(params)
