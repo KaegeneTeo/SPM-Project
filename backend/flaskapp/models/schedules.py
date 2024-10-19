@@ -3,6 +3,9 @@ class SchedulesService:
         self.supabase = supabase
 
     #for special logic for CEO and directors
+    def get_own_schedule(self,staff_id):
+        return self.supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, schedule!inner(schedule_id, staff_id, date, time_slot)').eq('Staff_ID', staff_id).execute()
+
     def get_ceo(self):
         return int(self.supabase.from_('Employee').select('Staff_ID').eq("Position", "MD").execute().data[0]["Staff_ID"])
 

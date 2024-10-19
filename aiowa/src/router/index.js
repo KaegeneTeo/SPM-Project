@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import axios from 'axios';
 import Login from '../views/Login.vue'
 import Schedule from '../views/Schedule.vue'
+import MySchedule from '../views/MySchedule.vue'
 import Request from '../views/Request.vue'
 import NewRequest from '../views/NewRequest.vue'
 import ViewRequestStaff from '../views/ViewRequestStaff.vue'
@@ -22,6 +23,12 @@ const router = createRouter({
       path: '/schedules',
       name: 'schedules',
       component: Schedule,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/myschedule',
+      name: 'schedule',
+      component: MySchedule,
       meta: { requiresAuth: true }
     },
     {
