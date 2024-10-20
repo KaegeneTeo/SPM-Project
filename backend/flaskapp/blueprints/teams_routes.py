@@ -20,6 +20,6 @@ def get_teams_by_reporting_manager():
 def get_team_details():
     return teams_controller.get_team_details()
 
-@teams_blueprint.route('/team/requests', methods=['GET'])
+@teams_blueprint.route('/team_requests', methods=['GET'])
 def get_team_requests():
     return teams_controller.get_team_requests()

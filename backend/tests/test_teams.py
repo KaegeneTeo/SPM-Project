@@ -27,6 +27,17 @@ def test_get_staff_by_department(teams_service, supabase_client):
     assert result == mock_response.data
     supabase_client.from_.assert_called_with('Employee')
 
+def test_get_staff_by_department_CEO(teams_service, supabase_client):
+    mock_response = MagicMock()
+    mock_response.data = [{'Staff_ID': 1, 'Staff_FName': 'John', 'Staff_LName': 'Doe', 'Dept': 'IT', 'Position': 'Developer', 'Reporting_Manager': 2}]
+    supabase_client.from_().select().eq().execute.return_value = mock_response
+
+    department = 'CEO'
+    result = teams_service.get_staff_by_department(department)
+
+    assert result == mock_response.data
+    supabase_client.from_.assert_called_with('Employee')
+
 
 def test_get_manager_name(teams_service, supabase_client):
     mock_response = MagicMock()
@@ -37,6 +48,14 @@ def test_get_manager_name(teams_service, supabase_client):
 
     assert manager_name == "John Doe"
 
+def test_get_manager_name_failure(teams_service, supabase_client):
+    mock_response = MagicMock()
+    mock_response.data = []
+    supabase_client.from_().select().eq().execute.return_value = mock_response
+
+    manager_name = teams_service.get_manager_name(1)
+
+    assert manager_name == "Unknown" 
 
 def test_get_team_by_manager_dept(teams_service, supabase_client):
     mock_response = MagicMock()
@@ -87,15 +106,15 @@ def test_get_team_details_success(teams_controller, client):
             response = teams_controller.get_team_details()
 
         assert response.status_code == 200
-        assert response.get_json() == {"staff_id": 1}
+        assert response.get_json() == {"Staff_ID": 1}
 
 
 def test_get_team_details_failure(teams_controller, client):
     
     response = client.get('/team_details?m_name=John Doe')
     print(response)
-    assert response.status_code == 404
-    assert response.get_json() == {"error": "No or wrong params received"}
+    assert response.status_code == 400
+    assert response.get_json() == {"error": "Manager name and department are required"}
 
 
 def test_get_teams_by_reporting_manager(teams_controller, client):
@@ -111,26 +130,63 @@ def test_get_teams_by_reporting_manager(teams_controller, client):
     assert "positions" in response.get_json()
     assert "teams" in response.get_json()
 
+def test_get_teams_by_reporting_manager_failure(teams_controller, client):
+    
+    with patch.object(teams_controller.teams_service, 'get_staff_by_department', return_value=None), \
+        patch.object(teams_controller.teams_service, 'get_manager_name', return_value=None):
+        
+        response = client.get('/teams_by_reporting_manager')
+    assert response.status_code == 404
+    assert response.get_json() == {"error": "No staff found"}
+
+def test_get_team_requests_failure_no_staff_id(teams_controller, client):
+    response = client.get('/team_requests')
+    assert response.status_code == 400
+    assert response.get_json() == {"error": "Staff ID is required"}
 
 def test_get_team_requests_success(teams_controller, client):
     mock_team_ids = [1]
     mock_staff_ids = [1]
-    mock_requests = [{'staff_id': 2, 'reason': 'Vacation'}]
+    mock_requests = [{'staff_id': '2', 'reason': 'Vacation'}]
 
-    with patch("flaskapp.models.teams.TeamsService.get_team_ids_for_staff", return_value=mock_team_ids), \
-         patch('flaskapp.models.teams.TeamsService.get_staff_in_teams', return_value=mock_staff_ids), \
-         patch('flaskapp.models.teams.TeamsService.get_requests_for_staff', return_value=mock_requests):
-        headers = {'X-Staff-ID': '1'}
-        
-        response = client.get('/team/requests', headers=headers)
-
+    with patch.object(teams_controller.teams_service, "get_team_ids_for_staff", return_value=mock_team_ids), \
+        patch.object(teams_controller.teams_service, 'get_staff_in_teams', return_value=mock_staff_ids), \
+        patch.object(teams_controller.teams_service, 'get_requests_for_staff', return_value=mock_requests):
+        headers = {'X-Staff-ID': '2'}
+        with client.application.test_request_context(headers=headers):
+            response = teams_controller.get_team_requests()
+    
     assert response.status_code == 200
     assert response.get_json() == mock_requests
 
 
-def test_get_team_requests_failure_no_staff_id(teams_controller, client):
+def test_get_team_requests_failure_no_teams(teams_controller, client):
+    mock_team_ids = []
+    mock_staff_ids = [1]
+    mock_requests = [{'staff_id': '2', 'reason': 'Vacation'}]
 
-    response = client.get('/team/requests')
-    print(response.data)
-    assert response.status_code == 400
-    assert response.get_json() == {"error": "Staff ID is required"}
+    with patch.object(teams_controller.teams_service, "get_team_ids_for_staff", return_value=mock_team_ids), \
+        patch.object(teams_controller.teams_service, 'get_staff_in_teams', return_value=mock_staff_ids), \
+        patch.object(teams_controller.teams_service, 'get_requests_for_staff', return_value=mock_requests):
+        headers = {'X-Staff-ID': '2'}
+        with client.application.test_request_context(headers=headers):
+            response = teams_controller.get_team_requests()
+    
+    assert response.status_code == 404
+    assert response.get_json() == {"error": "No teams found for the staff"}
+
+
+def test_get_team_requests_failure_no_staff(teams_controller, client):
+    mock_team_ids = [1]
+    mock_staff_ids = []
+    mock_requests = [{'staff_id': '2', 'reason': 'Vacation'}]
+
+    with patch.object(teams_controller.teams_service, "get_team_ids_for_staff", return_value=mock_team_ids), \
+        patch.object(teams_controller.teams_service, 'get_staff_in_teams', return_value=mock_staff_ids), \
+        patch.object(teams_controller.teams_service, 'get_requests_for_staff', return_value=mock_requests):
+        headers = {'X-Staff-ID': '2'}
+        with client.application.test_request_context(headers=headers):
+            response = teams_controller.get_team_requests()
+    
+    assert response.status_code == 404
+    assert response.get_json() == {"error": "No staff found in the teams"}
