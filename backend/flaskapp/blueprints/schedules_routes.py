@@ -18,7 +18,7 @@ def get_schedules():
     print(data)
 
     CEO = schedules_service.get_ceo()
-
+    
     # Special case for CEO department
     if data["dept"] == "CEO":
         allnames = schedules_service.get_all_employees_by_dept(data["dept"])

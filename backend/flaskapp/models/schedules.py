@@ -8,31 +8,31 @@ class SchedulesService:
 
     #for all depts filter
     def get_all_employees(self):
-        return self.supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName').execute()
+        return self.supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, Position').execute()
 
     def get_schedules_for_all_depts(self):
-        return self.supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, schedule!inner(schedule_id, staff_id, date, time_slot)').execute()
+        return self.supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, Position, schedule!inner(schedule_id, staff_id, date, time_slot)').execute()
 
     #for dept specified, all teams filter
     def get_all_employees_by_dept(self, dept):
-        return self.supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName').eq("Dept", dept).execute()
+        return self.supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, Position').eq("Dept", dept).execute()
     
     def get_schedules_by_dept(self, dept):
-        return self.supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, schedule!inner(schedule_id, staff_id, date, time_slot)').eq("Dept", dept).execute()
+        return self.supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, Position, schedule!inner(schedule_id, staff_id, date, time_slot)').eq("Dept", dept).execute()
 
     #for teams filter
     def get_schedules_by_reporting_manager(self, dept, reporting_manager):
-        return self.supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, schedule!inner(schedule_id, staff_id, date, time_slot)').eq("Dept", dept).eq("Reporting_Manager", reporting_manager).execute()
+        return self.supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, Position, schedule!inner(schedule_id, staff_id, date, time_slot)').eq("Dept", dept).eq("Reporting_Manager", reporting_manager).execute()
 
     def get_all_employees_by_reporting_manager(self, dept, reporting_manager):
-        return self.supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName').eq("Dept", dept).eq("Reporting_Manager", reporting_manager).execute()
+        return self.supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, , Dept, Position').eq("Dept", dept).eq("Reporting_Manager", reporting_manager).execute()
     
     #for directors team
     def get_all_directors(self, reporting_manager):
-        return self.supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName').eq("Reporting_Manager", reporting_manager).neq("Postion", "MD").execute()
+        return self.supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, Position').eq("Reporting_Manager", reporting_manager).neq("Postion", "MD").execute()
     
     def get_directors_schedules(self, reporting_manager):
-        return self.supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, schedule!inner(schedule_id, staff_id, date, time_slot)').eq("Reporting_Manager", reporting_manager).neq("Postion", "MD").execute()
+        return self.supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, Position, schedule!inner(schedule_id, staff_id, date, time_slot)').eq("Reporting_Manager", reporting_manager).neq("Postion", "MD").execute()
     
     #for data transform
     def format_schedules(self, response, allnames):
@@ -52,7 +52,9 @@ class SchedulesService:
                     "date": responselist[i]["schedule"][j]["date"],
                     "schedule_id": responselist[i]["schedule"][j]["schedule_id"],
                     "time_slot": responselist[i]["schedule"][j]["time_slot"],
-                    "staff_id": responselist[i]["Staff_ID"]
+                    "staff_id": responselist[i]["Staff_ID"],
+                    "position": responselist[i]["Position"],
+                    "dept": responselist[i]["Dept"]
                 })
 
         # Compress the list of schedules to create a NameList for each datetime
@@ -61,16 +63,16 @@ class SchedulesService:
             temp = {
                 "Date": item["date"],
                 "Time_Slot": item["time_slot"],
-                "Name_List": [f'{item["staff_id"]} - {item["staff_fname"]} {item["staff_lname"]}']
+                "Name_List": [f'{item["staff_id"]} - {item["staff_fname"]} {item["staff_lname"]} - {item["dept"]} - {item["position"]}']
             }
             if (item["date"], item["time_slot"]) not in dict1:
                 dict1[(item["date"], item["time_slot"])] = temp
             else:
-                dict1[(item["date"], item["time_slot"])]["Name_List"].append(f'{item["staff_id"]} - {item["staff_fname"]} {item["staff_lname"]}')
+                dict1[(item["date"], item["time_slot"])]["Name_List"].append(f'{item["staff_id"]} - {item["staff_fname"]} {item["staff_lname"]} - {item["dept"]} - {item["position"]}')
 
         # Convert data into the final format for frontend
         returnlist = []
-        allnamelist = [f'{employee["Staff_ID"]} - {employee["Staff_FName"]} {employee["Staff_LName"]}' for employee in allnames.data]
+        allnamelist = [f'{employee["Staff_ID"]} - {employee["Staff_FName"]} {employee["Staff_LName"]} - {item["dept"]} - {item["position"]}' for employee in allnames.data]
 
         for key in dict1:
             time_slot_data = dict1[key]
