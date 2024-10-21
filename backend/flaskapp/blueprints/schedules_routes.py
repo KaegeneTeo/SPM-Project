@@ -12,6 +12,8 @@ schedules_service = SchedulesService(supabase)
 def test():
     return jsonify("Hello world"), 200
 
+
+
 @schedules_blueprint.route("/schedules", methods=['GET'])
 def get_schedules():
     data = request.args
@@ -20,7 +22,7 @@ def get_schedules():
     CEO = schedules_service.get_ceo()
     
     # Special case for CEO department
-    if data["dept"] == "CEO":
+    elif data["dept"] == "CEO":
         allnames = schedules_service.get_all_employees_by_dept(data["dept"])
         response = schedules_service.get_schedules_by_dept(data["dept"])
 
@@ -45,5 +47,5 @@ def get_schedules():
         response = schedules_service.get_schedules_by_reporting_manager(data["dept"], int(data["reporting_manager"]))
 
     # Format and return the schedule data
-    print(schedules_service.format_schedules(response, allnames)[0])
+    # print(schedules_service.format_schedules(response, allnames)[0])
     return jsonify(schedules_service.format_schedules(response, allnames)[0])

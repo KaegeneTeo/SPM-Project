@@ -17,6 +17,7 @@
             <th>Time Slot</th>
             <th>Request Type</th>
             <th>Action</th> <!-- New Column for Button -->
+            <th>W/C Reason</th>
           </tr>
         </thead>
         <tbody>
@@ -32,6 +33,7 @@
               <button v-if="request.status === 1" @click="cancelRequest(request.request_id)">Cancel</button>
               <button v-if="request.status === 0" @click="withdrawRequest(request.request_id)">Withdraw</button>
             </td> <!-- Conditional rendering of buttons -->
+            <td><input type="text"></td>
           </tr>
         </tbody>
       </table>
@@ -43,7 +45,7 @@
 
 <script>
 import axios from "axios";
-const   VITE_AWS_URL = import.meta.env.VITE_AWS_URL
+const VITE_AWS_URL = import.meta.env.VITE_AWS_URL;
 
 export default {
   data() {
@@ -56,17 +58,23 @@ export default {
   },
   methods: {
     getStaffId() {
-      axios.get(`http://127.0.0.1:5000/getstaffid`, {
+      //axios.get(`http://127.0.0.1:5000/getstaffid`, {
+      axios.get(`${VITE_AWS_URL}/getstaffid`, {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${this.access_token}`,  // Include the access token here
           'X-Staff-ID': this.staff_id          // Include the staff ID here 
         }
       })
-    .then(response => {
-      console.log(response.data);
-      return response.data.staff_id
-    })
+      .then(response => {
+        console.log(response.data);
+        this.staffId = response.data.staff_id;
+        this.fetchRequests();  // Fetch requests after staff ID is retrieved
+      })
+      .catch(error => {
+        console.error("Error fetching staff ID:", error);
+        this.error = "Failed to fetch staff ID.";
+      });
     },
     async fetchRequests() {
       if (!this.staffId) {
@@ -77,18 +85,26 @@ export default {
       try {
         this.error = null;
         this.showNoRecords = false;  // Reset flag before fetching
+        //const response = await axios.get(`http://127.0.0.1:5000/requests/${this.staffId}`, {
+        const response = await axios.get(`${VITE_AWS_URL}/requests/${this.staffId}`, {
+          headers: {
+            'Authorization': `Bearer ${this.access_token}`,  // Include the access token
+            'X-Staff-ID': this.staff_id                     // Include the staff ID here
+          }
+        });
 
-        const response =  await axios.get(`http://127.0.0.1:5000/requests/${this.staffId}`);
         this.requests = response.data;
         console.log(response);
+
         // Only set showNoRecords to true if the response data is empty
         if (this.requests.length === 0) {
           this.showNoRecords = true;
         }
       } catch (err) {
+        console.log(err);
+
         // If it's a 404 error, and contains the specific message
-        console.log(err)
-        if (err.status === 404) {
+        if (err.response && err.response.status === 404) {
           this.showNoRecords = true;
         } else {
           this.error = "Error fetching data: " + (err.response?.data?.detail || err.message);
@@ -129,7 +145,8 @@ export default {
         default:
           return "Error";
       }
-    },getButtonLabel(status) {
+    },
+    getButtonLabel(status) {
       switch (status) {
         case 0:
           return "Withdraw";
@@ -141,12 +158,37 @@ export default {
           return "Error";
       }
     },
+    withdrawRequest(request_id){
+      axios.delete(`${VITE_AWS_URL}/withdraw_request/${request_id}`)
+      //axios.delete(`http://127.0.0.1:5000/withdraw_request/${request_id}`)
+    .then(response => {
+      console.log('Request withdrawn successfully:', response.data);
+      alert('Request withdrawn successfully');
+      location.reload()
+    })
+    .catch(error => {
+      console.error('Error withdrawing request:', error);
+      alert('Error withdrawing request');
+    });
+    },
+    cancelRequest(request_id){
+      axios.delete(`${VITE_AWS_URL}/cancel_request/${request_id}`)
+      //axios.delete(`http://127.0.0.1:5000/cancel_request/${request_id}`)
+    .then(response => {
+      console.log('Request cancelled successfully:', response.data);
+      alert('Request cancelled successfully');
+      location.reload()
+    })
+    .catch(error => {
+      console.error('Error cancelling request:', error);
+      alert('Error cancelling request');
+    });
+    }
   },
   mounted() {
     this.staff_id = localStorage.getItem('staff_id');
     this.access_token = localStorage.getItem('access_token');
-    this.getStaffId();
-    this.fetchRequests()
+    this.getStaffId();  // Fetch the staff ID and then the requests
   }
 };
 </script>
@@ -169,20 +211,25 @@ table th, table td {
 }
 
 button {
-padding: 8px 12px;
-background-color: #42b983;
-color: white;
-border: none;
-cursor: pointer;
+  padding: 8px 12px;
+  background-color: #42b983;
+  color: white;
+  border: none;
+  cursor: pointer;
 }
+
 input[type="number"],
 textarea {
-width: 100%;
-padding: 8px;
-border: 2px solid black;
-border-radius: 4px;
-box-sizing: border-box;
-margin-top: 4px;
-margin-bottom: 10px;
+  width: 100%;
+  padding: 8px;
+  border: 2px solid black;
+  border-radius: 4px;
+  box-sizing: border-box;
+  margin-top: 4px;
+  margin-bottom: 10px;
+}
+input[type="text"] {
+  border: 2px solid black;
+  border-radius: 4px;
 }
 </style>

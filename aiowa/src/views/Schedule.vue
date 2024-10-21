@@ -88,7 +88,8 @@ export default {
     },
     methods: {
         async fetchTeamDetails(team) {
-            if(!team){
+            if(team == ""){
+                // alert("Please select a team!")
                 return;
             }
             if(this.role == '1'){    
@@ -120,8 +121,9 @@ export default {
             
         },
         async fetchTeams(department) {
-            if (!department) {
-                this.filteredTeams = []; // Clear teams if no department is selected
+            if (department == "") {
+                this.filteredTeams = [];
+                // alert("Please select a department!") // Clear teams if no department is selected
                 return;
             }
             if(department == 'all'){
@@ -180,8 +182,15 @@ export default {
         },
         async search() {
             let params = {};
+
+            
             
             if (this.role === '1') {
+
+                if(this.selectedDept == "" || this.selectedTeam == ""){
+                    alert("Please ensure that department and team are selected!")
+                    return;
+                }
                 if (this.selectedTeam == 'all' && this.selectedDept == 'all'){
                     params = {dept: 'all', reporting_manager: 'all', position :this.position, role: this.role}
                     // console.log(params)
@@ -193,6 +202,10 @@ export default {
                 
             }
             if (this.role === '3') {
+                if(this.selectedTeam == ""){
+                    alert("Please ensure that team is selected!")
+                    return;
+                }
                 if (this.selectedTeam == 'all'){
                     params = {dept: localStorage.getItem('dept'), role: localStorage.getItem('role'), reporting_manager: this.selectedReportingManager, position: localStorage.getItem('position')}
                     // console.log(params)
@@ -211,7 +224,7 @@ export default {
                     
                     if (this.events.length === 0) {
                         // Show a popup when schedules are empty
-                        alert("There are no schedules for this selection.");
+                        alert("There are no schedules found.");
                     } else {
                         console.log(this.events);
                     }

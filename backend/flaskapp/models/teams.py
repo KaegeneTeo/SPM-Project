@@ -1,4 +1,4 @@
-from flask import jsonify, request, abort
+from flask import jsonify, request, abort, make_response
 
 class TeamsService:
     def __init__(self, supabase_client):
@@ -15,7 +15,6 @@ class TeamsService:
 
     def get_manager_name(self, manager_id):
         manager_response = self.supabase.from_('Employee').select('Staff_FName, Staff_LName').eq('Staff_ID', manager_id).execute()
-        print(manager_response)
         if manager_response.data:
             manager_fname = manager_response.data[0]['Staff_FName']
             manager_lname = manager_response.data[0]['Staff_LName']
@@ -45,27 +44,24 @@ class TeamsController:
     def __init__(self, teams_service):
         self.teams_service = teams_service
 
-    def check_online(self):
-        return "Hello teams", 200
-
     def get_team_details(self):
         manager_name = request.args.get('m_name')
         manager_fname = manager_name.split(" ")[0]
         manager_lname = manager_name.split(" ")[1]
         dept = request.args.get('dept')
         response = self.teams_service.get_team_by_manager_dept(manager_fname, manager_lname, dept)
-        # print(response.data[0]["Staff_ID"])
+        
         if manager_name and dept:
-            return jsonify({"staff_id": response.data[0]["Staff_ID"]})
+            return make_response(jsonify(response.data[0]), 200)
         else:
-            return jsonify({"error": "No or wrong params received"}), 404
+            return make_response(jsonify({"error": "Manager name and department are required"}), 400)
 
     def get_teams_by_reporting_manager(self):
         department = request.args.get('department')
         
         staff_data = self.teams_service.get_staff_by_department(department)
         if not staff_data:
-            return jsonify({"error": "No staff found"}), 404
+            return make_response(jsonify({"error": "No staff found"}), 404)
         
         positions_set = set(item['Position'] for item in staff_data)
         positions_list = list(positions_set)
@@ -115,23 +111,21 @@ class TeamsController:
                 dropdown_value = f"{manager['manager_name']}'s Team ({position['position']})"
                 dropdown_values.append(dropdown_value)
 
-        return jsonify({
-            "positions": positions_list,  # Include the list of unique positions
-            "teams": result,              # Include the structured team info
-            "dropdown_values": dropdown_values
-        }), 200
+        return make_response(jsonify({"positions": positions_list, "teams": result, "dropdown_values": dropdown_values}), 200)
 
     def get_team_requests(self):
         staff_id = request.headers.get('X-Staff-ID')
+        
         if not staff_id:
-            return jsonify({"error": "Staff ID is required"}), 400
+            return make_response(jsonify({"error": "Staff ID is required"}), 400)
         team_ids = self.teams_service.get_team_ids_for_staff(staff_id)
         if not team_ids:
-            return jsonify({"error": "No teams found for the provided staff ID"}), 404
+            return make_response(jsonify({"error": "No teams found for the staff"}), 404)
         
         staff_ids = self.teams_service.get_staff_in_teams(team_ids, staff_id)
         if not staff_ids:
-            return jsonify({"error": "No staff found in the teams"}), 404
+            return make_response(jsonify({"error": "No staff found in the teams"}), 404)
         
         requests = self.teams_service.get_requests_for_staff(staff_ids)
-        return jsonify(requests), 200
+        print(requests[0])
+        return make_response(jsonify(requests), 200)
