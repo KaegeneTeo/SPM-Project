@@ -22,7 +22,7 @@ def get_schedules():
     CEO = schedules_service.get_ceo()
     
     # Special case for CEO department
-    elif data["dept"] == "CEO":
+    if data["dept"] == "CEO":
         allnames = schedules_service.get_all_employees_by_dept(data["dept"])
         response = schedules_service.get_schedules_by_dept(data["dept"])
 
