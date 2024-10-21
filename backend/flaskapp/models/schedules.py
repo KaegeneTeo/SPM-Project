@@ -28,7 +28,7 @@ class SchedulesService:
         return self.supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, Position, schedule!inner(schedule_id, staff_id, date, time_slot)').eq("Dept", dept).eq("Reporting_Manager", reporting_manager).execute()
 
     def get_all_employees_by_reporting_manager(self, dept, reporting_manager):
-        return self.supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, , Dept, Position').eq("Dept", dept).eq("Reporting_Manager", reporting_manager).execute()
+        return self.supabase.from_('Employee').select('Staff_ID, Staff_FName, Staff_LName, Dept, Position').eq("Dept", dept).eq("Reporting_Manager", reporting_manager).execute()
     
     #for directors team
     def get_all_directors(self, reporting_manager):

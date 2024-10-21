@@ -103,7 +103,8 @@ export default {
                 const response = await axios.get(`${VITE_AWS_URL}/team_details`, {
                     params: {m_name : this.managername, dept : this.selectedDept}
                 });
-                this.selectedReportingManager = response.data["staff_id"]
+                // console.log(response.data.Staff_ID)
+                this.selectedReportingManager = response.data.Staff_ID
                 // console.log(this.selectedReportingManager)
             }
             else if(this.role == '3'){
@@ -196,6 +197,7 @@ export default {
                     // console.log(params)
                 }
                 else {
+                    
                     params = {dept: this.selectedDept, role: this.role, reporting_manager: this.selectedReportingManager, position: this.position}
                     // console.log(params);
                 }
