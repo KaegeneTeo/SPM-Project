@@ -21,8 +21,12 @@ def get_schedules():
 
     CEO = schedules_service.get_ceo()
     
+    if "staff_id" in data:
+        response = schedules_service.get_own_schedule(data["staff_id"])
+        allnames = schedules_service.get_all_employees()  # Optionally get all names if needed
+
     # Special case for CEO department
-    if data["dept"] == "CEO":
+    elif data["dept"] == "CEO":
         allnames = schedules_service.get_all_employees_by_dept(data["dept"])
         response = schedules_service.get_schedules_by_dept(data["dept"])
 
