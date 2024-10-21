@@ -17,6 +17,7 @@ export default {
             selectedEvent: {},
             showDialog: false,
             role: null,
+            reporting_manager:"",
             selectedDept: "",   // Stores the currently selected department
             selectedTeam: "",   // Stores the currently selected team
             selectedPosition: "",
@@ -71,6 +72,8 @@ export default {
         this.team = teamData ? JSON.parse(teamData).sort() : [];
         this.staff_id = localStorage.getItem('staff_id');
         this.position = localStorage.getItem('position');
+        this.dept = localStorage.getItem('dept');
+        this.reporting_manager = localStorage.getItem('reporting_manager')
         this.search()
         
 
@@ -86,7 +89,7 @@ export default {
             }
 
             // Query using the staff_id to fetch personal schedules
-            const params = { staff_id };
+            const params = { staff_id: this.staff_id, dept: this.dept, position: this.position, reporting_manager:this.reporting_manager };
 
             // Making an API call to the Supabase function or backend to fetch schedules
             try {
