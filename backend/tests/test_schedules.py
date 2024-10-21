@@ -178,7 +178,7 @@ def test_get_directors_schedules(schedules_service, supabase_mock):
     result = schedules_service.get_directors_schedules(reporting_manager)
     
     assert result.data == mock_response.data
-    supabase_mock.from_().select.assert_called_once_with('Staff_ID, Staff_FName, Staff_LName, Dept, Position schedule!inner(schedule_id, staff_id, date, time_slot)')
+    supabase_mock.from_().select.assert_called_once_with('Staff_ID, Staff_FName, Staff_LName, Dept, Position, schedule!inner(schedule_id, staff_id, date, time_slot)')
 
 # Test case for formatting schedules
 def test_format_schedules(schedules_service):
