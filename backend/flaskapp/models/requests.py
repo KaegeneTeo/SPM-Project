@@ -151,29 +151,12 @@ class RequestService:
 
     def create_schedule_entries(self, staff_id, dates, time_slot, request_id):
         for date in dates:
-            if date["time_slot"] == 3:
-                response = self.supabase.from_("schedule").insert({
+            response = self.supabase.from_("schedule").insert({
                 "staff_id": staff_id,
                 "date": date,
-                "time_slot": "AM",
+                "time_slot": time_slot,
                 "request_id": request_id
-                }).execute()
-                if response is None:
-                    current_app.logger.error("Failed to create schedule entry for date %s", date)
-
-                response = self.supabase.from_("schedule").insert({
-                "staff_id": staff_id,
-                "date": date,
-                "time_slot": "PM",
-                "request_id": request_id
-                }).execute()
-            else:
-                response = self.supabase.from_("schedule").insert({
-                    "staff_id": staff_id,
-                    "date": date,
-                    "time_slot": time_slot,
-                    "request_id": request_id
-                }).execute()
+            }).execute()
 
             if response is None:
                 current_app.logger.error("Failed to create schedule entry for date %s", date)
