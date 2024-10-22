@@ -151,15 +151,41 @@ class RequestService:
 
     def create_schedule_entries(self, staff_id, dates, time_slot, request_id):
         for date in dates:
-            response = self.supabase.from_("schedule").insert({
-                "staff_id": staff_id,
-                "date": date,
-                "time_slot": time_slot,
-                "request_id": request_id
-            }).execute()
+            time_slot_int = int(time_slot) if isinstance(time_slot, (int, float, str)) and str(time_slot).isdigit() else time_slot
+                
+            if time_slot_int == 3:
+                # Insert first record with time_slot as 1
+                response1 = self.supabase.from_("schedule").insert({
+                    "staff_id": staff_id,
+                    "date": date,
+                    "time_slot": 1,
+                    "request_id": request_id
+                }).execute()
 
-            if response is None:
-                current_app.logger.error("Failed to create schedule entry for date %s", date)
+                if response1 is None:
+                    current_app.logger.error("Failed to create schedule entry for date %s with time_slot 1", date)
+
+                # Insert second record with time_slot as 2
+                response2 = self.supabase.from_("schedule").insert({
+                    "staff_id": staff_id,
+                    "date": date,
+                    "time_slot": 2,
+                    "request_id": request_id
+                }).execute()
+
+                if response2 is None:
+                    current_app.logger.error("Failed to create schedule entry for date %s with time_slot 2", date)
+            else:
+                # Insert single record for other time_slot values
+                response = self.supabase.from_("schedule").insert({
+                    "staff_id": staff_id,
+                    "date": date,
+                    "time_slot": time_slot_int,
+                    "request_id": request_id
+                }).execute()
+
+        # if response is None:
+        #     current_app.logger.error("Failed to create schedule entry for date %s", date)
 
     def approve_request(self, request_id, result_reason, approved_dates):
         try:
