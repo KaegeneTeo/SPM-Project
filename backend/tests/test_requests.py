@@ -289,10 +289,10 @@ def test_create_request_general_exception(app, request_controller):
 def test_approve_request_success_controller(app, request_controller):
     request_service = request_controller.request_service
     # Mock supabase to simulate a successful request approval
-    request_service.supabase.from_().select().eq().execute = MagicMock(return_value=MagicMock(data=[{'request_type': 1, 'time_slot': 'morning', 'staff_id': '123', 'request_id': 'req-123'}]))
+    request_service.supabase.from_().select().eq().execute = MagicMock(return_value=MagicMock(data=[{'request_type': 1, 'time_slot': 1, 'staff_id': 123, 'request_id': 2}]))
     request_service.supabase.from_().update().eq().execute = MagicMock(return_value=MagicMock(data=[{}]))
 
     with app.test_request_context(json={'approved_dates': ['2024-01-01'], 'result_reason': 'Approved'}):
-        response = request_controller.approve_request('req-123')
+        response = request_controller.approve_request(123)
         assert response.status_code == 200
         assert response.get_json() == {"message": "Request approved successfully"}
