@@ -41,15 +41,15 @@ def get_selected_request(request_id):
 
 @requests_blueprint.route("/request/<request_id>/approve", methods=['PUT', 'POST'])
 def request_approve(request_id):
-    return request_controller.approve_request(request_id)
-    # try:
-    #     if result["message"] == "Request approved successfully":
-    #         email_success = notif_engine.compose_on_accept(request_id)
-    # except:
-    #     return result
-    # else:
-    #     result["email"] = email_success
-    #     return result
+    result = request_controller.approve_request(request_id)
+    try:
+        if result["message"] == "Request approved successfully":
+            email_success = notif_engine.compose_on_accept(request_id)
+    except:
+        return result
+    else:
+        result["email"] = email_success
+        return result
 
 @requests_blueprint.route("/request/<request_id>/reject", methods=['PUT'])
 def request_reject(request_id):

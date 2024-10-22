@@ -150,73 +150,33 @@ class RequestService:
         return date_list
 
     def create_schedule_entries(self, staff_id, dates, time_slot, request_id):
-        
-            # print(type(time_slot))
-            # if time_slot == 3:
-            #     response = self.supabase.from_("schedule").insert({
-            #     "staff_id": staff_id,
-            #     "date": date,
-            #     "time_slot": 1,
-            #     "request_id": request_id
-            #     }).execute()
-            #     response = self.supabase.from_("schedule").insert({
-            #     "staff_id": staff_id,
-            #     "date": date,
-            #     "time_slot": 2,
-            #     "request_id": request_id
-            #     }).execute()
-            # else:
-            # response = self.supabase.from_("schedule").insert({
-            #     "staff_id": staff_id,
-            #     "date": date,
-            #     "time_slot": time_slot,
-            #     "request_id": request_id
-            # }).execute()
-            for date in dates:
-                print(type(time_slot))  # Check the type of time_slot if needed
-                if time_slot == 3:
-                    # Insert two separate time slots (1 and 2) for the given date
-                    response1 = self.supabase.from_("schedule").insert({
-                        "staff_id": staff_id,
-                        "date": date,
-                        "time_slot": 1,
-                        "request_id": request_id
-                    }).execute()
-                    
-                    # Check for any errors in the first response
-                    if response1.get("error"):
-                        print(f"Error occurred while inserting time slot 1: {response1['error']}")
-                    else:
-                        print(f"Insert successful for time slot 1 on {date}")
+        for date in dates:
+            if date["time_slot"] == 3:
+                response = self.supabase.from_("schedule").insert({
+                "staff_id": staff_id,
+                "date": date,
+                "time_slot": "AM",
+                "request_id": request_id
+                }).execute()
+                if response is None:
+                    current_app.logger.error("Failed to create schedule entry for date %s", date)
 
-                    response2 = self.supabase.from_("schedule").insert({
-                        "staff_id": staff_id,
-                        "date": date,
-                        "time_slot": 2,
-                        "request_id": request_id
-                    }).execute()
+                response = self.supabase.from_("schedule").insert({
+                "staff_id": staff_id,
+                "date": date,
+                "time_slot": "PM",
+                "request_id": request_id
+                }).execute()
+            else:
+                response = self.supabase.from_("schedule").insert({
+                    "staff_id": staff_id,
+                    "date": date,
+                    "time_slot": time_slot,
+                    "request_id": request_id
+                }).execute()
 
-                    # Check for any errors in the second response
-                    if response2.get("error"):
-                        print(f"Error occurred while inserting time slot 2: {response2['error']}")
-                    else:
-                        print(f"Insert successful for time slot 2 on {date}")
-
-                else:
-                    # Insert the given time slot for the given date
-                    response = self.supabase.from_("schedule").insert({
-                        "staff_id": staff_id,
-                        "date": date,
-                        "time_slot": time_slot,
-                        "request_id": request_id
-                    }).execute()
-
-                    # Check for any errors in the response
-                    if response.get("error"):
-                        print(f"Error occurred while inserting time slot {time_slot}: {response['error']}")
-                    else:
-                        print(f"Insert successful for time slot {time_slot} on {date}")
-
+            if response is None:
+                current_app.logger.error("Failed to create schedule entry for date %s", date)
 
     def approve_request(self, request_id, result_reason, approved_dates):
         try:
