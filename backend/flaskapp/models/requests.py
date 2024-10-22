@@ -33,7 +33,13 @@ class RequestService:
 
     def get_staff_id(self):
         staff_id = request.headers.get('X-Staff-ID')
-        access_token = request.headers.get('Authorization').split(' ')[1]  # Extract Bearer token
+        authorization_header = request.headers.get('Authorization')
+        
+        if authorization_header and "Bearer " in authorization_header:
+            access_token = authorization_header.split(' ')[1]  # Extract Bearer token
+        else:
+            access_token = None  # Handle missing or malformed Authorization header
+        
         return {"message": "CORS is working", "staff_id": staff_id, "access_token": access_token}
 
     def create_request(self, form_data):

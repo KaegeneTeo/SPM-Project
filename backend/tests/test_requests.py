@@ -242,3 +242,57 @@ def test_reject_request_controller_success(app, request_controller):
         response = request_controller.reject_request(1)
         assert response.status_code == 200
         assert response.get_json() == {"message": "Request rejected successfully"}
+
+def test_get_staff_id_missing_headers(app, request_controller):
+    # Missing Authorization header
+    with app.test_request_context(headers={'X-Staff-ID': '123'}):
+        response = request_controller.get_staff_id()
+        response_data = response.get_json()  # Extract the JSON data from the response
+        assert response_data['staff_id'] == '123'
+        assert response_data['access_token'] is None  # Should be None since Authorization is missing
+
+    # Malformed Authorization header
+    with app.test_request_context(headers={'X-Staff-ID': '123', 'Authorization': 'Bearer'}):
+        response = request_controller.get_staff_id()
+        response_data = response.get_json()
+        assert response_data['staff_id'] == '123'
+        assert response_data['access_token'] is None  # Token extraction should fail due to malformed header
+
+    # Correct Authorization header
+    with app.test_request_context(headers={'X-Staff-ID': '123', 'Authorization': 'Bearer some_token'}):
+        response = request_controller.get_staff_id()
+        response_data = response.get_json()
+        assert response_data['staff_id'] == '123'
+        assert response_data['access_token'] == 'some_token'
+        
+def test_create_request_database_insert_error(app, request_controller):
+    request_service = request_controller.request_service
+    # Mocking the database to return None (simulate failure)
+    request_service.supabase.from_().insert().execute = MagicMock(return_value=None)
+
+    with app.test_request_context(json={'staffid': '123', 'reason': 'Test'}):
+        response, status_code = request_controller.create_request()
+        response_data = response.get_json()  # Extract JSON from response
+        assert status_code == 500
+        assert response_data == {"error": "Failed to insert data into the database"}
+
+def test_create_request_general_exception(app, request_controller):
+    request_service = request_controller.request_service
+    # Mocking to raise an exception
+    request_service.supabase.from_().insert().execute = MagicMock(side_effect=Exception("Some error"))
+
+    with app.test_request_context(json={'staffid': '123', 'reason': 'Test'}):
+        response, status_code = request_controller.create_request()
+        assert status_code == 500
+        assert "Some error" in response.get_json()["error"]
+
+def test_approve_request_success_controller(app, request_controller):
+    request_service = request_controller.request_service
+    # Mock supabase to simulate a successful request approval
+    request_service.supabase.from_().select().eq().execute = MagicMock(return_value=MagicMock(data=[{'request_type': 1, 'time_slot': 'morning', 'staff_id': '123', 'request_id': 'req-123'}]))
+    request_service.supabase.from_().update().eq().execute = MagicMock(return_value=MagicMock(data=[{}]))
+
+    with app.test_request_context(json={'approved_dates': ['2024-01-01'], 'result_reason': 'Approved'}):
+        response = request_controller.approve_request('req-123')
+        assert response.status_code == 200
+        assert response.get_json() == {"message": "Request approved successfully"}
