@@ -333,16 +333,16 @@ export default {
                     <v-dialog v-model="showDialog">
                         <v-card class="mycard">
                             <v-card-title style="background-color:#68B5C7;color:white;">
-                                <strong>Employee List (ID - name)</strong>
+                                <strong>Employee List</strong>
                                 <v-spacer />
                             </v-card-title>
                             <v-card-text> 
-                                <span>WFH</span> 
+                                <strong>WFH</strong> 
                                 <ul v-for="employee in selectedEvent.WFH"> 
                                     <li>{{ employee }}</li> 
                                 </ul> 
-                                
-                                <span>In Office</span> 
+                                <br>
+                                <strong>In Office</strong> 
                                 <ul v-for="employee in selectedEvent.inOffice"> 
                                     <li>{{ employee }}</li> 
                                 </ul> 
