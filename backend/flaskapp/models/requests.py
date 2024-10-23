@@ -14,7 +14,15 @@ class RequestService:
             print (staff_id)
             print (startdate)
             print (enddate)
+            data = self.supabase.from_("request").select().eq("request_id", request_id).execute()
+            staff_id = data.data[0]['staff_id']
+            startdate = data.data[0]['startdate']
+            enddate = data.data[0]['enddate']
+            print (staff_id)
+            print (startdate)
+            print (enddate)
             response = self.supabase.from_("request").delete().eq("request_id", request_id).execute()
+            
             
             if not response.data:
                 abort(404, description="Request not found.")
@@ -26,6 +34,13 @@ class RequestService:
 
     def cancel_request(self, request_id):
         try:
+            data = self.supabase.from_("request").select().eq("request_id", request_id).execute()
+            staff_id = data.data[0]['staff_id']
+            startdate = data.data[0]['startdate']
+            enddate = data.data[0]['enddate']
+            print (staff_id)
+            print (startdate)
+            print (enddate)
             data = self.supabase.from_("request").select().eq("request_id", request_id).execute()
             staff_id = data.data[0]['staff_id']
             startdate = data.data[0]['startdate']

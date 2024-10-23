@@ -5,9 +5,7 @@
       {{ feedbackMessage }}
     </div>
     <button @click="goToCreateRequestPage">Apply for WFH</button>
-    <br>
     <button @click="goToViewRequestStaffPage">View current & past requests</button>
-
     <!-- Display requests in a table format -->
     <div v-if="requests && requests.length">
       <h2>Requests</h2>
