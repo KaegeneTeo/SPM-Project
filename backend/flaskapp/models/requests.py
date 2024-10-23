@@ -7,18 +7,32 @@ class RequestService:
     
     def withdraw_request(self, request_id):
         try:
+            data = self.supabase.from_("request").select().eq("request_id", request_id).execute()
+            staff_id = data.data[0]['staff_id']
+            startdate = data.data[0]['startdate']
+            enddate = data.data[0]['enddate']
+            print (staff_id)
+            print (startdate)
+            print (enddate)
             response = self.supabase.from_("request").delete().eq("request_id", request_id).execute()
-
+            
             if not response.data:
                 abort(404, description="Request not found.")
 
-            return {"message": "Request withdrawn successfully"}, 200
+            return {"message": "Request withdrawn successful", "staff_id": staff_id, "startdate": startdate, "enddate": enddate}
 
         except Exception as e:
             return {"error": str(e)}, 500
 
     def cancel_request(self, request_id):
         try:
+            data = self.supabase.from_("request").select().eq("request_id", request_id).execute()
+            staff_id = data.data[0]['staff_id']
+            startdate = data.data[0]['startdate']
+            enddate = data.data[0]['enddate']
+            print (staff_id)
+            print (startdate)
+            print (enddate)
             response = self.supabase.from_("request").delete().eq("request_id", request_id).execute()
             response2 = self.supabase.from_("schedule").delete().eq("request_id", request_id).execute()
             
@@ -26,7 +40,7 @@ class RequestService:
             if not response.data or not response2.data:
                 abort(404, description="Request not found.")
 
-            return {"message": "Request withdrawn successfully"}, 200
+            return {"message": "Request withdrawn successfully", "staff_id": staff_id, "startdate": startdate, "enddate": enddate}
 
         except Exception as e:
             return {"error": str(e)}, 500

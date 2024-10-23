@@ -30,8 +30,8 @@
             <td>{{ getTimeSlotLabel(request.time_slot) }}</td>
             <td>{{ getRequestTypeLabel(request.request_type) }}</td>
             <td>
-              <button v-if="request.status === 1" @click="cancelRequest(request.request_id)">Cancel</button>
-              <button v-if="request.status === 0" @click="withdrawRequest(request.request_id)">Withdraw</button>
+              <button v-if="request.status === 1" @click="cancelRequest(request.request_id)">Withdraw</button>
+              <button v-if="request.status === 0" @click="withdrawRequest(request.request_id)">Cancel</button>
             </td> <!-- Conditional rendering of buttons -->
             <td><input type="text"></td>
           </tr>
