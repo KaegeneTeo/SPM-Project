@@ -7,18 +7,32 @@ class RequestService:
     
     def withdraw_request(self, request_id):
         try:
+            data = self.supabase.from_("request").select().eq("request_id", request_id).execute()
+            staff_id = data.data[0]['staff_id']
+            startdate = data.data[0]['startdate']
+            enddate = data.data[0]['enddate']
+            print (staff_id)
+            print (startdate)
+            print (enddate)
             response = self.supabase.from_("request").delete().eq("request_id", request_id).execute()
-
+            
             if not response.data:
                 abort(404, description="Request not found.")
 
-            return {"message": "Request withdrawn successfully"}, 200
+            return {"message": "Request withdrawn successful"}, {"request_id": request_id, "staff_id": staff_id, "startdate": startdate, "enddate": enddate}
 
         except Exception as e:
             return {"error": str(e)}, 500
 
     def cancel_request(self, request_id):
         try:
+            data = self.supabase.from_("request").select().eq("request_id", request_id).execute()
+            staff_id = data.data[0]['staff_id']
+            startdate = data.data[0]['startdate']
+            enddate = data.data[0]['enddate']
+            print (staff_id)
+            print (startdate)
+            print (enddate)
             response = self.supabase.from_("request").delete().eq("request_id", request_id).execute()
             response2 = self.supabase.from_("schedule").delete().eq("request_id", request_id).execute()
             
@@ -26,7 +40,7 @@ class RequestService:
             if not response.data or not response2.data:
                 abort(404, description="Request not found.")
 
-            return {"message": "Request withdrawn successfully"}, 200
+            return {"message": "Request withdrawn successfully"}, {"request_id": request_id, "staff_id": staff_id, "startdate": startdate, "enddate": enddate}
 
         except Exception as e:
             return {"error": str(e)}, 500
@@ -212,7 +226,7 @@ class RequestService:
                 "result_reason": result_reason
             }).eq("request_id", request_id).execute()
 
-            return {"message": "Request approved successfully"}
+            return {"message": "Request approved successfully"}, 200
 
         except Exception as e:
             return {"error": str(e)}, 500
@@ -227,7 +241,7 @@ class RequestService:
             if not response.data:
                 abort(404, description="Request not found.")
 
-            return {"message": "Request rejected successfully"}
+            return {"message": "Request rejected successfully"}, 200
 
         except Exception as e:
             return {"error": str(e)}, 500
@@ -239,12 +253,12 @@ class RequestController:
         self.request_service = request_service
 
     def withdraw_request(self, request_id):
-        response_data = self.request_service.withdraw_request(request_id)
-        return jsonify(response_data)
+        response_data, data = self.request_service.withdraw_request(request_id)
+        return response_data, data
     
     def cancel_request(self, request_id):
-        response_data = self.request_service.cancel_request(request_id)
-        return jsonify(response_data)
+        response_data, data = self.request_service.cancel_request(request_id)
+        return response_data, data
     
     def get_staff_id(self):
         response_data = self.request_service.get_staff_id()
@@ -253,7 +267,7 @@ class RequestController:
     def create_request(self):
         form_data = request.json
         response_data, status_code = self.request_service.create_request(form_data)
-        return jsonify(response_data), status_code
+        return response_data
 
     def get_requests_by_staff(self, staff_id):
         response_data, status_code = self.request_service.get_requests_by_staff(staff_id)
@@ -274,10 +288,10 @@ class RequestController:
     def approve_request(self, request_id):
         result_reason = request.json.get('result_reason')
         approved_dates = request.json.get('approved_dates')
-        response_data = self.request_service.approve_request(request_id, result_reason, approved_dates)
-        return jsonify(response_data)
+        response_data, status_code = self.request_service.approve_request(request_id, result_reason, approved_dates)
+        return response_data
 
     def reject_request(self, request_id):
         result_reason = request.json.get('result_reason')
-        response_data = self.request_service.reject_request(request_id, result_reason)
-        return jsonify(response_data)
+        response_data, status_code = self.request_service.reject_request(request_id, result_reason)
+        return response_data
