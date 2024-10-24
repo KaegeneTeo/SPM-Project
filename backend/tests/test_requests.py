@@ -27,10 +27,9 @@ def test_withdraw_request_success(request_service, supabase_client):
     # Mock the response for withdrawing a request
     supabase_client.from_("request").delete().eq("request_id", 1).execute.return_value = MagicMock(data=True)
     
-    response_data, status_code = request_service.withdraw_request(1)
+    response, data = request_service.withdraw_request(1)
     
-    assert status_code == 200
-    assert response_data == {"message": "Request withdrawn successfully"}
+    assert response == {"message": "Request withdrawn successful"}
     supabase_client.from_("request").delete().eq("request_id", 1).execute.assert_called_once()
 
 def test_withdraw_request_not_found(request_service, supabase_client):
@@ -50,10 +49,9 @@ def test_cancel_request_success(request_service, supabase_client):
     supabase_client.from_("schedule").delete().eq("request_id", 1).execute.return_value = MagicMock(data=[{"request_id": 1}])
 
     # Call the cancel_request method
-    response, status_code = request_service.cancel_request(1)
+    response, data = request_service.cancel_request(1)
 
     # Assert that the response is what we expect when the cancel is successful
-    assert status_code == 200
     assert response == {"message": "Request withdrawn successfully"}
 
 def test_cancel_request_not_found(request_service, supabase_client):
@@ -152,12 +150,13 @@ def test_reject_request_not_found(request_service, supabase_client):
 
 def test_withdraw_request_controller_success(request_controller, client, supabase_client):
     mock_response = {"message": "Request withdrawn successfully"}
-    mock_data = {'request_id': 1}
+    mock_data = {'staff_id': 1}
 
     # Mock the withdraw_request method in the RequestService
-    with patch.object(request_controller.request_service, 'withdraw_request', return_value=(mock_response, mock_data)):
+    with patch("flaskapp.models.requests.RequestService.withdraw_request", return_value=(mock_response, mock_data)), \
+        patch("flaskapp.models.notification.notification_sender.send_withdraw", return_value="test_email"):
         response = client.delete('/withdraw_request/1')
-
+    print(response.data)
     assert response.status_code == 200
     assert response.get_json() == mock_response
 
@@ -169,10 +168,12 @@ def test_withdraw_request_controller_success(request_controller, client, supabas
 
     #     assert response.status_code == 200
     #     assert response.json == [{"message": "Request withdrawn successfully"}, response.status_code]
+
+    
 def test_withdraw_request_controller_failure(request_controller, client):
     mock_response = {'error': 'Request not found'}
     
-    with patch.object(request_controller, 'withdraw_request', return_value=(mock_response, None)):
+    with patch("flaskapp.models.requests.RequestController.withdraw_request", return_value=(mock_response, None)):
         response = client.delete('/withdraw_request/999')  # Non-existent request
         
     assert response.status_code == 404
