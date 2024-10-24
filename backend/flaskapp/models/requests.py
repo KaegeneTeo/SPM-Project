@@ -2,8 +2,8 @@ from flask import jsonify, request, abort, current_app
 from datetime import datetime, timedelta
 
 class RequestService:
-    def __init__(self, supabase):
-        self.supabase = supabase
+    def __init__(self, supabase_client):
+        self.supabase = supabase_client
     
     def withdraw_request(self, request_id):
         try:
@@ -14,15 +14,7 @@ class RequestService:
             print (staff_id)
             print (startdate)
             print (enddate)
-            data = self.supabase.from_("request").select().eq("request_id", request_id).execute()
-            staff_id = data.data[0]['staff_id']
-            startdate = data.data[0]['startdate']
-            enddate = data.data[0]['enddate']
-            print (staff_id)
-            print (startdate)
-            print (enddate)
             response = self.supabase.from_("request").delete().eq("request_id", request_id).execute()
-            
             
             if not response.data:
                 abort(404, description="Request not found.")
@@ -41,13 +33,7 @@ class RequestService:
             print (staff_id)
             print (startdate)
             print (enddate)
-            data = self.supabase.from_("request").select().eq("request_id", request_id).execute()
-            staff_id = data.data[0]['staff_id']
-            startdate = data.data[0]['startdate']
-            enddate = data.data[0]['enddate']
-            print (staff_id)
-            print (startdate)
-            print (enddate)
+
             response = self.supabase.from_("request").delete().eq("request_id", request_id).execute()
             response2 = self.supabase.from_("schedule").delete().eq("request_id", request_id).execute()
             
