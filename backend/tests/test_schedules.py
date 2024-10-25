@@ -203,3 +203,13 @@ def test_format_schedules_no_data(schedules_service):
     result, status_code = schedules_service.format_schedules(response, allnames)
     assert result == {'code': 404, 'message': 'No data or bad data'}
     assert status_code == 404
+
+def test_schedule_endpoint(client):
+    with patch('flaskapp.models.schedules.SchedulesService.get_own_schedule') as get_own_mock, \
+        patch('flaskapp.models.schedules.SchedulesService.get_schedules_by_reporting_manager') as get_schedules_mock:
+
+        get_own_mock.return_value = MagicMock()
+        get_schedules_mock.return_value = MagicMock()
+        response = client.get('/schedule')
+        assert get_own_mock.assert_called_once()
+    assert response.get_json() == {"message": "Hello schedules"}
