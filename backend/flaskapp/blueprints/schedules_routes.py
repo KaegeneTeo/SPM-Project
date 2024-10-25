@@ -43,7 +43,7 @@ def get_schedules():
     # Director team (special logic)
     elif int(data["role"]) == 1 and int(data["reporting_manager"]) == CEO:
         allnames = schedules_service.get_all_directors(data["reporting_manager"])
-        response = schedules_service.get_directors_schedules(data["dept"], data["reporting_manager"])
+        response = schedules_service.get_directors_schedules(data["reporting_manager"])
 
     # Filter by department and reporting manager
     else:
