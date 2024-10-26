@@ -12,6 +12,10 @@ def supabase_client():
     return MagicMock()
 
 @pytest.fixture
+def mock_staff_id():
+    return 123  # Example staff_id
+
+@pytest.fixture
 def request_service(supabase_client):
     return RequestService(supabase_client)
 
@@ -30,6 +34,69 @@ def client():
 # ---------------------------------------------
 # Testing RequestService
 # ---------------------------------------------
+def test_user_not_found(request_service, mock_staff_id):
+    # Mock supabase response for non-existent user
+    request_service.supabase.from_().select().eq().execute.return_value.data = None
+
+    result, status_code = request_service.get_team_requests(mock_staff_id)
+
+    assert result == {"error": "User not found"}
+    assert status_code == 404
+
+def test_user_not_authorized(request_service, mock_staff_id):
+    # Mock user response with unauthorized role and position
+    request_service.supabase.from_().select().eq().execute.return_value.data = [
+        {"Role": 2, "Position": "employee"}
+    ]
+
+    result, status_code = request_service.get_team_requests(mock_staff_id)
+
+    assert result == []
+    assert status_code == 200
+
+def test_manager_with_no_team_members(request_service, mock_staff_id):
+    # Mock authorized role and position
+    request_service.supabase.from_().select().eq().execute.side_effect = [
+        MagicMock(data=[{"Role": 1, "Position": "manager"}]),  # User role lookup
+        MagicMock(data=[])  # No team members found
+    ]
+
+    result, status_code = request_service.get_team_requests(mock_staff_id)
+
+    assert result == []
+    assert status_code == 200
+
+def test_manager_with_team_members_and_requests(request_service, mock_staff_id):
+    # Mock authorized role and position, team members, and requests
+    request_service.supabase.from_().select().eq().execute.side_effect = [
+        MagicMock(data=[{"Role": 1, "Position": "manager"}]),  # User role lookup
+        MagicMock(data=[{"Staff_ID": 124}, {"Staff_ID": 125}]),  # Team members
+        MagicMock(data=[{"staff_id": 124, "request": "Request 1"}, 
+                        {"staff_id": 125, "request": "Request 2"}])  # Requests for team
+    ]
+
+    result, status_code = request_service.get_team_requests(mock_staff_id)
+
+    expected_result = [
+        {"staff_id": 124, "request": "Request 1"},
+        {"staff_id": 125, "request": "Request 2"}
+    ]
+    assert result.data == expected_result
+    assert status_code == 200
+
+def test_manager_with_team_members_but_no_requests(request_service, mock_staff_id):
+    # Mock authorized role and position, team members, and empty requests
+    request_service.supabase.from_().select().eq().execute.side_effect = [
+        MagicMock(data=[{"Role": 1, "Position": "manager"}]),  # User role lookup
+        MagicMock(data=[{"Staff_ID": 124}, {"Staff_ID": 125}]),  # Team members
+        MagicMock(data=[])  # No requests for team members
+    ]
+
+    result, status_code = request_service.get_team_requests(mock_staff_id)
+
+    assert result == []
+    assert status_code == 200
+
 def test_get_selected_request_success(request_service, supabase_client):
     # Mock the response for getting a request
     supabase_client.from_("request").select().eq("request_id", 1).execute.return_value = MagicMock(data=[{"request_id": 1}])
@@ -89,41 +156,6 @@ def test_calculate_recurring_dates_multiple_dates(request_service):
 
     assert result == expected_dates  # Verify the generated list of dates matches expected Mondays and Wednesdays
 
-def test_get_team_requests_user_not_found(request_service, supabase_client):
-    # Mock response for a non-existent user
-    supabase_client.from_("Employee").select().eq("Staff_ID", 999).execute.return_value = MagicMock(data=[])
-    
-    response = request_service.get_team_requests(999)
-    assert response == ({"error": "User not found"}, 404)
-    supabase_client.from_("Employee").select().eq("Staff_ID", 999).execute.assert_called_once()
-
-
-def test_get_team_requests_authorized_with_team_members(request_service, supabase_client):
-    # Mock response for an authorized user with Role 1 and 'Manager' position
-    supabase_client.from_("Employee").select('Role, Position').eq("Staff_ID", 1).execute.return_value = MagicMock(data=[{"Role": 1, "Position": "Director", "Staff_ID":1}])
-    response = request_service.get_team_requests(1)
-    print(response)
-    assert response == ([{'request_id': 42, 'staff_id': 140894, 'reason': 'test 6', 'status': 0, 'startdate': '2024-10-14', 'enddate': '2024-10-16', 'time_slot': 3, 'request_type': 1, 'result_reason': ''}], 200)
-
-
-def test_get_team_requests_authorized_no_team_members(request_service, supabase_client):
-    # Mock response for an authorized user with Role 1 and 'Manager' position
-    supabase_client.from_("Employee").select().eq("Staff_ID", 1).execute.return_value = MagicMock(data=[{"Role": 1, "Position": "Manager"}])
-
-    # Mock response for no team members
-    supabase_client.from_("Employee").select().eq("Reporting_Manager", 1).execute.return_value = MagicMock(data=[])
-
-    response = request_service.get_team_requests(1)
-    assert response == ([], 200)  # Expected to return an empty list with 200 status code
-
-
-def test_get_team_requests_unauthorized_user(request_service, supabase_client):
-    # Mock response for an unauthorized user with Role 2 and no managerial position
-    supabase_client.from_("Employee").select().eq("Staff_ID", 4).execute.return_value = MagicMock(data=[{"Role": 2, "Position": "Employee"}])
-
-    response = request_service.get_team_requests(4)
-    assert response == ([], 200)
-    
 def test_withdraw_request_success(request_service, supabase_client):
     # Mock the response for withdrawing a request
     supabase_client.from_("request").delete().eq("request_id", 1).execute.return_value = MagicMock(data=True)
