@@ -163,7 +163,7 @@ export default {
       //axios.delete(`http://127.0.0.1:5000/withdraw_request/${request_id}`)
     .then(response => {
       console.log('Request withdrawn successfully:', response.data);
-      alert('Request withdrawn successfully');
+      alert('Request cancelled successfully!');
       location.reload()
     })
     .catch(error => {
@@ -176,7 +176,7 @@ export default {
       //axios.delete(`http://127.0.0.1:5000/cancel_request/${request_id}`)
     .then(response => {
       console.log('Request cancelled successfully:', response.data);
-      alert('Request cancelled successfully');
+      alert('Request withdrawn successfully!');
       location.reload()
     })
     .catch(error => {

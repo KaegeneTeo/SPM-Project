@@ -268,11 +268,11 @@ class RequestController:
         form_data = request.json
         try:
             response_data = self.request_service.create_request(form_data)
-            return response_data
+            return response_data, 201
         except Exception as e:
             # Handle the exception and log the error
             current_app.logger.error("An error occurred: %s", str(e))
-            return {"error": str(e)}
+            return {"error": str(e)}, 500
 
     def get_requests_by_staff(self, staff_id):
         response_data, status_code = self.request_service.get_requests_by_staff(staff_id)
