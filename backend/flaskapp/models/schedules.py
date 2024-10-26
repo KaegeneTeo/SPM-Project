@@ -75,7 +75,7 @@ class SchedulesService:
 
         # Convert data into the final format for frontend
         returnlist = []
-        allnamelist = [f'{employee["Staff_ID"]} - {employee["Staff_FName"]} {employee["Staff_LName"]} - {item["dept"]} - {item["position"]}' for employee in allnames.data]
+        allnamelist = [f'{employee["Staff_ID"]} - {employee["Staff_FName"]} {employee["Staff_LName"]} - {employee["Dept"]} - {employee["Position"]}' for employee in allnames.data]
 
         for key in dict1:
             time_slot_data = dict1[key]
