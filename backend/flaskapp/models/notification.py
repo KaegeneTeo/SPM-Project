@@ -6,28 +6,64 @@ load_dotenv()
 sns_url = os.environ.get("SNS_URL")
 topic = os.environ.get("TOPIC")
 
+class supabase_access:
+    def __init__(self,supabase):
+        self.supabase = supabase
+
+    #get request data
+    def get_request_data(self, request_id):
+        request_response = self.supabase.from_("request").select("*").eq("request_id", request_id).execute()
+        if not request_response.data:
+            return {"error": "Requests not found"}, 404
+        selected_request = request_response.data[0]
+        return selected_request, 200
+
+    #get staff data
+    def get_staff_data(self, staffid):
+        employee_response = self.supabase.from_("Employee").select("*").eq("Staff_ID", staffid).execute()
+        if not employee_response.data:
+            return {"error": "Employee not found"}, 404
+        employee = employee_response.data[0]
+        return employee, 200
+    
+    #get latest req
+    def get_latest_req(self):
+        request_response = self.supabase.from_("request").select("*").order('request_id', desc=True).limit(1).execute()
+        if not request_response.data:
+            return {"error": "Requests not found"}, 404
+        selected_request = request_response.data[0]
+        return selected_request, 200
+
+    #get manager data
+    def get_manager_data(self, managerid):
+        manager_response = self.supabase.from_("Employee").select("*").eq("Staff_ID", managerid).execute()
+        if not manager_response.data:
+            return {"error": "Employee not found"}, 404
+        manager = manager_response.data[0]
+        return manager, 200
+
+
+
 class notification_engine:
     #init
-    def __init__(self, supabase):
-        self.supabase = supabase
+    def __init__(self, supabase_access):
+        self.supabase_caller = supabase_access
     
     #compose email on accepted schedule
     def compose_approve(self, request_id):
         email = ""
 
         #get request data
-        request_response = self.supabase.from_("request").select("*").eq("request_id", request_id).execute()
-        if not request_response.data:
-            return {"error": "Requests not found"}, 404
-        selected_request = request_response.data[0]
+        selected_request, status = self.supabase_caller.get_request_data(request_id)
+        if int(status) != 200:
+            return selected_request
 
         #get staff data
         staffid = selected_request["staff_id"]
-        employee_response = self.supabase.from_("Employee").select("*").eq("Staff_ID", staffid).execute()
-        if not request_response.data:
-            return {"error": "Employee not found"}, 404
-        employee = employee_response.data[0]
-
+        employee, status = self.supabase_caller.get_staff_data(staffid)
+        if int(status) != 200:
+            return employee
+        
         #compose
         staffname = employee["Staff_FName"] + " " + employee["Staff_LName"]
         email += f"Hi {staffname}, your request (ID: {selected_request["request_id"]}) from {selected_request["startdate"]} to {selected_request["enddate"]} has been partially or fully approved. Please check your schedule for details."
@@ -37,18 +73,16 @@ class notification_engine:
         email = ""
 
         #get request data
-        request_response = self.supabase.from_("request").select("*").eq("request_id", request_id).execute()
-        if not request_response.data:
-            return {"error": "Requests not found"}, 404
-        selected_request = request_response.data[0]
+        selected_request, status = self.supabase_caller.get_request_data(request_id)
+        if int(status) != 200:
+            return selected_request
 
         #get staff data
         staffid = selected_request["staff_id"]
-        employee_response = self.supabase.from_("Employee").select("*").eq("Staff_ID", staffid).execute()
-        if not request_response.data:
-            return {"error": "Employee not found"}, 404
-        employee = employee_response.data[0]
-
+        employee, status = self.supabase_caller.get_staff_data(staffid)
+        if int(status) != 200:
+            return employee
+        
         #compose
         staffname = employee["Staff_FName"] + " " + employee["Staff_LName"]
         email += f"Hi {staffname}, your request (ID: {selected_request["request_id"]}) from {selected_request["startdate"]} to {selected_request["enddate"]} has been rejected."
@@ -58,24 +92,21 @@ class notification_engine:
         email = ""
 
         #get request data
-        request_response = self.supabase.from_("request").select("*").order('request_id', desc=True).limit(1).execute()
-        if not request_response.data:
-            return {"error": "Requests not found"}, 404
-        selected_request = request_response.data[0]
+        selected_request, status = self.supabase_caller.get_latest_req()
+        if int(status) != 200:
+            return selected_request
         
         #get staff data
         staffid = selected_request["staff_id"]
-        employee_response = self.supabase.from_("Employee").select("*").eq("Staff_ID", staffid).execute()
-        if not request_response.data:
-            return {"error": "Employee not found"}, 404
-        employee = employee_response.data[0]
+        employee, status = self.supabase_caller.get_staff_data(staffid)
+        if int(status) != 200:
+            return employee
 
         #get manager data
         managerid = employee["Reporting_Manager"]
-        manager_response = self.supabase.from_("Employee").select("*").eq("Staff_ID", managerid).execute()
-        if not request_response.data:
-            return {"error": "Employee not found"}, 404
-        manager = manager_response.data[0]
+        manager, status = self.supabase_caller.get_manager_data(managerid)
+        if int(status) != 200:
+            return manager
 
         #compose
         staffname = employee["Staff_FName"] + " " + employee["Staff_LName"]
@@ -88,17 +119,15 @@ class notification_engine:
         staffid = data["staff_id"]
         
         #get staff data
-        employee_response = self.supabase.from_("Employee").select("*").eq("Staff_ID", staffid).execute()
-        if not employee_response.data:
-            return {"error": "Employee not found"}, 404
-        employee = employee_response.data[0]
+        employee, status = self.supabase_caller.get_staff_data(staffid)
+        if int(status) != 200:
+            return employee
 
         #get manager data
         managerid = employee["Reporting_Manager"]
-        manager_response = self.supabase.from_("Employee").select("*").eq("Staff_ID", managerid).execute()
-        if not manager_response.data:
-            return {"error": "Manager not found"}, 404
-        manager = manager_response.data[0]
+        manager, status = self.supabase_caller.get_manager_data(managerid)
+        if int(status) != 200:
+            return manager
 
         #compose
         staffname = employee["Staff_FName"] + " " + employee["Staff_LName"]
@@ -111,17 +140,15 @@ class notification_engine:
         staffid = data["staff_id"]
         
         #get staff data
-        employee_response = self.supabase.from_("Employee").select("*").eq("Staff_ID", staffid).execute()
-        if not employee_response.data:
-            return {"error": "Employee not found"}, 404
-        employee = employee_response.data[0]
+        employee, status = self.supabase_caller.get_staff_data(staffid)
+        if int(status) != 200:
+            return employee
 
         #get manager data
         managerid = employee["Reporting_Manager"]
-        manager_response = self.supabase.from_("Employee").select("*").eq("Staff_ID", managerid).execute()
-        if not manager_response.data:
-            return {"error": "Manager not found"}, 404
-        manager = manager_response.data[0]
+        manager, status = self.supabase_caller.get_manager_data(managerid)
+        if int(status) != 200:
+            return manager
 
         #compose
         staffname = employee["Staff_FName"] + " " + employee["Staff_LName"]

@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify
 from ..extensions import supabase  # Assuming you have initialized supabase
 from ..models.requests import RequestService, RequestController
-from ..models.notification import notification_engine, notification_sender
+from ..models.notification import notification_engine, notification_sender, supabase_access
 
 
 requests_blueprint = Blueprint("requests", __name__)
@@ -9,7 +9,8 @@ requests_blueprint = Blueprint("requests", __name__)
 # Initialize services and controllers
 request_service = RequestService(supabase)
 request_controller = RequestController(request_service)
-notif_engine = notification_engine(supabase)
+notif_supabase = supabase_access(supabase)
+notif_engine = notification_engine(notif_supabase)
 notif_sender = notification_sender(notif_engine)
 
 # Define routes
@@ -35,7 +36,7 @@ def get_staff_id():
 
 @requests_blueprint.route("/requests/", methods=['POST'])
 def create_request():
-    response = request_controller.create_request()
+    response, status = request_controller.create_request()
     if "error" not in response.keys():
         code = notif_sender.send_create()
         response["email"] = code
