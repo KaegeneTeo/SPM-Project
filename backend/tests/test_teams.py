@@ -38,6 +38,16 @@ def test_get_staff_by_department_CEO(teams_service, supabase_client):
     assert result == mock_response.data
     supabase_client.from_.assert_called_with('Employee')
 
+def test_get_staff_by_department_all(teams_service, supabase_client):
+    mock_response = MagicMock()
+    mock_response.data = [{'Staff_ID': 1, 'Staff_FName': 'John', 'Staff_LName': 'Doe', 'Dept': 'IT', 'Position': 'Developer', 'Reporting_Manager': 2}]
+    supabase_client.from_().select().execute.return_value = mock_response
+
+    department = 'All'
+    result = teams_service.get_staff_by_department(department)
+
+    assert result == mock_response.data
+    supabase_client.from_.assert_called_with('Employee')
 
 def test_get_manager_name(teams_service, supabase_client):
     mock_response = MagicMock()
@@ -138,3 +148,68 @@ def test_get_teams_by_reporting_manager_failure(teams_controller, client):
         response = client.get('/teams_by_reporting_manager')
     assert response.status_code == 404
     assert response.get_json() == {"error": "No staff found"}
+
+def test_get_team_requests_success(client, teams_controller):
+    # Mock data setup
+
+    with patch.object(teams_controller.teams_service, 'get_team_ids_for_staff', return_value=[1, 2]), \
+        patch.object(teams_controller.teams_service, 'get_staff_in_teams', return_value=[10, 11]), \
+        patch.object(teams_controller.teams_service, 'get_requests_for_staff', return_value=[{"request_id": 1, "staff_id": 10, "status": 0}, {"request_id": 2, "staff_id": 11, "status": 0}]):
+    
+    
+        with client.application.test_request_context(headers={'X-Staff-ID': '1'}):
+            response = teams_controller.get_team_requests()
+    
+    # Assertions
+    assert response.status_code == 200
+    data = response.get_json()
+    assert len(data) == 2
+    assert data[0]["request_id"] == 1
+    assert data[1]["request_id"] == 2
+
+def test_get_team_requests_missing_staff_id(client, teams_controller):
+    with client.application.test_request_context(headers={}):
+        response = teams_controller.get_team_requests()
+    
+    # Assertions
+    assert response.status_code == 400
+    data = response.get_json()
+    assert data["error"] == "Staff ID is required"
+
+def test_get_team_requests_no_teams_found(client, teams_controller):
+    # Mock data for no teams found
+    with patch.object(teams_controller.teams_service, 'get_team_ids_for_staff', return_value=[]):    
+        with client.application.test_request_context(headers={'X-Staff-ID': '1'}):
+            response = teams_controller.get_team_requests()
+    
+    # Assertions
+    assert response.status_code == 404
+    data = response.get_json()
+    assert data["error"] == "No teams found for the staff"
+
+def test_get_team_requests_no_staff_in_teams(client, teams_controller):
+    # Mock data for staff in teams
+
+    with patch.object(teams_controller.teams_service, 'get_team_ids_for_staff', return_value=[1, 2]), \
+        patch.object(teams_controller.teams_service, 'get_staff_in_teams', return_value=[]):    
+        with client.application.test_request_context(headers={'X-Staff-ID': '1'}):
+            response = teams_controller.get_team_requests()
+    
+    # Assertions
+    assert response.status_code == 404
+    data = response.get_json()
+    assert data["error"] == "No staff found in the teams"
+
+def test_get_team_requests_no_requests_for_team_staff(client, teams_controller):
+    # Mock data for no requests found
+
+    with patch.object(teams_controller.teams_service, 'get_team_ids_for_staff', return_value=[1, 2]), \
+        patch.object(teams_controller.teams_service, 'get_staff_in_teams', return_value=[10, 11]), \
+        patch.object(teams_controller.teams_service, 'get_requests_for_staff', return_value=[]):    
+        with client.application.test_request_context(headers={'X-Staff-ID': '1'}):
+            response = teams_controller.get_team_requests()
+    
+    # Assertions
+    assert response.status_code == 404
+    data = response.get_json()
+    assert data["error"] == "No requests found for the team"

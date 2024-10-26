@@ -127,5 +127,6 @@ class TeamsController:
             return make_response(jsonify({"error": "No staff found in the teams"}), 404)
         
         requests = self.teams_service.get_requests_for_staff(staff_ids)
-        print(requests[0])
+        if not requests:
+            return make_response(jsonify({"error": "No requests found for the team"}), 404)
         return make_response(jsonify(requests), 200)
