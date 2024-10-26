@@ -30,7 +30,100 @@ def client():
 # ---------------------------------------------
 # Testing RequestService
 # ---------------------------------------------
+def test_get_selected_request_success(request_service, supabase_client):
+    # Mock the response for getting a request
+    supabase_client.from_("request").select().eq("request_id", 1).execute.return_value = MagicMock(data=[{"request_id": 1}])
 
+    response = request_service.get_selected_request(1)
+    assert response == ({"request_id": 1}, 200)  # Expecting a tuple
+    supabase_client.from_("request").select().eq("request_id", 1).execute.assert_called_once()
+
+def test_get_selected_request_not_found(request_service, supabase_client):
+    # Mock the response to simulate a request not found scenario
+    supabase_client.from_("request").select().eq("request_id", 999).execute.return_value = MagicMock(data=[])
+
+    response = request_service.get_selected_request(999)
+    assert response == ({"error": "Request not found"}, 404)  # Expecting an error message and 404 status
+    supabase_client.from_("request").select().eq("request_id", 999).execute.assert_called_once()
+
+def test_calculate_recurring_dates_empty_input(request_service):
+    # Test with empty approved_dates input
+    result = request_service.calculate_recurring_dates([])
+    assert result == []  # Expecting an empty list when there are no approved dates
+
+
+def test_calculate_recurring_dates_single_date(request_service):
+    # Test with a single approved date
+    approved_dates = ["2024-01-01"]  # A Monday
+    result = request_service.calculate_recurring_dates(approved_dates)
+    
+    # Generate expected dates for all Mondays within one year from 2024-01-01
+    expected_dates = []
+    start_date = datetime.strptime("2024-01-01", "%Y-%m-%d")
+    end_date = start_date + timedelta(days=365)
+    current_date = start_date
+
+    while current_date <= end_date:
+        if current_date.weekday() == 0:  # Monday
+            expected_dates.append(current_date.strftime("%Y-%m-%d"))
+        current_date += timedelta(days=1)
+
+    assert result == expected_dates  # Verify the generated list of dates matches expected Mondays
+
+
+def test_calculate_recurring_dates_multiple_dates(request_service):
+    # Test with multiple approved dates (Monday and Wednesday)
+    approved_dates = ["2024-01-01", "2024-01-03"]  # Monday and Wednesday
+    result = request_service.calculate_recurring_dates(approved_dates)
+
+    # Generate expected dates for all Mondays and Wednesdays within one year from 2024-01-01
+    expected_dates = []
+    start_date = datetime.strptime("2024-01-01", "%Y-%m-%d")
+    end_date = start_date + timedelta(days=365)
+    current_date = start_date
+
+    while current_date <= end_date:
+        if current_date.weekday() in [0, 2]:  # Monday or Wednesday
+            expected_dates.append(current_date.strftime("%Y-%m-%d"))
+        current_date += timedelta(days=1)
+
+    assert result == expected_dates  # Verify the generated list of dates matches expected Mondays and Wednesdays
+
+def test_get_team_requests_user_not_found(request_service, supabase_client):
+    # Mock response for a non-existent user
+    supabase_client.from_("Employee").select().eq("Staff_ID", 999).execute.return_value = MagicMock(data=[])
+    
+    response = request_service.get_team_requests(999)
+    assert response == ({"error": "User not found"}, 404)
+    supabase_client.from_("Employee").select().eq("Staff_ID", 999).execute.assert_called_once()
+
+
+def test_get_team_requests_authorized_with_team_members(request_service, supabase_client):
+    # Mock response for an authorized user with Role 1 and 'Manager' position
+    supabase_client.from_("Employee").select('Role, Position').eq("Staff_ID", 1).execute.return_value = MagicMock(data=[{"Role": 1, "Position": "Director", "Staff_ID":1}])
+    response = request_service.get_team_requests(1)
+    print(response)
+    assert response == ([{'request_id': 42, 'staff_id': 140894, 'reason': 'test 6', 'status': 0, 'startdate': '2024-10-14', 'enddate': '2024-10-16', 'time_slot': 3, 'request_type': 1, 'result_reason': ''}], 200)
+
+
+def test_get_team_requests_authorized_no_team_members(request_service, supabase_client):
+    # Mock response for an authorized user with Role 1 and 'Manager' position
+    supabase_client.from_("Employee").select().eq("Staff_ID", 1).execute.return_value = MagicMock(data=[{"Role": 1, "Position": "Manager"}])
+
+    # Mock response for no team members
+    supabase_client.from_("Employee").select().eq("Reporting_Manager", 1).execute.return_value = MagicMock(data=[])
+
+    response = request_service.get_team_requests(1)
+    assert response == ([], 200)  # Expected to return an empty list with 200 status code
+
+
+def test_get_team_requests_unauthorized_user(request_service, supabase_client):
+    # Mock response for an unauthorized user with Role 2 and no managerial position
+    supabase_client.from_("Employee").select().eq("Staff_ID", 4).execute.return_value = MagicMock(data=[{"Role": 2, "Position": "Employee"}])
+
+    response = request_service.get_team_requests(4)
+    assert response == ([], 200)
+    
 def test_withdraw_request_success(request_service, supabase_client):
     # Mock the response for withdrawing a request
     supabase_client.from_("request").delete().eq("request_id", 1).execute.return_value = MagicMock(data=True)
