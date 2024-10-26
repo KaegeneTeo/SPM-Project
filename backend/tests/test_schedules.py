@@ -11,6 +11,13 @@ def supabase_mock():
 def schedules_service(supabase_mock):
     return SchedulesService(supabase_mock)
 
+@pytest.fixture
+def schedules_service_mock():
+    # Mock the SchedulesService class methods
+    mocker = MagicMock()
+    mock = mocker.patch('flaskapp.models.schedules.SchedulesService')
+    return mock
+
 # Test case for getting the own schedule of a staff member
 def test_get_own_schedule(schedules_service, supabase_mock):
     staff_id = 1
@@ -204,12 +211,140 @@ def test_format_schedules_no_data(schedules_service):
     assert result == {'code': 404, 'message': 'No data or bad data'}
     assert status_code == 404
 
-def test_schedule_endpoint(client):
-    with patch('flaskapp.models.schedules.SchedulesService.get_own_schedule') as get_own_mock, \
-        patch('flaskapp.models.schedules.SchedulesService.get_schedules_by_reporting_manager') as get_schedules_mock:
 
-        get_own_mock.return_value = MagicMock()
-        get_schedules_mock.return_value = MagicMock()
-        response = client.get('/schedule')
-        assert get_own_mock.assert_called_once()
-    assert response.get_json() == {"message": "Hello schedules"}
+def test_get_schedules_own_schedule(client):
+    # Use the `patch` context manager and capture the mock objects
+    with patch('flaskapp.models.schedules.SchedulesService.get_own_schedule') as mock_get_own_schedule, \
+         patch('flaskapp.models.schedules.SchedulesService.get_schedules_by_reporting_manager') as mock_get_schedules_by_reporting_manager:
+
+        # Mock the return values of the patched methods
+        mock_get_own_schedule.return_value = {}
+        mock_get_schedules_by_reporting_manager.return_value = {}
+
+        # Make the request
+        response = client.get('/schedules', query_string={
+            'staff_id': '1',
+            'dept': 'HR',
+            'reporting_manager': '2'
+        })
+
+        # Assertions on response status code, etc.
+        assert response.status_code == 200
+
+        # Use assert_called_once_with to check if the methods were called with specific arguments
+        mock_get_own_schedule.assert_called_once_with('1')
+        mock_get_schedules_by_reporting_manager.assert_called_once_with('HR', 2)
+
+def test_get_schedules_ceo(client):
+    # Mock the get_ceo, get_all_employees_by_dept, and get_schedules_by_dept methods
+
+    with patch('flaskapp.models.schedules.SchedulesService.get_ceo') as mock_get_ceo, \
+         patch('flaskapp.models.schedules.SchedulesService.get_all_employees_by_dept') as mock_get_all_employees_by_dept, \
+         patch('flaskapp.models.schedules.SchedulesService.get_schedules_by_dept') as mock_get_schedules_by_dept:
+
+        # Mock the return values of the patched methods
+        mock_get_ceo.return_value = {}
+        mock_get_all_employees_by_dept.return_value = {}
+        mock_get_schedules_by_dept.return_value = {}
+
+        # Call the endpoint with dept set to CEO
+        response = client.get('/schedules', query_string={
+            'dept': 'CEO',
+            'reporting_manager': 'all'
+        })
+
+        # Verify that the service methods were called correctly
+        mock_get_ceo.assert_called_once()
+        mock_get_all_employees_by_dept.assert_called_once_with('CEO')
+        mock_get_schedules_by_dept.assert_called_once_with('CEO')
+
+        # Verify the response status code
+        assert response.status_code == 200
+
+def test_get_schedules_all_depts(client):
+
+    # Mock the get_all_employees and get_schedules_for_all_depts methods
+    with patch('flaskapp.models.schedules.SchedulesService.get_all_employees') as mock_get_all_employees, \
+         patch('flaskapp.models.schedules.SchedulesService.get_schedules_for_all_depts') as mock_get_schedules_for_all_depts:
+
+        # Mock the return values of the patched methods
+        mock_get_all_employees.return_value = {}
+        mock_get_schedules_for_all_depts.return_value = {}
+        # Call the endpoint with dept=all and reporting_manager=all
+        response = client.get('/schedules', query_string={
+            'dept': 'all',
+            'reporting_manager': 'all'
+        })
+
+        mock_get_all_employees.assert_called_once()
+        mock_get_schedules_for_all_depts.assert_called_once()
+        assert response.status_code == 200
+
+
+def test_get_schedules_for_team_in_dept(client):
+    # Mock the get_all_employees_by_dept and get_schedules_by_dept methods
+    with patch('flaskapp.models.schedules.SchedulesService.get_all_employees_by_dept') as mock_get_all_employees_by_dept, \
+         patch('flaskapp.models.schedules.SchedulesService.get_schedules_by_dept') as mock_get_schedules_by_dept:
+
+        # Call the endpoint with a specific department and reporting_manager=all
+        response = client.get('/schedules', query_string={
+            'dept': 'IT',
+            'reporting_manager': 'all'
+        })
+
+        # Verify that the service methods were called correctly
+        mock_get_all_employees_by_dept.assert_called_once_with('IT')
+        mock_get_schedules_by_dept.assert_called_once_with('IT')
+        # Verify the response status code
+        assert response.status_code == 200
+
+def test_get_schedules_directors_team(client):
+    # Mock the get_all_directors and get_directors_schedules methods
+    with patch('flaskapp.models.schedules.SchedulesService.get_all_directors') as mock_get_all_directors, \
+         patch('flaskapp.models.schedules.SchedulesService.get_directors_schedules') as mock_get_directors_schedules, \
+        patch('flaskapp.models.schedules.SchedulesService.get_ceo') as mock_get_ceo:
+        
+        # Mock the return values of the patched methods
+        mock_get_all_directors.return_value = {}
+        mock_get_directors_schedules.return_value = {}
+        mock_get_ceo.return_value = 1
+        # Call the endpoint with the role and reporting_manager of the CEO
+        response = client.get('/schedules', query_string={
+            'role': '1',
+            'reporting_manager': '1',  # Mocking the CEO ID as 1
+            'dept': 'IT'
+        })
+
+        mock_get_all_directors.assert_called_once_with("1")
+        mock_get_directors_schedules.assert_called_once_with("1")
+        assert response.status_code == 200
+
+def test_get_schedules_by_dept_and_reporting_manager(client, schedules_service_mock):
+    # Mock the get_schedules_by_reporting_manager and get_all_employees_by_reporting_manager methods
+    with patch('flaskapp.models.schedules.SchedulesService.get_schedules_by_reporting_manager') as mock_get_schedules_by_reporting_manager, \
+        patch('flaskapp.models.schedules.SchedulesService.get_all_employees_by_reporting_manager') as mock_get_all_employees_by_reporting_manager, \
+        patch('flaskapp.models.schedules.SchedulesService.get_ceo') as mock_get_ceo:
+
+        mock_get_all_employees_by_reporting_manager.return_value = {}
+        mock_get_schedules_by_reporting_manager.return_value = {}
+        mock_get_ceo.return_value = 1
+        # Call the endpoint with a specific department and reporting manager
+        response = client.get('/schedules', query_string={
+            'dept': 'IT',
+            'reporting_manager': '2',
+            'role': '1'
+        })
+        
+        mock_get_all_employees_by_reporting_manager.assert_called_once_with('IT', 2)
+        mock_get_schedules_by_reporting_manager.assert_called_once_with('IT', 2)
+        assert response.status_code == 200
+
+def test_get_schedules_missing_params(client, schedules_service_mock):
+    # Call the endpoint without providing necessary query parameters
+    response = client.get('/schedules', query_string={})
+
+    # Verify that no service methods were called and an error is returned
+    schedules_service_mock.get_own_schedule.assert_not_called()
+    schedules_service_mock.get_schedules_for_all_depts.assert_not_called()
+
+    assert response.status_code == 400  

@@ -17,7 +17,6 @@ def test():
 @schedules_blueprint.route("/schedules", methods=['GET'])
 def get_schedules():
     data = request.args
-    print(data)
 
     CEO = schedules_service.get_ceo()
     
@@ -47,6 +46,7 @@ def get_schedules():
 
     # Filter by department and reporting manager
     else:
+        print("here")
         allnames = schedules_service.get_all_employees_by_reporting_manager(data["dept"], int(data["reporting_manager"]))
         response = schedules_service.get_schedules_by_reporting_manager(data["dept"], int(data["reporting_manager"]))
 
