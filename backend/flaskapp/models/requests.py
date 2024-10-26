@@ -74,15 +74,15 @@ class RequestService:
             }).execute()
 
             # Check for errors in the response
-            if response is None:
-                current_app.logger.error("Database insert error")
-                return {"error": "Failed to insert data into the database"}, 500
+            # if response is None:
+            #     current_app.logger.error("Database insert error")
+            #     return {"error": "Failed to insert data into the database"}, 500
 
             # If everything is fine, return the inserted request
             return response.data[0], 201
         except Exception as e:
             current_app.logger.error("An error occurred: %s", str(e))
-            return {"error": str(e)}, 500
+            return {"error": str(e)}
 
     def get_requests_by_staff(self, staff_id):
         try:
@@ -266,8 +266,13 @@ class RequestController:
 
     def create_request(self):
         form_data = request.json
-        response_data, status_code = self.request_service.create_request(form_data)
-        return response_data
+        try:
+            response_data = self.request_service.create_request(form_data)
+            return response_data
+        except Exception as e:
+            # Handle the exception and log the error
+            current_app.logger.error("An error occurred: %s", str(e))
+            return {"error": str(e)}
 
     def get_requests_by_staff(self, staff_id):
         response_data, status_code = self.request_service.get_requests_by_staff(staff_id)

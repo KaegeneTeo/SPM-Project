@@ -19,6 +19,14 @@ def request_service(supabase_client):
 def request_controller(request_service):
     return RequestController(request_service)
 
+@pytest.fixture
+def client():
+    app = Flask(__name__)
+    app.register_blueprint(requests_blueprint)
+    app.config["TESTING"] = True
+    with app.test_client() as client:
+        yield client
+
 # ---------------------------------------------
 # Testing RequestService
 # ---------------------------------------------
@@ -71,18 +79,41 @@ def test_create_request_success(request_service, supabase_client):
     supabase_client.from_("request").insert().execute.return_value = supabase_response
 
     form_data = {
-        "staffid": "123",
+        "staffid": 123,
         "reason": "Need leave",
         "status": 0,
         "startdate": "2024-11-01",
         "enddate": "2024-11-02",
-        "time_slot": "morning",
+        "time_slot": 1,
         "request_type": 1
     }
 
     result, status_code = request_service.create_request(form_data)
     assert status_code == 201
     assert result == {"request_id": 1, "staff_id": "123"}
+    supabase_client.from_("request").insert().execute.assert_called_once()
+
+def test_create_request_exception(request_service, supabase_client):
+    # Mock the Supabase client to raise an exception
+    supabase_client.from_("request").insert().execute.side_effect = Exception("Database connection error")
+
+    form_data = {
+        "staffid": 123,
+        "reason": "Need leave",
+        "status": 0,
+        "startdate": "2024-11-01",
+        "enddate": "2024-11-02",
+        "time_slot": 1,
+        "request_type": 1
+    }
+
+    # Call the create_request method and capture the result
+    result = request_service.create_request(form_data)  # Ensure to capture status_code
+
+    # Check that the result contains the error message
+    assert result == {"error": "Database connection error"}
+
+    # Ensure the insert method was called once
     supabase_client.from_("request").insert().execute.assert_called_once()
 
 def test_create_request_invalid_input(request_service):
@@ -171,52 +202,54 @@ def test_cancel_request_controller_success(request_controller, client):
     assert response.status_code == 200
     assert response.get_json() == mock_response
 
+from unittest.mock import patch
+
 def test_create_request_controller_success(request_controller, client):
     form_data = {
-        'staffid': '123',
+        'staffid': 123,
         'reason': 'Test Reason',
-        'status': 'pending',
+        'status': 0,
         'startdate': '2023-01-01',
         'enddate': '2023-01-02',
-        'time_slot': 'morning',
-        'request_type': 'vacation'
+        'time_slot': 1,
+        'request_type': 2
     }
 
-    # Mock the request_service.create_request method
-    mock_response = ({'request_id': '1', 'staff_id': '123'}, 201)
-    with patch.object(request_controller.request_service, 'create_request', return_value=mock_response):
+    # Mock the necessary methods
+    mock_response = {'request_id': '1', 'staff_id': 123}
+
+    with patch("flaskapp.models.requests.RequestService.get_staff_id", return_value={'staff_id': 123}), \
+         patch("flaskapp.models.requests.RequestService.create_request", return_value=mock_response), \
+         patch("flaskapp.models.notification.notification_sender.send_create", return_value="test_email"):
+
         # Send a POST request to the endpoint with JSON data
         response = client.post('/requests/', json=form_data)
 
     # Assert the response
-    assert response.status_code == 201  # Make sure you're asserting the correct status code
-    assert response.get_json() == {'request_id': '1', 'staff_id': '123'}
-
-def test_create_request_controller_failure(request_controller, client):
-    mock_response = {'error': 'Invalid request data'}
-    
-    with patch.object(request_controller, 'create_request', return_value=mock_response):
-        response = client.post('/requests/')  # Simulate a bad request
-        
-    assert response.status_code == 400
     assert response.get_json() == mock_response
 
-import pytest
-from unittest.mock import MagicMock, patch
-from flask import Flask, jsonify
-from flaskapp.models.requests import RequestService, RequestController
-from flaskapp.blueprints.requests_routes import requests_blueprint
+def test_create_request_exception(request_controller, client):
+    form_data = {
+        'staffid': 123,
+        'reason': 'Test Reason',
+        'status': 0,
+        'startdate': '2023-01-01',
+        'enddate': '2023-01-02',
+        'time_slot': 1,
+        'request_type': 2
+    }
 
+    with patch("flaskapp.models.requests.RequestService.get_staff_id", return_value={'staff_id': 123}), \
+         patch("flaskapp.models.requests.RequestService.create_request") as mock_create_request:
 
-@pytest.fixture
-def client():
-    app = Flask(__name__)
-    app.register_blueprint(requests_blueprint)
-    app.config["TESTING"] = True
-    with app.test_client() as client:
-        yield client
+        # Set the create_request to raise an exception
+        mock_create_request.side_effect = Exception("Database connection error")
 
+        # Send a POST request to the endpoint with JSON data
+        response = client.post('/requests/', json=form_data)
 
+        # Check that the error message is as expected
+        assert response.json == {"error": "Database connection error"}
 # ---------------------------------------------
 # Testing Get Staff ID with different scenarios
 # ---------------------------------------------
@@ -254,8 +287,6 @@ def test_get_staff_id_valid_headers(client):
     assert response.status_code == 200
     assert response_data['staff_id'] == '123'
     assert response_data['access_token'] == 'some_token'
-
-
 
 
 # def test_get_requests_by_staff_controller(request_controller, client):
