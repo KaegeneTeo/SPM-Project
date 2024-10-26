@@ -34,6 +34,64 @@ def client():
 # ---------------------------------------------
 # Testing RequestService
 # ---------------------------------------------
+def test_single_time_slot_insert(request_service, supabase_client):
+    # Mocking insert response for single time slot
+    mock_response = MagicMock()
+    supabase_client.from_().insert().execute.return_value = mock_response
+
+    # Call the method with a time slot other than 3
+    request_service.create_schedule_entries(staff_id=123, dates=["2024-10-26"], time_slot=1, request_id=456)
+
+    # Assert that one insert call was made with the correct parameters
+    supabase_client.from_("schedule").insert.assert_called_once_with({
+        "staff_id": 123,
+        "date": "2024-10-26",
+        "time_slot": 1,
+        "request_id": 456
+    })
+
+def test_multiple_time_slots_insert(request_service, supabase_client):
+    # Mock insert responses for time slot 3 scenario
+    mock_response1 = MagicMock()
+    mock_response2 = MagicMock()
+    supabase_client.from_().insert().execute.side_effect = [mock_response1, mock_response2]
+
+    # Call the method with time slot 3
+    request_service.create_schedule_entries(staff_id=123, dates=["2024-10-26"], time_slot=3, request_id=456)
+
+    # Assert that two insert calls were made with time slots 1 and 2
+    expected_calls = [
+        {"staff_id": 123, "date": "2024-10-26", "time_slot": 1, "request_id": 456},
+        {"staff_id": 123, "date": "2024-10-26", "time_slot": 2, "request_id": 456}
+    ]
+    supabase_client.from_("schedule").insert.assert_any_call(expected_calls[0])
+    supabase_client.from_("schedule").insert.assert_any_call(expected_calls[1])
+
+def test_invalid_time_slot_type(request_service, supabase_client):
+    # Mocking insert response
+    mock_response = MagicMock()
+    supabase_client.from_().insert().execute.return_value = mock_response
+
+    # Call the method with a non-integer, non-numeric string time slot (should skip insertion)
+    request_service.create_schedule_entries(staff_id=123, dates=["2024-10-26"], time_slot="invalid", request_id=456)
+
+    # Assert no insertion was attempted due to invalid time slot
+    supabase_client.from_("schedule").insert.assert_not_called()
+
+def test_insert_failure_logs_error(request_service, supabase_client):
+    # Simulate failure by returning None
+    supabase_client.from_().insert().execute.return_value = None
+
+    # Mock logger
+    with patch("flask.current_app.logger") as mock_logger:
+        # Call the method with time slot 3 to trigger two insert attempts
+        request_service.create_schedule_entries(staff_id=123, dates=["2024-10-26"], time_slot=3, request_id=456)
+
+        # Assert that error logging was called twice, once for each failed insert
+        assert mock_logger.error.call_count == 2
+        mock_logger.error.assert_any_call("Failed to create schedule entry for date %s with time_slot 1", "2024-10-26")
+        mock_logger.error.assert_any_call("Failed to create schedule entry for date %s with time_slot 2", "2024-10-26")
+
 def test_user_not_found(request_service, mock_staff_id):
     # Mock supabase response for non-existent user
     request_service.supabase.from_().select().eq().execute.return_value.data = None
