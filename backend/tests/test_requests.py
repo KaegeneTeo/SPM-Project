@@ -385,8 +385,6 @@ def test_cancel_request_controller_success(request_controller, client):
     assert response.status_code == 200
     assert response.get_json() == mock_response
 
-from unittest.mock import patch
-
 def test_create_request_controller_success(request_controller, client):
     form_data = {
         'staffid': 123,
