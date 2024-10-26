@@ -82,7 +82,7 @@ class RequestService:
             return response.data[0], 201
         except Exception as e:
             current_app.logger.error("An error occurred: %s", str(e))
-            return {"error": str(e)}
+            return {"error": str(e)}, 500
 
     def get_requests_by_staff(self, staff_id):
         try:
