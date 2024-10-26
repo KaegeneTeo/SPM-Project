@@ -11,15 +11,13 @@ class RequestService:
             staff_id = data.data[0]['staff_id']
             startdate = data.data[0]['startdate']
             enddate = data.data[0]['enddate']
-            print (staff_id)
-            print (startdate)
-            print (enddate)
             response = self.supabase.from_("request").delete().eq("request_id", request_id).execute()
             
             if not response.data:
                 abort(404, description="Request not found.")
 
-            return {"message": "Request withdrawn successful"}, {"request_id": request_id, "staff_id": staff_id, "startdate": startdate, "enddate": enddate}
+            return {"message": "Request withdrawn successful", 
+                    "data": {"request_id": request_id, "staff_id": staff_id, "startdate": startdate, "enddate": enddate}}, 200 
 
         except Exception as e:
             return {"error": str(e)}, 500
@@ -30,9 +28,6 @@ class RequestService:
             staff_id = data.data[0]['staff_id']
             startdate = data.data[0]['startdate']
             enddate = data.data[0]['enddate']
-            print (staff_id)
-            print (startdate)
-            print (enddate)
 
             response = self.supabase.from_("request").delete().eq("request_id", request_id).execute()
             response2 = self.supabase.from_("schedule").delete().eq("request_id", request_id).execute()
@@ -41,7 +36,8 @@ class RequestService:
             if not response.data or not response2.data:
                 abort(404, description="Request not found.")
 
-            return {"message": "Request withdrawn successfully"}, {"request_id": request_id, "staff_id": staff_id, "startdate": startdate, "enddate": enddate}
+            return {"message": "Request cancel successful",
+                    "data":{"request_id": request_id, "staff_id": staff_id, "startdate": startdate, "enddate": enddate}}, 200
 
         except Exception as e:
             return {"error": str(e)}, 500
@@ -55,7 +51,7 @@ class RequestService:
         else:
             access_token = None  # Handle missing or malformed Authorization header
         
-        return {"message": "CORS is working", "staff_id": staff_id, "access_token": access_token}
+        return {"message": "CORS is working", "staff_id": staff_id, "access_token": access_token}, 200
 
     def create_request(self, form_data):
         # Validate input
@@ -107,7 +103,7 @@ class RequestService:
     def get_team_requests(self, staff_id):
         # Query for the current user's role and position based on staff_id
         user_response = self.supabase.from_('Employee').select('Role, Position').eq('Staff_ID', staff_id).execute()
-
+        
         if not user_response.data:
             return {"error": "User not found"}, 404
 
@@ -126,15 +122,14 @@ class RequestService:
                 if team_member_ids:
                     # Retrieve requests of staff belonging to the logged-in user's team where status = 0
                     requests_response = self.supabase.from_("request").select("*").in_("staff_id", team_member_ids).eq("status", 0).execute()
-
                     return requests_response.data, 200
                 else:
                     return [], 200
             else:
-                return [], 200
+                return [], 404
         else:
             # User not authorized to view team requests
-            return [], 200
+            return [], 401
 
     def get_selected_request(self, request_id):
         # Retrieve selected request by request_id
@@ -167,7 +162,7 @@ class RequestService:
     def create_schedule_entries(self, staff_id, dates, time_slot, request_id):
         for date in dates:
             time_slot_int = int(time_slot) if isinstance(time_slot, (int, float, str)) and str(time_slot).isdigit() else time_slot
-                
+            
             if time_slot_int == 3:
                 # Insert first record with time_slot as 1
                 response1 = self.supabase.from_("schedule").insert({
@@ -190,7 +185,8 @@ class RequestService:
 
                 if response2 is None:
                     current_app.logger.error("Failed to create schedule entry for date %s with time_slot 2", date)
-            else:
+            elif time_slot_int in [1, 2]:
+                print("here")
                 # Insert single record for other time_slot values
                 response = self.supabase.from_("schedule").insert({
                     "staff_id": staff_id,
@@ -253,16 +249,17 @@ class RequestController:
         self.request_service = request_service
 
     def withdraw_request(self, request_id):
-        response_data, data = self.request_service.withdraw_request(request_id)
-        return response_data, data
+        response_data, status_code = self.request_service.withdraw_request(request_id)
+
+        return response_data, status_code
     
     def cancel_request(self, request_id):
-        response_data, data = self.request_service.cancel_request(request_id)
-        return response_data, data
+        response_data, status_code = self.request_service.cancel_request(request_id)
+        return response_data, status_code
     
     def get_staff_id(self):
-        response_data = self.request_service.get_staff_id()
-        return jsonify(response_data)
+        response_data, status_code = self.request_service.get_staff_id()
+        return response_data, status_code
 
     def create_request(self):
         form_data = request.json
@@ -281,22 +278,22 @@ class RequestController:
     def get_team_requests(self):
         staff_id = request.headers.get('X-Staff-ID')
         if not staff_id:
-            return jsonify({"error": "Staff ID is required"}), 400
+            return {"error": "Staff ID is required"}, 400
 
         response_data, status_code = self.request_service.get_team_requests(staff_id)
-        return jsonify(response_data), status_code
+        return response_data, status_code
 
     def get_selected_request(self, request_id):
         response_data, status_code = self.request_service.get_selected_request(request_id)
-        return jsonify(response_data), status_code
+        return response_data, status_code
 
     def approve_request(self, request_id):
         result_reason = request.json.get('result_reason')
         approved_dates = request.json.get('approved_dates')
         response_data, status_code = self.request_service.approve_request(request_id, result_reason, approved_dates)
-        return response_data
+        return response_data, status_code
 
     def reject_request(self, request_id):
         result_reason = request.json.get('result_reason')
         response_data, status_code = self.request_service.reject_request(request_id, result_reason)
-        return response_data
+        return response_data, status_code

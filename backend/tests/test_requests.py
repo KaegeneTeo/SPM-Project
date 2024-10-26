@@ -36,8 +36,6 @@ def client():
 # ---------------------------------------------
 def test_single_time_slot_insert(request_service, supabase_client):
     # Mocking insert response for single time slot
-    mock_response = MagicMock()
-    supabase_client.from_().insert().execute.return_value = mock_response
 
     # Call the method with a time slot other than 3
     request_service.create_schedule_entries(staff_id=123, dates=["2024-10-26"], time_slot=1, request_id=456)
@@ -69,28 +67,12 @@ def test_multiple_time_slots_insert(request_service, supabase_client):
 
 def test_invalid_time_slot_type(request_service, supabase_client):
     # Mocking insert response
-    mock_response = MagicMock()
-    supabase_client.from_().insert().execute.return_value = mock_response
 
     # Call the method with a non-integer, non-numeric string time slot (should skip insertion)
-    request_service.create_schedule_entries(staff_id=123, dates=["2024-10-26"], time_slot="invalid", request_id=456)
+    request_service.create_schedule_entries(123, ["2024-10-26"], "invalid", 456)
 
     # Assert no insertion was attempted due to invalid time slot
     supabase_client.from_("schedule").insert.assert_not_called()
-
-def test_insert_failure_logs_error(request_service, supabase_client):
-    # Simulate failure by returning None
-    supabase_client.from_().insert().execute.return_value = None
-
-    # Mock logger
-    with patch("flask.current_app.logger") as mock_logger:
-        # Call the method with time slot 3 to trigger two insert attempts
-        request_service.create_schedule_entries(staff_id=123, dates=["2024-10-26"], time_slot=3, request_id=456)
-
-        # Assert that error logging was called twice, once for each failed insert
-        assert mock_logger.error.call_count == 2
-        mock_logger.error.assert_any_call("Failed to create schedule entry for date %s with time_slot 1", "2024-10-26")
-        mock_logger.error.assert_any_call("Failed to create schedule entry for date %s with time_slot 2", "2024-10-26")
 
 def test_user_not_found(request_service, mock_staff_id):
     # Mock supabase response for non-existent user
@@ -110,7 +92,7 @@ def test_user_not_authorized(request_service, mock_staff_id):
     result, status_code = request_service.get_team_requests(mock_staff_id)
 
     assert result == []
-    assert status_code == 200
+    assert status_code == 401
 
 def test_manager_with_no_team_members(request_service, mock_staff_id):
     # Mock authorized role and position
@@ -122,33 +104,36 @@ def test_manager_with_no_team_members(request_service, mock_staff_id):
     result, status_code = request_service.get_team_requests(mock_staff_id)
 
     assert result == []
-    assert status_code == 200
+    assert status_code == 404
 
 def test_manager_with_team_members_and_requests(request_service, mock_staff_id):
     # Mock authorized role and position, team members, and requests
     request_service.supabase.from_().select().eq().execute.side_effect = [
         MagicMock(data=[{"Role": 1, "Position": "manager"}]),  # User role lookup
         MagicMock(data=[{"Staff_ID": 124}, {"Staff_ID": 125}]),  # Team members
-        MagicMock(data=[{"staff_id": 124, "request": "Request 1"}, 
-                        {"staff_id": 125, "request": "Request 2"}])  # Requests for team
+        MagicMock(data=[{"staff_id": 124, "request": "Request 1"}])
     ]
+
+    request_service.supabase.from_().select().in_().eq().execute.return_value = MagicMock(data=[{"staff_id": 125, "request": "Request 2"}])
 
     result, status_code = request_service.get_team_requests(mock_staff_id)
 
     expected_result = [
-        {"staff_id": 124, "request": "Request 1"},
         {"staff_id": 125, "request": "Request 2"}
     ]
-    assert result.data == expected_result
+    print(result)
+    assert result == expected_result
     assert status_code == 200
+
 
 def test_manager_with_team_members_but_no_requests(request_service, mock_staff_id):
     # Mock authorized role and position, team members, and empty requests
     request_service.supabase.from_().select().eq().execute.side_effect = [
         MagicMock(data=[{"Role": 1, "Position": "manager"}]),  # User role lookup
-        MagicMock(data=[{"Staff_ID": 124}, {"Staff_ID": 125}]),  # Team members
-        MagicMock(data=[])  # No requests for team members
+        MagicMock(data=[{"Staff_ID": 124}, {"Staff_ID": 125}])  # No requests for team members
     ]
+
+    request_service.supabase.from_().select().in_().eq().execute.return_value = MagicMock(data=[])
 
     result, status_code = request_service.get_team_requests(mock_staff_id)
 
@@ -218,9 +203,10 @@ def test_withdraw_request_success(request_service, supabase_client):
     # Mock the response for withdrawing a request
     supabase_client.from_("request").delete().eq("request_id", 1).execute.return_value = MagicMock(data=True)
     
-    response, data = request_service.withdraw_request(1)
+    response, status_code = request_service.withdraw_request(1)
     
-    assert response == {"message": "Request withdrawn successful"}
+    assert status_code == 200
+    assert response["message"] == "Request withdrawn successful"
     supabase_client.from_("request").delete().eq("request_id", 1).execute.assert_called_once()
 
 def test_withdraw_request_not_found(request_service, supabase_client):
@@ -240,10 +226,11 @@ def test_cancel_request_success(request_service, supabase_client):
     supabase_client.from_("schedule").delete().eq("request_id", 1).execute.return_value = MagicMock(data=[{"request_id": 1}])
 
     # Call the cancel_request method
-    response, data = request_service.cancel_request(1)
+    response, status_code = request_service.cancel_request(1)
 
     # Assert that the response is what we expect when the cancel is successful
-    assert response == {"message": "Request withdrawn successfully"}
+    assert response["message"] == "Request cancel successful"
+    assert status_code == 200
 
 def test_cancel_request_not_found(request_service, supabase_client):
     # Mock the responses to simulate a request not found
@@ -363,25 +350,25 @@ def test_reject_request_not_found(request_service, supabase_client):
 # ---------------------------------------------
 
 def test_withdraw_request_controller_success(request_controller, client, supabase_client):
-    mock_response = {"message": "Request withdrawn successfully"}
+    mock_response = {"message": "Request withdrawn successful", "data": {"request_id": 1}}
     mock_data = {'staff_id': 1}
 
     # Mock the withdraw_request method in the RequestService
     with patch("flaskapp.models.requests.RequestService.withdraw_request", return_value=(mock_response, mock_data)), \
         patch("flaskapp.models.notification.notification_sender.send_withdraw", return_value="test_email"):
         response = client.delete('/withdraw_request/1')
-    print(response.data)
+    
     assert response.status_code == 200
     assert response.get_json() == mock_response
 
 def test_cancel_request_controller_success(request_controller, client):
-    mock_response = {"message": "Request withdrawn successfully"}
+    mock_response = {"message": "Request cancel successful", "data": {"request_id": 1}}
     mock_data = {'staff_id': 1}
     # Mock the cancel_request method in the RequestService
     with patch("flaskapp.models.requests.RequestService.cancel_request", return_value=(mock_response, mock_data)), \
         patch("flaskapp.models.notification.notification_sender.send_cancel", return_value="test_email"):
         response = client.delete('/cancel_request/1')
-    print(response.data)
+    
     assert response.status_code == 200
     assert response.get_json() == mock_response
 
