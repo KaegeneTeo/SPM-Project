@@ -247,7 +247,6 @@ class RequestService:
         except Exception as e:
             return {"error": str(e)}, 500
 
-    
 
 class RequestController:
     def __init__(self, request_service):
