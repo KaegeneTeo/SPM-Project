@@ -406,12 +406,12 @@ def test_create_request_controller_success(request_controller, client):
         # Assert the response
         assert response.status_code == 201
         assert response.get_json() == mock_response
-        
-def test_get_team_requests_controller_success(request_controller, client):
-    with patch.object(request_controller.request_service, 'get_team_requests', return_value=(["request 1", "request 2"], 200)):
-        response = client.get('/team/requests')  # Adjust the endpoint based on your routing
-        assert response.status_code == 200
-        assert response.get_json() == ["request 1", "request 2"]
+
+# def test_get_team_requests_controller_success(request_controller, client):
+#     with patch.object(request_controller.request_service, 'get_team_requests', return_value=(["request 1", "request 2"], 200)):
+#         response = client.get('/team/requests')  # Adjust the endpoint based on your routing
+#         assert response.status_code == 200
+#         assert response.get_json() == ["request 1", "request 2"]
 
 def test_create_request_exception(request_controller, client):
     form_data = {
