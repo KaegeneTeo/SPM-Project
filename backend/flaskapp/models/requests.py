@@ -1,4 +1,4 @@
-from flask import jsonify, request, abort, current_app
+from flask import request, abort, current_app
 from datetime import datetime, timedelta
 
 class RequestService:
@@ -273,7 +273,7 @@ class RequestController:
 
     def get_requests_by_staff(self, staff_id):
         response_data, status_code = self.request_service.get_requests_by_staff(staff_id)
-        return jsonify(response_data), status_code
+        return response_data, status_code
 
     def get_team_requests(self):
         staff_id = request.headers.get('X-Staff-ID')
