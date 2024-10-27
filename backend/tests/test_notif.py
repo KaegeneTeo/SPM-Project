@@ -23,6 +23,94 @@ def notif_sender(notif_engine):
     return notification_sender(notif_engine)
 
 #happy paths
+def test_get_request_data(supabase_caller):
+    supabase_caller.supabase.from_().select().eq().execute.return_value.data = [{
+        "request_id": 1, 
+        "staff_id": 1, 
+        "reason": "test", 
+        "status": 1, 
+        "startdate": "1970-1-1", 
+        "enddate": "1970-1-2", 
+        "time_slot": 3, 
+        "request_type": 1, 
+        "result_reason": None}]
+    assert supabase_caller.get_request_data(1) == ({
+        "request_id": 1, 
+        "staff_id": 1, 
+        "reason": "test", 
+        "status": 1, 
+        "startdate": "1970-1-1", 
+        "enddate": "1970-1-2", 
+        "time_slot": 3, 
+        "request_type": 1, 
+        "result_reason": None}, 200)
+
+def test_get_staff_data(supabase_caller):
+    supabase_caller.supabase.from_().select().eq().execute.return_value.data = [{
+        "Staff_ID":1,
+        "Staff_FName":"John",
+        "Staff_LName":"Doe",
+        "Dept":"Sales",
+        "Position":"Sales Manager",
+        "Country":"Singapore",
+        "Email":"john.doe@allinone.com.sg",
+        "Reporting_Manager":2,
+        "Role":2}]
+    assert supabase_caller.get_staff_data(1) == ({
+        "Staff_ID":1,
+        "Staff_FName":"John",
+        "Staff_LName":"Doe",
+        "Dept":"Sales",
+        "Position":"Sales Manager",
+        "Country":"Singapore",
+        "Email":"john.doe@allinone.com.sg",
+        "Reporting_Manager":2,
+        "Role":2}, 200)
+    
+def test_get_latest_req(supabase_caller):
+    supabase_caller.supabase.from_().select().order().limit().execute.return_value.data = [{
+        "request_id": 1, 
+        "staff_id": 1, 
+        "reason": "test", 
+        "status": 1, 
+        "startdate": "1970-1-1", 
+        "enddate": "1970-1-2", 
+        "time_slot": 3, 
+        "request_type": 1, 
+        "result_reason": None}]
+    assert supabase_caller.get_latest_req() == ({
+        "request_id": 1, 
+        "staff_id": 1, 
+        "reason": "test", 
+        "status": 1, 
+        "startdate": "1970-1-1", 
+        "enddate": "1970-1-2", 
+        "time_slot": 3, 
+        "request_type": 1, 
+        "result_reason": None}, 200)
+
+def test_get_manager_data(supabase_caller):
+    supabase_caller.supabase.from_().select().eq().execute.return_value.data = [{
+        "Staff_ID":2,
+        "Staff_FName":"Jane",
+        "Staff_LName":"Doe",
+        "Dept":"Sales",
+        "Position":"Sales Director",
+        "Country":"Singapore",
+        "Email":"jane.doe@allinone.com.sg",
+        "Reporting_Manager":3,
+        "Role":1}]
+    assert supabase_caller.get_manager_data(1) == ({
+        "Staff_ID":2,
+        "Staff_FName":"Jane",
+        "Staff_LName":"Doe",
+        "Dept":"Sales",
+        "Position":"Sales Director",
+        "Country":"Singapore",
+        "Email":"jane.doe@allinone.com.sg",
+        "Reporting_Manager":3,
+        "Role":1}, 200)
+
 def test_compose_approve(notif_engine, supabase_caller): 
     supabase_caller.get_request_data = MagicMock(return_value = ({
         "request_id": 1, 
@@ -169,6 +257,23 @@ def test_compose_withdraw(supabase_caller, notif_engine):
     assert notif_engine.compose_withdraw(data) == ("Hi Jane Doe, John Doe has withdrawn a request (ID: 1) from 1970-1-1 to 1970-1-2. Please check requests for details.", 200)
 
 #error paths
+
+#bad DB calls
+def test_get_request_data(supabase_caller):
+    supabase_caller.supabase.from_().select().eq().execute.return_value.data = None
+    assert supabase_caller.get_request_data(1) == ({"error": "Requests not found"}, 404)
+
+def test_get_staff_data(supabase_caller):
+    supabase_caller.supabase.from_().select().eq().execute.return_value.data = None
+    assert supabase_caller.get_staff_data(1) == ({"error": "Employee not found"}, 404)
+    
+def test_get_latest_req(supabase_caller):
+    supabase_caller.supabase.from_().select().order().limit().execute.return_value.data = None
+    assert supabase_caller.get_latest_req() == ({"error": "Requests not found"}, 404)
+
+def test_get_manager_data(supabase_caller):
+    supabase_caller.supabase.from_().select().eq().execute.return_value.data = None
+    assert supabase_caller.get_manager_data(1) == ({"error": "Employee not found"}, 404)
 
 #-ve compose approve
 def test_compose_approve_request_data_error(supabase_caller, notif_engine):
