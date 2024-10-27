@@ -70,9 +70,9 @@ class RequestService:
             }).execute()
 
             # Check for errors in the response
-            # if response is None:
-            #     current_app.logger.error("Database insert error")
-            #     return {"error": "Failed to insert data into the database"}, 500
+            if response is None:
+                current_app.logger.error("Database insert error")
+                return {"error": "Failed to insert data into the database"}, 500
 
             # If everything is fine, return the inserted request
             return response.data[0], 201

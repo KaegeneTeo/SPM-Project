@@ -265,7 +265,9 @@ def test_create_request_success(request_service, supabase_client):
 
 def test_create_request_exception(request_service, supabase_client):
     # Mock the Supabase client to raise an exception
-    supabase_client.from_("request").insert().execute.side_effect = Exception("Database connection error")
+    supabase_response = MagicMock()
+    supabase_response.data = None
+    supabase_client.from_("request").insert().execute.return_value = supabase_response
 
     form_data = {
         "staffid": 123,
@@ -274,16 +276,12 @@ def test_create_request_exception(request_service, supabase_client):
         "startdate": "2024-11-01",
         "enddate": "2024-11-02",
         "time_slot": 1,
-        "request_type": 1
+        "request_type": 2
     }
 
-    # Call the create_request method and capture the result
-    result = request_service.create_request(form_data)  # Ensure to capture status_code
-
-    # Check that the result contains the error message
-    assert result == {"error": "Database connection error"}
-
-    # Ensure the insert method was called once
+    result, status_code = request_service.create_request(form_data)
+    assert status_code == 500
+    assert result == {"error": "Failed to insert data into the database"}
     supabase_client.from_("request").insert().execute.assert_called_once()
 
 def test_create_request_invalid_input(request_service):
@@ -313,9 +311,21 @@ def test_get_requests_by_staff_not_found(request_service, supabase_client):
 
 def test_approve_request_success(request_service, supabase_client):
     request_response = MagicMock()
-    request_response.data = [{"request_id": 1, "staff_id": "123", "request_type": 1, "time_slot": "morning"}]
+    request_response.data = [{"request_id": 1, "staff_id": "123", "request_type": 1, "time_slot": 2}]
     supabase_client.from_("request").select().eq("request_id", 1).execute.return_value = request_response
 
+    request_service.create_schedule_entries = MagicMock()
+
+    result = request_service.approve_request(1, "Approved", ["2024-11-01"])
+    assert result == ({"message": "Request approved successfully"}, 200)
+    supabase_client.from_("request").select().eq("request_id", 1).execute.assert_called_once()
+
+def test_approve_request_success_recurring(request_service, supabase_client):
+    request_response = MagicMock()
+    request_response.data = [{"request_id": 1, "staff_id": "123", "request_type": 2, "time_slot": 2}]
+    supabase_client.from_("request").select().eq("request_id", 1).execute.return_value = request_response
+
+    request_service.calculate_recurring_dates = MagicMock()
     request_service.create_schedule_entries = MagicMock()
 
     result = request_service.approve_request(1, "Approved", ["2024-11-01"])
@@ -387,14 +397,21 @@ def test_create_request_controller_success(request_controller, client):
     mock_response = {'request_id': '1', 'staff_id': 123}
 
     with patch("flaskapp.models.requests.RequestService.get_staff_id", return_value={'staff_id': 123}), \
-         patch("flaskapp.models.requests.RequestService.create_request", return_value=mock_response), \
+         patch("flaskapp.models.requests.RequestService.create_request", return_value=(mock_response, 201)), \
          patch("flaskapp.models.notification.notification_sender.send_create", return_value="test_email"):
 
         # Send a POST request to the endpoint with JSON data
         response = client.post('/requests/', json=form_data)
 
-    # Assert the response
-    assert response.get_json() == mock_response
+        # Assert the response
+        assert response.status_code == 201
+        assert response.get_json() == mock_response
+        
+def test_get_team_requests_controller_success(request_controller, client):
+    with patch.object(request_controller.request_service, 'get_team_requests', return_value=(["request 1", "request 2"], 200)):
+        response = client.get('/team/requests')  # Adjust the endpoint based on your routing
+        assert response.status_code == 200
+        assert response.get_json() == ["request 1", "request 2"]
 
 def test_create_request_exception(request_controller, client):
     form_data = {
@@ -418,6 +435,7 @@ def test_create_request_exception(request_controller, client):
 
         # Check that the error message is as expected
         assert response.json == {"error": "Database connection error"}
+        assert response.status_code == 500
 # ---------------------------------------------
 # Testing Get Staff ID with different scenarios
 # ---------------------------------------------
@@ -455,42 +473,7 @@ def test_get_staff_id_valid_headers(client):
     assert response_data['staff_id'] == '123'
     assert response_data['access_token'] == 'some_token'
 
-
-
-""" def test_get_staff_id_missing_authorization(client):
-    # Missing Authorization header
-    response = client.get('/getstaffid', headers={'X-Staff-ID': '123'})
-    response_data = response.get_json()
-
-    # Assert that the response contains the error for missing Authorization
-    assert response_data['staff_id'] == '123'
-    assert response_data['access_token'] == None
-
-def test_get_staff_id_missing_staff_id(client):
-    # Missing X-Staff-ID header
-    response = client.get('/getstaffid', headers={'Authorization': 'Bearer some_token'})
-    response_data = response.get_json()
-
-    # Assert that the response contains the error for missing Staff ID
-    assert response_data['staff_id'] == None
-    assert response_data['access_token'] == 'some_token'
-
-def test_get_staff_id_valid_headers(client):
-    # Prepare the headers with valid values
-    headers = {
-        'X-Staff-ID': '123',
-        'Authorization': 'Bearer some_token'
-    }
-
-    # Make the GET request to the endpoint with the headers
-    response = client.get('/getstaffid', headers=headers)
-    response_data = response.get_json()
-
-    # Assert that the response contains the expected staff_id and access_token
-    assert response.status_code == 200
-    assert response_data['staff_id'] == '123'
-    assert response_data['access_token'] == 'some_token'
-
+""" 
 
 def test_get_requests_by_staff_controller(request_controller, client):
     mock_response = [{'request_id': '1', 'staff_id': '123'}]
