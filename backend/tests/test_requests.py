@@ -421,6 +421,41 @@ def test_create_request_exception(request_controller, client):
 # ---------------------------------------------
 # Testing Get Staff ID with different scenarios
 # ---------------------------------------------
+def test_get_staff_id_missing_authorization(client):
+    # Missing Authorization header
+    response = client.get('/getstaffid', headers={'X-Staff-ID': '123'})
+    response_data = response.get_json()
+
+    # Assert that the response contains the error for missing Authorization
+    assert response_data['staff_id'] == '123'
+    assert response_data['access_token'] == None
+
+def test_get_staff_id_missing_staff_id(client):
+    # Missing X-Staff-ID header
+    response = client.get('/getstaffid', headers={'Authorization': 'Bearer some_token'})
+    response_data = response.get_json()
+
+    # Assert that the response contains the error for missing Staff ID
+    assert response_data['staff_id'] == None
+    assert response_data['access_token'] == 'some_token'
+
+def test_get_staff_id_valid_headers(client):
+    # Prepare the headers with valid values
+    headers = {
+        'X-Staff-ID': '123',
+        'Authorization': 'Bearer some_token'
+    }
+
+    # Make the GET request to the endpoint with the headers
+    response = client.get('/getstaffid', headers=headers)
+    response_data = response.get_json()
+
+    # Assert that the response contains the expected staff_id and access_token
+    assert response.status_code == 200
+    assert response_data['staff_id'] == '123'
+    assert response_data['access_token'] == 'some_token'
+
+
 
 """ def test_get_staff_id_missing_authorization(client):
     # Missing Authorization header

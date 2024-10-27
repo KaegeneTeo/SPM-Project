@@ -119,12 +119,9 @@ class RequestService:
             if response.data:
                 team_member_ids = [member['Staff_ID'] for member in response.data]
 
-                if team_member_ids:
-                    # Retrieve requests of staff belonging to the logged-in user's team where status = 0
-                    requests_response = self.supabase.from_("request").select("*").in_("staff_id", team_member_ids).eq("status", 0).execute()
-                    return requests_response.data, 200
-                else:
-                    return [], 200
+                # Retrieve requests of staff belonging to the logged-in user's team where status = 0
+                requests_response = self.supabase.from_("request").select("*").in_("staff_id", team_member_ids).eq("status", 0).execute()
+                return requests_response.data, 200
             else:
                 return [], 404
         else:
