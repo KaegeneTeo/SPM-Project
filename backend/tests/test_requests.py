@@ -407,12 +407,6 @@ def test_create_request_controller_success(request_controller, client):
         assert response.status_code == 201
         assert response.get_json() == mock_response
 
-# def test_get_team_requests_controller_success(request_controller, client):
-#     with patch.object(request_controller.request_service, 'get_team_requests', return_value=(["request 1", "request 2"], 200)):
-#         response = client.get('/team/requests')  # Adjust the endpoint based on your routing
-#         assert response.status_code == 200
-#         assert response.get_json() == ["request 1", "request 2"]
-
 def test_create_request_exception(request_controller, client):
     form_data = {
         'staffid': 123,
@@ -424,8 +418,7 @@ def test_create_request_exception(request_controller, client):
         'request_type': 2
     }
 
-    with patch("flaskapp.models.requests.RequestService.get_staff_id", return_value={'staff_id': 123}), \
-         patch("flaskapp.models.requests.RequestService.create_request") as mock_create_request:
+    with patch("flaskapp.models.requests.RequestService.create_request") as mock_create_request:
 
         # Set the create_request to raise an exception
         mock_create_request.side_effect = Exception("Database connection error")
@@ -436,6 +429,108 @@ def test_create_request_exception(request_controller, client):
         # Check that the error message is as expected
         assert response.json == {"error": "Database connection error"}
         assert response.status_code == 500
+
+def test_get_team_requests_controller_success(request_controller, client):
+    mock_response = {
+        'request_id': 1, 
+        'staff_id': 123,         
+        'reason': 'Test Reason',
+        'status': 0,
+        'startdate': '2023-01-01',
+        'enddate': '2023-01-02',
+        'time_slot': 1,
+        'request_type': 2
+    }
+    with patch("flaskapp.models.requests.RequestService.get_team_requests", return_value=(mock_response, 200)):
+        response = client.get('/team/requests', headers={'X-Staff-ID': '123'})
+        assert response.status_code == 200
+        assert response.get_json() == mock_response
+
+def test_get_team_requests_controller_missing_staff_id(request_controller, client):
+    response = client.get('/team/requests')
+    assert response.status_code == 400
+    assert response.get_json() == {"error": "Staff ID is required"}
+
+def test_get_selected_request_controller_success(request_controller, client):
+    # Define a mock response to simulate a successful request retrieval
+    mock_response = {
+        'request_id': 1,
+        'staff_id': 123,
+        'reason': 'Test Reason',
+        'status': 0,
+        'startdate': '2023-01-01',
+        'enddate': '2023-01-02',
+        'time_slot': 1,
+        'request_type': 2
+    }
+
+    # Mock the get_selected_request method in RequestService to return the mock response with status code 200
+    with patch("flaskapp.models.requests.RequestService.get_selected_request", return_value=(mock_response, 200)):
+        response = client.get('/request/1')  # Ensure this matches the route defined
+        assert response.status_code == 200
+        assert response.get_json() == mock_response
+
+def test_get_requests_by_staff_controller_success(request_controller, client):
+    # Define a mock response to simulate a successful request retrieval
+    mock_response = {
+        'request_id': 1,
+        'staff_id': 123,
+        'reason': 'Test Reason',
+        'status': 0,
+        'startdate': '2023-01-01',
+        'enddate': '2023-01-02',
+        'time_slot': 1,
+        'request_type': 2
+    }
+
+    # Mock the get_selected_request method in RequestService to return the mock response with status code 200
+    with patch("flaskapp.models.requests.RequestService.get_requests_by_staff", return_value=(mock_response, 200)):
+        response = client.get('/requests/123')  
+        assert response.status_code == 200
+        assert response.get_json() == mock_response
+
+def test_approve_request_controller_success(request_controller, client):
+    # Define mock response to simulate a successful request approval
+    mock_response = {"message": "Request approved successfully"}
+    
+    # Mock the approve_request method in RequestService
+    with patch("flaskapp.models.requests.RequestService.approve_request", return_value=(mock_response, 200)), \
+         patch("flaskapp.models.notification.notification_sender.send_approve", return_value="test_email"):
+        
+        # Make a PUT request to the approve endpoint with required JSON data
+        response = client.put(
+            '/request/1/approve',
+            json={
+                "result_reason": "Approved",
+                "approved_dates": ["2024-11-01"]
+            }
+        )
+        
+        # Assert the response status code and response data
+        assert response.status_code == 200
+        assert response.get_json() == mock_response
+
+def test_reject_request_controller_success(request_controller, client):
+    # Define mock response to simulate a successful request approval
+    mock_response = {"message": "Request rejected successfully"}
+    
+    # Mock the approve_request method in RequestService
+    with patch("flaskapp.models.requests.RequestService.reject_request", return_value=(mock_response, 200)), \
+         patch("flaskapp.models.notification.notification_sender.send_reject", return_value="test_email"):
+        
+        # Make a PUT request to the approve endpoint with required JSON data
+        response = client.put(
+            '/request/1/reject',
+            json={
+                "status": -1,
+                "result_reason": "Rejected"
+            }
+        )
+        
+        # Assert the response status code and response data
+        assert response.status_code == 200
+        assert response.get_json() == mock_response
+
 # ---------------------------------------------
 # Testing Get Staff ID with different scenarios
 # ---------------------------------------------
@@ -475,19 +570,6 @@ def test_get_staff_id_valid_headers(client):
 
 """ 
 
-def test_get_requests_by_staff_controller(request_controller, client):
-    mock_response = [{'request_id': '1', 'staff_id': '123'}]
-    
-    with patch.object(request_controller.request_service, 'get_requests_by_staff', return_value=(mock_response, 200)):
-        response = client.get('/requests/123')  # Adjust the endpoint based on your routing
-        assert response.status_code == 200
-        assert response.get_json() == mock_response
-
-def test_get_team_requests_controller_success(request_controller, client):
-    with patch.object(request_controller.request_service, 'get_team_requests', return_value=(["request 1", "request 2"], 200)):
-        response = client.get('/team/requests')  # Adjust the endpoint based on your routing
-        assert response.status_code == 200
-        assert response.get_json() == ["request 1", "request 2"]
 
 def test_approve_request_controller_success(request_controller, client):
     with patch.object(request_controller.request_service, 'approve_request', return_value={"message": "Request approved successfully"}):
@@ -508,56 +590,4 @@ def test_reject_request_controller_success(request_controller, client):
             # Assert the expected response
             assert response.status_code == 400
             assert response.get_json() == {"message": "Request rejected successfully"}
-
-def test_get_staff_id_missing_authorization(client):
-    # Missing Authorization header
-    response = client.get('/getstaffid', headers={'X-Staff-ID': '123'})
-    response_data = response.get_json()
-    # Assert that the response contains the error for missing Authorization
-    assert 'error' in response_data
-    assert response_data['error'] == 'Staff ID and token are required'  
-
-def test_get_staff_id_missing_staff_id(client):
-    # Missing X-Staff-ID header
-    response = client.get('/getstaffid', headers={'Authorization': 'Bearer some_token'})
-    response_data = response.get_json()
-
-    # Assert that the response contains the error for missing Staff ID
-    assert 'error' in response_data
-    assert response_data['error'] == 'Staff ID and token are required'
-
-def test_get_staff_id_valid_headers(client):
-    # Prepare the headers with valid values
-    headers = {
-        'X-Staff-ID': '123',
-        'Authorization': 'Bearer some_token'
-    }
-
-    # Make the GET request to the endpoint with the headers
-    response = client.get('/getstaffid', headers=headers)
-    response_data = response.get_json()
-
-    # Assert that the response contains the expected staff_id and access_token
-    assert response.status_code == 200
-    assert response_data['staff_id'] == '123'
-    assert response_data['access_token'] == 'some_token'
-        
-def test_create_request_database_insert_error(request_controller, client):
-    # Mocking the database to raise an exception (simulate failure)
-    with patch.object(request_controller.request_service.supabase.from_(), 'insert') as mock_insert:
-        mock_insert.return_value.execute.side_effect = Exception("Null value in column 'status' violates not-null constraint")
-        response = client.post('/requests/', json={'staffid': '123', 'reason': 'Test'})
-        response_data = response.get_json()  # Extract JSON from response
-      
-        # Assert the expected status code and error message
-        assert response.status_code == 500
-        assert response_data == {"error": "Failed to insert data into the database"}
-    
-def test_create_request_general_exception(request_controller, client):
-    # Mocking to raise a general exception
-    with patch.object(request_controller.request_service.supabase.from_(), 'insert') as mock_insert:
-        # Setting the insert to raise an exception when execute is calle#         mock_insert.return_value.execute.side_effect = Exception("Some error"        
-        response = client.post('/requests/', json={'staffid': '123', 'reason': 'Test'})      
-        # Assert the expected status code and error message
-        assert response.status_code == 500
-        assert response.get_json()["error"] == "Failed to insert data into the database" """
+" """
