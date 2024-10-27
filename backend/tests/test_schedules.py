@@ -348,3 +348,63 @@ def test_get_schedules_missing_params(client, schedules_service_mock):
     schedules_service_mock.get_schedules_for_all_depts.assert_not_called()
 
     assert response.status_code == 400  
+
+def test_format_schedules_if_branch(schedules_service):
+    # Mock response with unique date-time combinations
+    response_mock = MagicMock()
+    response_mock.data = [
+        {
+            "Dept": "HR",
+            "Staff_FName": "John",
+            "Staff_LName": "Doe",
+            "Staff_ID": 1,
+            "Position": "Analyst",
+            "schedule": [{"date": "2023-10-01", "schedule_id": 101, "time_slot": 1}]
+        }
+    ]
+
+    allnames_mock = MagicMock()
+    allnames_mock.data = response_mock.data  # Simulate the allnames data for this case
+
+    # Call format_schedules
+    result, status = schedules_service.format_schedules(response_mock, allnames_mock)
+
+    # Assertions
+    assert status == 200
+    assert len(result["schedules"]) == 1
+    assert result["schedules"][0]["WFH"] == ["1 - John Doe - HR - Analyst"]
+
+def test_format_schedules_else_branch(schedules_service):
+    # Mock response with a duplicate date-time combination to trigger else
+    response_mock = MagicMock()
+    response_mock.data = [
+        {
+            "Dept": "HR",
+            "Staff_FName": "John",
+            "Staff_LName": "Doe",
+            "Staff_ID": 1,
+            "Position": "Analyst",
+            "schedule": [{"date": "2023-10-01", "schedule_id": 101, "time_slot": 1}]
+        },
+        {
+            "Dept": "IT",
+            "Staff_FName": "Jane",
+            "Staff_LName": "Smith",
+            "Staff_ID": 2,
+            "Position": "Developer",
+            "schedule": [{"date": "2023-10-01", "schedule_id": 102, "time_slot": 1}]
+        }
+    ]
+
+    allnames_mock = MagicMock()
+    allnames_mock.data = response_mock.data  # Simulate the allnames data for this case
+
+    # Call format_schedules
+    result, status = schedules_service.format_schedules(response_mock, allnames_mock)
+
+    # Assertions
+    assert status == 200
+    assert len(result["schedules"]) == 1  # Same date and time slot are combined
+    assert len(result["schedules"][0]["WFH"]) == 2
+    assert "1 - John Doe - HR - Analyst" in result["schedules"][0]["WFH"]
+    assert "2 - Jane Smith - IT - Developer" in result["schedules"][0]["WFH"]
