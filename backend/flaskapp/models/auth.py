@@ -21,16 +21,10 @@ class AuthService:
             # Fetch staff_id, role, dept, reporting_manager from Employee table
             staff_response = self.supabase.from_("Employee").select("Staff_ID, Role, Dept, Reporting_Manager").ilike("Email", json_response["email"]).execute()
 
-            json_response["staff_id"] = None
-            json_response["role"] = None
-            json_response["dept"] = None
-            json_response["reporting_manager"] = None
-
-            if staff_response.data:
-                json_response["staff_id"] = staff_response.data[0]["Staff_ID"]
-                json_response["role"] = staff_response.data[0]["Role"]
-                json_response["dept"] = staff_response.data[0]["Dept"]
-                json_response["reporting_manager"] = staff_response.data[0]["Reporting_Manager"]
+            json_response["staff_id"] = staff_response.data[0]["Staff_ID"]
+            json_response["role"] = staff_response.data[0]["Role"]
+            json_response["dept"] = staff_response.data[0]["Dept"]
+            json_response["reporting_manager"] = staff_response.data[0]["Reporting_Manager"]
 
             return json_response, 200
 

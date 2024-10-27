@@ -1,4 +1,4 @@
-from flask import jsonify, request, abort, current_app
+from flask import request, abort, current_app
 from datetime import datetime, timedelta
 
 class RequestService:
@@ -119,12 +119,9 @@ class RequestService:
             if response.data:
                 team_member_ids = [member['Staff_ID'] for member in response.data]
 
-                if team_member_ids:
-                    # Retrieve requests of staff belonging to the logged-in user's team where status = 0
-                    requests_response = self.supabase.from_("request").select("*").in_("staff_id", team_member_ids).eq("status", 0).execute()
-                    return requests_response.data, 200
-                else:
-                    return [], 200
+                # Retrieve requests of staff belonging to the logged-in user's team where status = 0
+                requests_response = self.supabase.from_("request").select("*").in_("staff_id", team_member_ids).eq("status", 0).execute()
+                return requests_response.data, 200
             else:
                 return [], 404
         else:
@@ -264,8 +261,8 @@ class RequestController:
     def create_request(self):
         form_data = request.json
         try:
-            response_data = self.request_service.create_request(form_data)
-            return response_data, 201
+            response_data, status_code = self.request_service.create_request(form_data)
+            return response_data, status_code
         except Exception as e:
             # Handle the exception and log the error
             current_app.logger.error("An error occurred: %s", str(e))
@@ -273,7 +270,7 @@ class RequestController:
 
     def get_requests_by_staff(self, staff_id):
         response_data, status_code = self.request_service.get_requests_by_staff(staff_id)
-        return jsonify(response_data), status_code
+        return response_data, status_code
 
     def get_team_requests(self):
         staff_id = request.headers.get('X-Staff-ID')
