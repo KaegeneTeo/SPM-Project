@@ -263,26 +263,50 @@ def test_create_request_success(request_service, supabase_client):
     assert result == {"request_id": 1, "staff_id": "123"}
     supabase_client.from_("request").insert().execute.assert_called_once()
 
-def test_create_request_exception(request_service, supabase_client):
-    # Mock the Supabase client to raise an exception
-    supabase_response = MagicMock()
-    supabase_response.data = None
-    supabase_client.from_("request").insert().execute.return_value = supabase_response
+def test_create_request_insert_failure(request_service, supabase_client, client):
+    # Use the application context for current_app.logger
+    with client.application.app_context():
+        # Mock the Supabase client to return None for execute to simulate a failure
+        supabase_client.from_("request").insert().execute.return_value = None
 
-    form_data = {
-        "staffid": 123,
-        "reason": "Need leave",
-        "status": 0,
-        "startdate": "2024-11-01",
-        "enddate": "2024-11-02",
-        "time_slot": 1,
-        "request_type": 2
-    }
+        form_data = {
+            "staffid": 123,
+            "reason": "Need leave",
+            "status": 0,
+            "startdate": "2024-11-01",
+            "enddate": "2024-11-02",
+            "time_slot": 1,
+            "request_type": 2
+        }
 
-    result, status_code = request_service.create_request(form_data)
-    assert status_code == 500
-    assert result == {"error": "Failed to insert data into the database"}
-    supabase_client.from_("request").insert().execute.assert_called_once()
+        result, status_code = request_service.create_request(form_data)
+        assert status_code == 500
+        assert result == {"error": "Failed to insert data into the database"}
+        supabase_client.from_("request").insert().execute.assert_called_once()
+
+
+def test_create_request_exception_handling(request_service, supabase_client, client):
+    # Use the application context for current_app.logger
+    with client.application.app_context():
+        # Mock the Supabase client to raise an exception
+        supabase_client.from_("request").insert().execute.side_effect = Exception("Database connection error")
+
+        form_data = {
+            "staffid": 123,
+            "reason": "Need leave",
+            "status": 0,
+            "startdate": "2024-11-01",
+            "enddate": "2024-11-02",
+            "time_slot": 1,
+            "request_type": 2
+        }
+
+        result, status_code = request_service.create_request(form_data)
+
+        # Assert that the error was handled correctly
+        assert status_code == 500
+        assert result == {"error": "Database connection error"}
+        supabase_client.from_("request").insert().execute.assert_called_once()
 
 def test_create_request_invalid_input(request_service):
     result, status_code = request_service.create_request(None)
@@ -354,6 +378,73 @@ def test_reject_request_not_found(request_service, supabase_client):
     response = request_service.reject_request(999, "Rejected")
     assert response == ({'error': '404 Not Found: Request not found.'}, 500)
     supabase_client.from_("request").update().eq("request_id", 999).execute.assert_called_once()
+
+def test_create_schedule_entries_response1_none(request_service, supabase_client, client, caplog):
+    # Use the application context for current_app.logger
+    with client.application.app_context(), caplog.at_level("ERROR"):
+        # Set up mock for supabase execute to return None for response1
+        supabase_client.from_("schedule").insert().execute.side_effect = [None, MagicMock()]
+
+        staff_id = 123
+        dates = ["2024-11-01"]
+        time_slot = 3
+        request_id = 456
+
+        # Call the function
+        request_service.create_schedule_entries(staff_id, dates, time_slot, request_id)
+
+        # Check the log for the correct error message
+        assert any("Failed to create schedule entry for date 2024-11-01 with time_slot 1" in record.message for record in caplog.records)
+
+        # Verify the execute call was made
+        supabase_client.from_("schedule").insert().execute.assert_called()
+
+def test_create_schedule_entries_response2_none(request_service, supabase_client, client):
+    # Use the application context for current_app.logger
+    with client.application.app_context():
+        # Mock the Supabase client so that the second insert returns None
+        supabase_client.from_("schedule").insert().execute.side_effect = [MagicMock(), None]
+
+        staff_id = 123
+        dates = ["2024-11-01"]
+        time_slot = 3
+        request_id = 456
+
+        # Call the create_schedule_entries method
+        request_service.create_schedule_entries(staff_id, dates, time_slot, request_id)
+
+        # Verify that the insert method was called twice
+        assert supabase_client.from_("schedule").insert().execute.call_count == 2
+
+def test_get_requests_by_staff_no_response(request_service, supabase_client, client):
+    # Use the application context for current_app.logger
+    with client.application.app_context():
+        # Mock the Supabase client to return None for execute to simulate a database error
+        supabase_client.from_("request").select().eq().execute.return_value = None
+
+        staff_id = 123
+
+        result, status_code = request_service.get_requests_by_staff(staff_id)
+
+        # Assert that the error was handled correctly
+        assert status_code == 500
+        assert result == {"error": "Failed to retrieve data from the database"}
+        supabase_client.from_("request").select().eq().execute.assert_called_once()
+
+def test_get_requests_by_staff_exception_handling(request_service, supabase_client, client):
+    # Use the application context for current_app.logger
+    with client.application.app_context():
+        # Mock the Supabase client to raise an exception
+        supabase_client.from_("request").select().eq().execute.side_effect = Exception("Unexpected error")
+
+        staff_id = 123
+
+        result, status_code = request_service.get_requests_by_staff(staff_id)
+
+        # Assert that the error was handled correctly
+        assert status_code == 500
+        assert result == {"error": "Unexpected error"}
+        supabase_client.from_("request").select().eq().execute.assert_called_once()
 
 # ---------------------------------------------
 # Testing RequestController
