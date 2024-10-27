@@ -246,13 +246,22 @@ class RequestController:
         self.request_service = request_service
 
     def withdraw_request(self, request_id):
-        response_data, status_code = self.request_service.withdraw_request(request_id)
-
-        return response_data, status_code
+        try:
+            response_data, status_code = self.request_service.withdraw_request(request_id)
+            return response_data, status_code
+        except Exception as e:
+            # Log the exception if needed
+            current_app.logger.error("An error occurred: %s", str(e))
+            return {"error": str(e)}, 500
     
     def cancel_request(self, request_id):
-        response_data, status_code = self.request_service.cancel_request(request_id)
-        return response_data, status_code
+        try:
+            response_data, status_code = self.request_service.cancel_request(request_id)
+            return response_data, status_code
+        except Exception as e:
+            # Log the exception if needed
+            current_app.logger.error("An error occurred: %s", str(e))
+            return {"error": str(e)}, 500
     
     def get_staff_id(self):
         response_data, status_code = self.request_service.get_staff_id()
@@ -285,12 +294,22 @@ class RequestController:
         return response_data, status_code
 
     def approve_request(self, request_id):
-        result_reason = request.json.get('result_reason')
-        approved_dates = request.json.get('approved_dates')
-        response_data, status_code = self.request_service.approve_request(request_id, result_reason, approved_dates)
-        return response_data, status_code
+        try:
+            result_reason = request.json.get('result_reason')
+            approved_dates = request.json.get('approved_dates')
+            response_data, status_code = self.request_service.approve_request(request_id, result_reason, approved_dates)
+            return response_data, status_code
+        except Exception as e:
+            # Log the exception if needed
+            current_app.logger.error("An error occurred: %s", str(e))
+            return {"error": str(e)}, 500
 
     def reject_request(self, request_id):
-        result_reason = request.json.get('result_reason')
-        response_data, status_code = self.request_service.reject_request(request_id, result_reason)
-        return response_data, status_code
+        try:
+            result_reason = request.json.get('result_reason')
+            response_data, status_code = self.request_service.reject_request(request_id, result_reason)
+            return response_data, status_code
+        except Exception as e:
+            # Log the exception if needed
+            current_app.logger.error("An error occurred: %s", str(e))
+            return {"error": str(e)}, 500

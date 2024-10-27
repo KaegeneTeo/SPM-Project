@@ -462,6 +462,19 @@ def test_withdraw_request_controller_success(request_controller, client, supabas
     assert response.status_code == 200
     assert response.get_json() == mock_response
 
+def test_withdraw_request_controller_exception(request_controller, client):
+    # Mock the supabase `from_` call to raise an exception
+    with patch("flaskapp.models.requests.RequestService.withdraw_request") as mock_withdraw_request:
+        
+        # Set the withdraw_request to raise an exception
+        mock_withdraw_request.side_effect = Exception("Database connection error")
+        # Send the delete request
+        response = client.delete('/withdraw_request/1')
+        
+    # Verify the response
+    assert response.status_code == 500
+    assert response.get_json() == {"error": "Database connection error"}
+
 def test_cancel_request_controller_success(request_controller, client):
     mock_response = {"message": "Request cancel successful", "data": {"request_id": 1}}
     mock_data = {'staff_id': 1}
@@ -472,6 +485,19 @@ def test_cancel_request_controller_success(request_controller, client):
     
     assert response.status_code == 200
     assert response.get_json() == mock_response
+
+def test_cancel_request_controller_exception(request_controller, client):
+    # Mock the supabase `from_` call to raise an exception
+    with patch("flaskapp.models.requests.RequestService.cancel_request") as mock_cancel_request:
+        
+        # Set the cancel_request to raise an exception
+        mock_cancel_request.side_effect = Exception("Database connection error")
+        # Send the delete request
+        response = client.delete('/cancel_request/1')
+        
+    # Verify the response
+    assert response.status_code == 500
+    assert response.get_json() == {"error": "Database connection error"}
 
 def test_create_request_controller_success(request_controller, client):
     form_data = {
@@ -601,6 +627,25 @@ def test_approve_request_controller_success(request_controller, client):
         assert response.status_code == 200
         assert response.get_json() == mock_response
 
+def test_approve_request_controller_exception(request_controller, client):
+    # Mock the supabase `from_` call to raise an exception
+    with patch("flaskapp.models.requests.RequestService.approve_request") as mock_approve_request:
+        
+        # Set the cancel_request to raise an exception
+        mock_approve_request.side_effect = Exception("Database connection error")
+        # Send the delete request
+        response = client.put(
+            '/request/1/approve',
+            json={
+                "result_reason": "Approved",
+                "approved_dates": ["2024-11-01"]
+            }
+        )
+        
+    # Verify the response
+    assert response.status_code == 500
+    assert response.get_json() == {"error": "Database connection error"}
+
 def test_reject_request_controller_success(request_controller, client):
     # Define mock response to simulate a successful request approval
     mock_response = {"message": "Request rejected successfully"}
@@ -621,6 +666,25 @@ def test_reject_request_controller_success(request_controller, client):
         # Assert the response status code and response data
         assert response.status_code == 200
         assert response.get_json() == mock_response
+
+def test_reject_request_controller_exception(request_controller, client):
+    # Mock the supabase `from_` call to raise an exception
+    with patch("flaskapp.models.requests.RequestService.reject_request") as mock_reject_request:
+        
+        # Set the cancel_request to raise an exception
+        mock_reject_request.side_effect = Exception("Database connection error")
+        # Send the delete request
+        response = client.put(
+            '/request/1/reject',
+            json={
+                "status": -1,
+                "result_reason": "Rejected"
+            }
+        )
+        
+    # Verify the response
+    assert response.status_code == 500
+    assert response.get_json() == {"error": "Database connection error"}
 
 # ---------------------------------------------
 # Testing Get Staff ID with different scenarios
