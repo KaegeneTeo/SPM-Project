@@ -259,19 +259,19 @@ def test_compose_withdraw(supabase_caller, notif_engine):
 #error paths
 
 #bad DB calls
-def test_get_request_data(supabase_caller):
+def test_get_request_data_error(supabase_caller):
     supabase_caller.supabase.from_().select().eq().execute.return_value.data = None
     assert supabase_caller.get_request_data(1) == ({"error": "Requests not found"}, 404)
 
-def test_get_staff_data(supabase_caller):
+def test_get_staff_data_error(supabase_caller):
     supabase_caller.supabase.from_().select().eq().execute.return_value.data = None
     assert supabase_caller.get_staff_data(1) == ({"error": "Employee not found"}, 404)
     
-def test_get_latest_req(supabase_caller):
+def test_get_latest_req_error(supabase_caller):
     supabase_caller.supabase.from_().select().order().limit().execute.return_value.data = None
     assert supabase_caller.get_latest_req() == ({"error": "Requests not found"}, 404)
 
-def test_get_manager_data(supabase_caller):
+def test_get_manager_data_error(supabase_caller):
     supabase_caller.supabase.from_().select().eq().execute.return_value.data = None
     assert supabase_caller.get_manager_data(1) == ({"error": "Employee not found"}, 404)
 
@@ -562,62 +562,62 @@ def test_send_withdraw(notif_engine, notif_sender):
         assert notif_sender.send_withdraw(data) == 200
 
 #-ve path error from compose
-def test_send_approve(notif_engine, notif_sender):
+def test_send_approve_compose_error(notif_engine, notif_sender):
     notif_engine.compose_approve = MagicMock(return_value = ("Unique error1", 500))
     with mock.patch('requests.post') as patched_post:
         patched_post.return_value.status_code = 200
         assert notif_sender.send_approve(1) == "Unique error1"
 
-def test_send_reject(notif_engine, notif_sender):
+def test_send_reject_compose_error(notif_engine, notif_sender):
     notif_engine.compose_reject = MagicMock(return_value = ("Unique error2", 500))
     with mock.patch('requests.post') as patched_post:
         patched_post.return_value.status_code = 200
         assert notif_sender.send_reject(1) == "Unique error2"
 
-def test_send_created(notif_engine, notif_sender):
+def test_send_created_compose_error(notif_engine, notif_sender):
     notif_engine.compose_create = MagicMock(return_value = ("Unique error3", 500))
     with mock.patch('requests.post') as patched_post:
         patched_post.return_value.status_code = 200
         assert notif_sender.send_create() == "Unique error3"
 
-def test_send_cancel(notif_engine, notif_sender):
+def test_send_cancel_compose_error(notif_engine, notif_sender):
     notif_engine.compose_cancel = MagicMock(return_value = ("Unique error4", 500))
     with mock.patch('requests.post') as patched_post:
         patched_post.return_value.status_code = 200
         assert notif_sender.send_cancel(data) == "Unique error4"
 
-def test_send_withdraw(notif_engine, notif_sender):
+def test_send_withdraw_compose_error(notif_engine, notif_sender):
     notif_engine.compose_withdraw = MagicMock(return_value = ("Unique error5", 500))
     with mock.patch('requests.post') as patched_post:
         patched_post.return_value.status_code = 200
         assert notif_sender.send_withdraw(data) == "Unique error5"
 
 #post error path
-def test_send_approve(notif_engine, notif_sender):
+def test_send_approve_post_error(notif_engine, notif_sender):
     notif_engine.compose_approve = MagicMock(return_value = ("Hi John Doe, your request (ID: 1) from 1970-1-1 to 1970-1-2 has been partially or fully approved. Please check your schedule for details.", 200))
     with mock.patch('requests.post') as patched_post:
         patched_post.return_value.status_code = 400
         assert notif_sender.send_approve(1) == "Email failed to send"
 
-def test_send_reject(notif_engine, notif_sender):
+def test_send_reject_post_error(notif_engine, notif_sender):
     notif_engine.compose_reject = MagicMock(return_value = ("Hi John Doe, your request (ID: 1) from 1970-1-1 to 1970-1-2 has been rejected.", 200))
     with mock.patch('requests.post') as patched_post:
         patched_post.return_value.status_code = 400
         assert notif_sender.send_reject(1) == "Email failed to send"
 
-def test_send_created(notif_engine, notif_sender):
+def test_send_created_post_error(notif_engine, notif_sender):
     notif_engine.compose_create = MagicMock(return_value = ("Hi Jane Doe, John Doe has sent a request (ID: 1) from 1970-1-1 to 1970-1-2. Please check requests for details.", 200))
     with mock.patch('requests.post') as patched_post:
         patched_post.return_value.status_code = 400
         assert notif_sender.send_create() == "Email failed to send"
 
-def test_send_cancel(notif_engine, notif_sender):
+def test_send_cancel_post_error(notif_engine, notif_sender):
     notif_engine.compose_cancel = MagicMock(return_value = ("Hi Jane Doe, John Doe has cancelled a request (ID: 1) from 1970-1-1 to 1970-1-2. Please check requests for details.", 200))
     with mock.patch('requests.post') as patched_post:
         patched_post.return_value.status_code = 400
         assert notif_sender.send_cancel(data) == "Email failed to send"
 
-def test_send_withdraw(notif_engine, notif_sender):
+def test_send_withdraw_post_error(notif_engine, notif_sender):
     notif_engine.compose_withdraw = MagicMock(return_value = ("Hi Jane Doe, John Doe has withdrawn a request (ID: 1) from 1970-1-1 to 1970-1-2. Please check requests for details.", 200))
     with mock.patch('requests.post') as patched_post:
         patched_post.return_value.status_code = 400
