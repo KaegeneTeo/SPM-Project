@@ -212,7 +212,7 @@ class RequestService:
             if request_type == 2:  # Recurring
                 recurring_dates = self.calculate_recurring_dates(approved_dates)
                 self.create_schedule_entries(staff_id, recurring_dates, time_slot, requestId)
-            elif request_type == 1:  # Ad-hoc
+            else:  # Ad-hoc
                 self.create_schedule_entries(staff_id, approved_dates, time_slot, requestId)
 
             self.supabase.from_("request").update({
