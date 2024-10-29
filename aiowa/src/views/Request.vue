@@ -1,102 +1,105 @@
 <template>
-  <div>
+  <div class="max-w-6xl mx-auto p-6 bg-white shadow-md rounded-lg">
     <!-- Feedback message display -->
-    <div v-if="feedbackMessage" :class="['feedback', feedbackType]">
+    <div v-if="feedbackMessage" :class="['p-4 rounded mb-4', feedbackType === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700']">
       {{ feedbackMessage }}
     </div>
-    <button @click="goToCreateRequestPage">Apply for WFH</button>
-    <button @click="goToViewRequestStaffPage">View current & past requests</button>
+
+    <!-- Action buttons -->
+    <div class="flex space-x-4 mb-4">
+      <button @click="goToCreateRequestPage" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+        Apply for WFH
+      </button>
+      <button @click="goToViewRequestStaffPage" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
+        View current & past requests
+      </button>
+    </div>
+
     <!-- Display requests in a table format -->
-    <div v-if="requests && requests.length">
-      <h2>Requests</h2>
-      <table>
+    <div v-if="requests && requests.length" class="overflow-x-auto">
+      <h2 class="text-lg font-medium text-gray-700 mb-3">Requests</h2>
+      <table class="min-w-full bg-white border border-gray-300 shadow rounded-lg">
         <thead>
-          <tr>
-            <th>Request ID</th>
-            <th>Staff ID</th>
-            <th>Reason</th>
-            <th>Status</th>
-            <th>Start Date</th>
-            <th>End Date</th>
-            <th>Time Slot</th>
-            <th>Request Type</th>
-            <th>Result Reason</th>
+          <tr class="bg-gray-100 border-b">
+            <th class="px-4 py-2 text-left text-gray-600 font-semibold">Request ID</th>
+            <th class="px-4 py-2 text-left text-gray-600 font-semibold">Staff ID</th>
+            <th class="px-4 py-2 text-left text-gray-600 font-semibold">Reason</th>
+            <th class="px-4 py-2 text-left text-gray-600 font-semibold">Status</th>
+            <th class="px-4 py-2 text-left text-gray-600 font-semibold">Start Date</th>
+            <th class="px-4 py-2 text-left text-gray-600 font-semibold">End Date</th>
+            <th class="px-4 py-2 text-left text-gray-600 font-semibold">Time Slot</th>
+            <th class="px-4 py-2 text-left text-gray-600 font-semibold">Request Type</th>
+            <th class="px-4 py-2 text-left text-gray-600 font-semibold">Result Reason</th>
           </tr>
         </thead>
         <tbody>
-          <!-- For loop to display all request records -->
-          <tr v-for="request in requests" :key="request.request_id">
-            <td>
-              <a href="#" @click.prevent="openRequestDetails(request.request_id)" style="color: blue; text-decoration: underline;">
-                {{ request.request_id }}
-              </a>
+          <tr v-for="request in requests" :key="request.request_id" class="border-b hover:bg-gray-50">
+            <td class="px-4 py-2 text-blue-600 underline cursor-pointer" @click.prevent="openRequestDetails(request.request_id)">
+              {{ request.request_id }}
             </td>
-            <td>{{ request.staff_id }}</td>
-            <td>{{ request.reason }}</td>
-            <td>{{ mapStatus(request.status) }}</td> <!-- Status based on int value -->
-            <td>{{ request.startdate }}</td>
-            <td>{{ request.enddate }}</td>
-            <td>{{ mapTimeSlot(request.time_slot) }}</td> <!-- Time Slot based on int value -->
-            <td>{{ mapRequestType(request.request_type) }}</td> <!-- Request Type based on int value -->
-            <td>{{ request.result_reason }}</td>
+            <td class="px-4 py-2 text-gray-700">{{ request.staff_id }}</td>
+            <td class="px-4 py-2 text-gray-700">{{ request.reason }}</td>
+            <td class="px-4 py-2 text-gray-700">{{ mapStatus(request.status) }}</td>
+            <td class="px-4 py-2 text-gray-700">{{ request.startdate }}</td>
+            <td class="px-4 py-2 text-gray-700">{{ request.enddate }}</td>
+            <td class="px-4 py-2 text-gray-700">{{ mapTimeSlot(request.time_slot) }}</td>
+            <td class="px-4 py-2 text-gray-700">{{ mapRequestType(request.request_type) }}</td>
+            <td class="px-4 py-2 text-gray-700">{{ request.result_reason }}</td>
           </tr>
         </tbody>
       </table>
     </div>
 
-    <!-- If there are no requests for this team -->
-    <div v-else>
-      <p>No requests available.</p>
-    </div>
+    <!-- No requests available message -->
+    <div v-else class="text-gray-700 mt-4">No requests available.</div>
+
     <!-- Modal for displaying request details -->
-    <div v-if="showModal" class="modal">
-      <div class="modal-content">
-        <span class="close" @click="closeModal">&times;</span>
-        <h2>Request Details</h2>
+    <div v-if="showModal" class="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
+      <div class="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+        <span class="absolute top-3 right-3 text-gray-600 cursor-pointer" @click="closeModal">&times;</span>
+        <h2 class="text-xl font-semibold text-gray-800 mb-4">Request Details</h2>
 
         <!-- Request Information -->
-        <div class="request-info">
-          <p><strong>Request ID:</strong> {{ selectedRequest.request_id }}</p>
-          <p><strong>Staff ID:</strong> {{ selectedRequest.staff_id }}</p>
-          <p><strong>Schedule ID:</strong> {{ selectedRequest.schedule_id }}</p>
-          <p><strong>Reason:</strong> {{ selectedRequest.reason }}</p>
-          <p><strong>Status:</strong> {{ mapStatus(selectedRequest.status) }}</p>
-          <p><strong>Start Date:</strong> {{ selectedRequest.startdate }}</p>
-          <p><strong>End Date:</strong> {{ selectedRequest.enddate }}</p>
-          <p><strong>Time Slot:</strong> {{ mapTimeSlot(selectedRequest.time_slot) }}</p>
-          <p><strong>Request Type:</strong> {{ mapRequestType(selectedRequest.request_type) }}</p>
+        <div class="mb-4">
+          <p class="text-gray-700"><strong>Request ID:</strong> {{ selectedRequest.request_id }}</p>
+          <p class="text-gray-700"><strong>Staff ID:</strong> {{ selectedRequest.staff_id }}</p>
+          <p class="text-gray-700"><strong>Schedule ID:</strong> {{ selectedRequest.schedule_id }}</p>
+          <p class="text-gray-700"><strong>Reason:</strong> {{ selectedRequest.reason }}</p>
+          <p class="text-gray-700"><strong>Status:</strong> {{ mapStatus(selectedRequest.status) }}</p>
+          <p class="text-gray-700"><strong>Start Date:</strong> {{ selectedRequest.startdate }}</p>
+          <p class="text-gray-700"><strong>End Date:</strong> {{ selectedRequest.enddate }}</p>
+          <p class="text-gray-700"><strong>Time Slot:</strong> {{ mapTimeSlot(selectedRequest.time_slot) }}</p>
+          <p class="text-gray-700"><strong>Request Type:</strong> {{ mapRequestType(selectedRequest.request_type) }}</p>
         </div>
 
         <!-- Reason for Approval/Rejection -->
-        <div class="result-reason">
-          <p><strong>Reason for Approval/Rejection:</strong></p>
-          <textarea v-model="resultReason" rows="3" placeholder="Enter reason for approval/rejection"></textarea>
+        <div class="mb-4">
+          <p class="text-gray-700 font-medium">Reason for Approval/Rejection:</p>
+          <textarea v-model="resultReason" rows="3" placeholder="Enter reason for approval/rejection" class="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
         </div>
 
         <!-- Checkbox options for affected dates -->
-        <div class="affected-dates">
-          <p><strong>Select Affected Dates:</strong></p>
-          <div v-for="date in affectedDates" :key="date">
-            <label>
-              <input type="checkbox" :value="date" v-model="selectedDates" />
-              {{ date }}
-            </label>
+        <div class="mb-4">
+          <p class="text-gray-700 font-medium">Select Affected Dates:</p>
+          <div v-for="date in affectedDates" :key="date" class="flex items-center space-x-2">
+            <input type="checkbox" :value="date" v-model="selectedDates" class="form-checkbox text-blue-500">
+            <label class="text-gray-700">{{ date }}</label>
           </div>
         </div>
 
         <!-- Approve and Reject buttons -->
-        <div class="action-buttons">
+        <div class="flex space-x-4">
           <button 
-            class="approve-button" 
+            class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600" 
             @click="approveRequest" 
             :disabled="!isApproveEnabled"
-            :class="{ 'disabled': !isApproveEnabled }">Approve
+            :class="{ 'opacity-50 cursor-not-allowed': !isApproveEnabled }">Approve
           </button>
           <button 
-            class="reject-button"
+            class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
             @click="rejectRequest" 
             :disabled="!isRejectEnabled"
-            :class="{ 'disabled': !isRejectEnabled }">Reject
+            :class="{ 'opacity-50 cursor-not-allowed': !isRejectEnabled }">Reject
           </button>
         </div>
       </div>
