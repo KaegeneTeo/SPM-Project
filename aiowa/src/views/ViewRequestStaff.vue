@@ -1,45 +1,65 @@
 <template>
-  <div>
-    <h1><strong>My Requests</strong></h1>
+  <div class="max-w-5xl mx-auto p-6 bg-white shadow-md rounded-lg">
+    <h1 class="text-2xl font-semibold text-gray-800 mb-4">My Requests</h1>
     
-    <div v-if="error" class="error">{{ error }}</div>
+    <div v-if="error" class="p-4 bg-red-100 text-red-700 rounded mb-4">{{ error }}</div>
     
     <div v-if="requests.length > 0">
-      <h2>Requests for Staff ID: {{ staffId }}</h2>
-      <table border="1">
-        <thead>
-          <tr>
-            <th>Request ID</th>
-            <th>Reason</th>
-            <th>Status</th>
-            <th>Start Date</th>
-            <th>End Date</th>
-            <th>Time Slot</th>
-            <th>Request Type</th>
-            <th>Action</th> <!-- New Column for Button -->
-            <th>W/C Reason</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="request in requests" :key="request.request_id">
-            <td>{{ request.request_id }}</td>
-            <td>{{ request.reason }}</td>
-            <td>{{ getStatusLabel(request.status) }}</td>
-            <td>{{ request.startdate }}</td>
-            <td>{{ request.enddate }}</td>
-            <td>{{ getTimeSlotLabel(request.time_slot) }}</td>
-            <td>{{ getRequestTypeLabel(request.request_type) }}</td>
-            <td>
-              <button v-if="request.status === 1" @click="cancelRequest(request.request_id)">Withdraw</button>
-              <button v-if="request.status === 0" @click="withdrawRequest(request.request_id)">Cancel</button>
-            </td> <!-- Conditional rendering of buttons -->
-            <td><input type="text"></td>
-          </tr>
-        </tbody>
-      </table>
+      <h2 class="text-lg font-medium text-gray-700 mb-3">Requests for Staff ID: {{ staffId }}</h2>
+      <div class="overflow-x-auto">
+        <table class="min-w-full bg-white border border-gray-300 shadow rounded-lg">
+          <thead>
+            <tr class="bg-gray-100 border-b border-gray-300">
+              <th class="px-4 py-2 text-left text-gray-600 font-semibold">Request ID</th>
+              <th class="px-4 py-2 text-left text-gray-600 font-semibold">Reason</th>
+              <th class="px-4 py-2 text-left text-gray-600 font-semibold">Status</th>
+              <th class="px-4 py-2 text-left text-gray-600 font-semibold">Start Date</th>
+              <th class="px-4 py-2 text-left text-gray-600 font-semibold">End Date</th>
+              <th class="px-4 py-2 text-left text-gray-600 font-semibold">Time Slot</th>
+              <th class="px-4 py-2 text-left text-gray-600 font-semibold">Request Type</th>
+              <th class="px-4 py-2 text-left text-gray-600 font-semibold">Action</th>
+              <th class="px-4 py-2 text-left text-gray-600 font-semibold">W/C Reason</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="request in requests"
+              :key="request.request_id"
+              class="border-b hover:bg-gray-50"
+            >
+              <td class="px-4 py-2 text-gray-700">{{ request.request_id }}</td>
+              <td class="px-4 py-2 text-gray-700">{{ request.reason }}</td>
+              <td class="px-4 py-2 text-gray-700">{{ getStatusLabel(request.status) }}</td>
+              <td class="px-4 py-2 text-gray-700">{{ request.startdate }}</td>
+              <td class="px-4 py-2 text-gray-700">{{ request.enddate }}</td>
+              <td class="px-4 py-2 text-gray-700">{{ getTimeSlotLabel(request.time_slot) }}</td>
+              <td class="px-4 py-2 text-gray-700">{{ getRequestTypeLabel(request.request_type) }}</td>
+              <td class="px-4 py-2">
+                <button
+                  v-if="request.status === 1"
+                  @click="cancelRequest(request.request_id)"
+                  class="px-3 py-1 text-sm text-white bg-red-500 rounded hover:bg-red-600"
+                >
+                  Withdraw
+                </button>
+                <button
+                  v-if="request.status === 0"
+                  @click="withdrawRequest(request.request_id)"
+                  class="px-3 py-1 text-sm text-white bg-yellow-500 rounded hover:bg-yellow-600"
+                >
+                  Cancel
+                </button>
+              </td>
+              <td class="px-4 py-2">
+                <input type="text" class="p-2 border border-gray-300 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
-
-    <div v-else-if="requests.length === 0 && !error && showNoRecords">No records found for this staff ID.</div>
+    
+    <div v-else-if="requests.length === 0 && !error && showNoRecords" class="text-gray-700 mt-4">No records found for this staff ID.</div>
   </div>
 </template>
 
