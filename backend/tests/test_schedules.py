@@ -196,7 +196,7 @@ def test_format_schedules(schedules_service):
     allnames.data = [{'Staff_ID': 1, 'Staff_FName': 'John', 'Staff_LName': 'Doe', "Dept": "HR", "Position": "HR_Manager"}]
     
     result, status_code = schedules_service.format_schedules(response, allnames)
-    assert result == {'schedules': [{'start': '2024-10-16 09:00', 'end': '2024-10-16 13:00', 'class': 'AM', 'WFH': ['1 - John Doe - HR - HR_Manager'], 'count': 1, 'title': 1, 'inOffice': []}]}
+    assert result == {'schedules': [{'start': '2024-10-16 09:00', 'end': '2024-10-16 13:00', 'class': 'AM', 'WFH': [{"staff_id": 1, "staff_fname": "John", "staff_lname": "Doe", "dept": "HR", "position": "HR_Manager"}], 'count': 1, 'title': 1, 'inOffice': []}]}
     assert status_code == 200
 
 # Test case for formatting schedules with no data
@@ -372,7 +372,7 @@ def test_format_schedules_if_branch(schedules_service):
     # Assertions
     assert status == 200
     assert len(result["schedules"]) == 1
-    assert result["schedules"][0]["WFH"] == ["1 - John Doe - HR - Analyst"]
+    assert result["schedules"][0]["WFH"] == [{"staff_id": 1, "staff_fname": "John", "staff_lname": "Doe", "dept": "HR", "position": "Analyst"}]
 
 def test_format_schedules_else_branch(schedules_service):
     # Mock response with a duplicate date-time combination to trigger else
@@ -406,5 +406,5 @@ def test_format_schedules_else_branch(schedules_service):
     assert status == 200
     assert len(result["schedules"]) == 1  # Same date and time slot are combined
     assert len(result["schedules"][0]["WFH"]) == 2
-    assert "1 - John Doe - HR - Analyst" in result["schedules"][0]["WFH"]
-    assert "2 - Jane Smith - IT - Developer" in result["schedules"][0]["WFH"]
+    assert {"staff_id": 1, "staff_fname": "John", "staff_lname": "Doe", "dept": "HR", "position": "Analyst"} in result["schedules"][0]["WFH"]
+    assert {"staff_id": 2, "staff_fname": "Jane", "staff_lname": "Smith", "dept": "IT", "position": "Developer"} in result["schedules"][0]["WFH"]
