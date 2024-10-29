@@ -88,7 +88,8 @@ export default {
     },
     methods: {
         async fetchTeamDetails(team) {
-            if(!team){
+            if(team == ""){
+                // alert("Please select a team!")
                 return;
             }
             if(this.role == '1'){    
@@ -102,7 +103,8 @@ export default {
                 const response = await axios.get(`${VITE_AWS_URL}/team_details`, {
                     params: {m_name : this.managername, dept : this.selectedDept}
                 });
-                this.selectedReportingManager = response.data["staff_id"]
+                // console.log(response.data.Staff_ID)
+                this.selectedReportingManager = response.data.Staff_ID
                 // console.log(this.selectedReportingManager)
             }
             else if(this.role == '3'){
@@ -120,8 +122,9 @@ export default {
             
         },
         async fetchTeams(department) {
-            if (!department) {
-                this.filteredTeams = []; // Clear teams if no department is selected
+            if (department == "") {
+                this.filteredTeams = [];
+                // alert("Please select a department!") // Clear teams if no department is selected
                 return;
             }
             if(department == 'all'){
@@ -180,19 +183,31 @@ export default {
         },
         async search() {
             let params = {};
+
+            
             
             if (this.role === '1') {
+
+                if(this.selectedDept == "" || this.selectedTeam == ""){
+                    alert("Please ensure that department and team are selected!")
+                    return;
+                }
                 if (this.selectedTeam == 'all' && this.selectedDept == 'all'){
                     params = {dept: 'all', reporting_manager: 'all', position :this.position, role: this.role}
                     // console.log(params)
                 }
                 else {
+                    
                     params = {dept: this.selectedDept, role: this.role, reporting_manager: this.selectedReportingManager, position: this.position}
                     // console.log(params);
                 }
                 
             }
             if (this.role === '3') {
+                if(this.selectedTeam == ""){
+                    alert("Please ensure that team is selected!")
+                    return;
+                }
                 if (this.selectedTeam == 'all'){
                     params = {dept: localStorage.getItem('dept'), role: localStorage.getItem('role'), reporting_manager: this.selectedReportingManager, position: localStorage.getItem('position')}
                     // console.log(params)
@@ -203,12 +218,18 @@ export default {
                 }
             }
             if (this.role === '2'){
-                params = {dept:localStorage.getItem('dept'), role : '3', position: 'Sales Manager', reporting_manager: localStorage.getItem('reporting_manager')}
+                params = {dept:localStorage.getItem('dept'), role : '3', position: '', reporting_manager: localStorage.getItem('reporting_manager')}
             }    
             axios.get(`${VITE_AWS_URL}/schedules`, { params })
                 .then(response => {
                     this.events = response.data['schedules'];
-                    console.log(this.events)
+                    
+                    if (this.events.length === 0) {
+                        // Show a popup when schedules are empty
+                        alert("There are no schedules found.");
+                    } else {
+                        console.log(this.events);
+                    }
                 })
                 .catch(error => {
                     console.error("Error fetching schedules: ", error);
@@ -312,16 +333,16 @@ export default {
                     <v-dialog v-model="showDialog">
                         <v-card class="mycard">
                             <v-card-title style="background-color:#68B5C7;color:white;">
-                                <strong>Employee List (ID - name)</strong>
+                                <strong>Employee List</strong>
                                 <v-spacer />
                             </v-card-title>
                             <v-card-text> 
-                                <span>WFH</span> 
+                                <strong>WFH</strong> 
                                 <ul v-for="employee in selectedEvent.WFH"> 
                                     <li>{{ employee }}</li> 
                                 </ul> 
-                                
-                                <span>In Office</span> 
+                                <br>
+                                <strong>In Office</strong> 
                                 <ul v-for="employee in selectedEvent.inOffice"> 
                                     <li>{{ employee }}</li> 
                                 </ul> 

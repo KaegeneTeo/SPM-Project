@@ -37,9 +37,13 @@ jobs:
             - name: Run tests
               working-directory: ./backend
               run: |
-                  coverage run -m pytest --cov --cov-report=xml
+                  coverage run -m pytest
+                  coverage xml  # Generates an XML report for Codecov
 
             - name: Upload results to Codecov
               uses: codecov/codecov-action@v4
               with:
                   token: ${{ secrets.CODECOV_TOKEN }}
+
+            - name: Verify Coverage Report
+              run: ls -la . | grep ".coverage\|coverage.xml"

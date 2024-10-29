@@ -3,7 +3,6 @@
     <h1><strong>New Request</strong></h1>
     <br>
     <form @submit.prevent="submitRequest">
-      
       <div>
         <label for="reason">Reason:</label>
         <textarea v-model="form.reason" id="reason" required></textarea>
@@ -55,7 +54,7 @@
 
 <script>
 import axios from "axios";
-const   VITE_AWS_URL = import.meta.env.VITE_AWS_URL;
+const VITE_AWS_URL = import.meta.env.VITE_AWS_URL;
 
 export default {
   data() {
@@ -80,7 +79,8 @@ export default {
   },
   methods: {
     getStaffId() {
-      axios.get(`http://127.0.0.1:5000/getstaffid`, {
+      //axios.get(`http://127.0.0.1:5000/getstaffid`, {
+      axios.get(`${VITE_AWS_URL}/getstaffid`, {
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${this.access_token}`,  // Include the access token here
@@ -89,8 +89,11 @@ export default {
         })
       .then(response => {
         console.log(response.data);
-        return response.data.staff_id
+        this.form.staffid = response.data.staff_id;
       })
+      .catch(error => {
+        console.error("Error fetching staff ID:", error);
+      });
     },
     getCurrentDate() {
       const today = new Date();
@@ -172,10 +175,16 @@ export default {
       }
 
       try {
-        const response = await axios.post( `http://127.0.0.1:5000/requests/`, this.form);
+        //const response = await axios.post(`http://127.0.0.1:5000/requests/`, this.form, {
+        const response = await axios.post(`${VITE_AWS_URL}/requests/`, this.form, {
+          headers: {
+            'Authorization': `Bearer ${this.access_token}`,  // Include the access token
+            'X-Staff-ID': this.staff_id                     // Include the staff ID here
+          }
+        });
         alert("Request created successfully!");
         console.log(response.data);
-        this.$router.push({ name: 'requests' })
+        this.$router.push({ name: 'viewrequeststaff' });
       } catch (error) {
         if (error.response) {
           console.error(error.response.data);

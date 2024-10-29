@@ -41,6 +41,16 @@
 
                     <a
                         @click.prevent="
+                            handleLinkClick('MySchedule');
+                            toggleMobileMenu();
+                        "
+                        class="block text-white text-lg font-medium"
+                        href="#"
+                        >My Schedule</a
+                    >
+
+                    <a
+                        @click.prevent="
                             handleLinkClick('Login');
                             toggleMobileMenu();
                         "
@@ -56,16 +66,16 @@
         <!-- Navigation -->
         <nav class="bg-gray-800">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                <div class="flex h-16 items-center justify-between">
+                <div class="grid grid-cols-12 h-16 items-center justify-between">
                     <!-- Logo/Home button -->
-                    <div class="flex-shrink-0">
+                    <div class="lg:col-span-3 flex-shrink-0">
                         <img
-                            class="h-12 w-12 cursor-pointer"
+                            class="h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14 cursor-pointer object-contain"
                             src="../assets/aiowa-photoaidcom-cropped.png"
                             alt="Your Company" />
                     </div>
                     <!-- Mobile menu button (hamburger) -->
-                    <div class="-mr-2 flex md:hidden">
+                    <div class="col-start-12 col-span-1 md:hidden flex justify-end">
                         <button
                             @click="toggleMobileMenu"
                             type="button"
@@ -83,31 +93,33 @@
                         </button>
                     </div>
                     <!-- Navigation links -->
-                    <div class="hidden md:block">
-                        <div class="ml-10 flex items-baseline space-x-4">
+                    <div class="hidden md:block col-span-6">
+                        <div class="ml-10 flex items-baseline space-x-4 justify-center">
                             <a
                                 @click.prevent="handleLinkClick('Schedules')"
                                 href="#"
                                 class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
                                 >Schedules</a
                             >
-
                             <a
                                 @click.prevent="handleLinkClick('Requests')"
                                 href="#"
                                 class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
                                 >Requests</a
                             >
+                            <a
+                                @click.prevent="handleLinkClick('MySchedule')"
+                                href="#"
+                                class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
+                                >My Schedule</a
+                            >
                         </div>
                     </div>
                     <!-- Notifications button -->
-                    <div class="hidden md:block">
-                        <div class="ml-4 flex items-center md:ml-6">
-                            <!-- User's Details -->
+                    <div class="col-span-3 hidden md:block">
+                        <div class="ml-4 flex items-center justify-end">
                             <div>
-                                <span class="px-3 py-2 text-sm font-medium text-gray-300"
-                                    >Welcome back, {{ username }}</span
-                                >
+                                <span class="px-3 py-2 text-sm font-medium text-gray-300">Welcome back, {{ username }}</span>
                             </div>
                             <!-- Profile dropdown -->
                             <div class="relative ml-3">
@@ -165,6 +177,7 @@
                 </div>
             </div>
         </nav>
+
 
         <main>
             <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
