@@ -4,14 +4,12 @@
 name: CD Pipeline With Zappa
 
 on:
-    workflow_run:
-        workflows: ["CI Pipeline"]
-        types:
-            - completed
-    #paths:
-    #    - app/**
-    #    - requirements.txt
-    #    - zappa_settings.json
+    push:
+        branches: ["dev", "main"]
+        #paths:
+        #    - app/**
+        #    - requirements.txt
+        #    - zappa_settings.json
 
 jobs:
     build:
