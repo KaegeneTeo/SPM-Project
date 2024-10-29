@@ -282,5 +282,5 @@ td{
     padding-left: 10px;
     padding-right: 10px;
 }
-.table-bordered th, .table-bordered td { border: 1px solid #48bc84!important }
+.table-bordered th, .table-bordered td { border: 1px solid #70b4c4!important }
 </style>
