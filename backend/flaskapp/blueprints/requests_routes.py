@@ -18,7 +18,7 @@ notif_sender = notification_sender(notif_engine)
 def withdraw_request(request_id: int):
     response, status_code = request_controller.withdraw_request(request_id)
     if "error" not in response.keys():
-        email = notif_sender.send_withdraw(response["data"])
+        email = notif_sender.send_cancel(response["data"])
         response["email"] = email
     return make_response(jsonify(response), status_code)
 
@@ -26,7 +26,7 @@ def withdraw_request(request_id: int):
 def cancel_request(request_id: int):
     response, status_code = request_controller.cancel_request(request_id)
     if "error" not in response.keys():
-        email = notif_sender.send_cancel(response["data"])
+        email = notif_sender.send_withdraw(response["data"])
         response["email"] = email
     return make_response(jsonify(response), status_code)
 

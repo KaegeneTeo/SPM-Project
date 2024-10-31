@@ -16,7 +16,7 @@ class RequestService:
             if not response.data:
                 abort(404, description="Request not found.")
 
-            return {"message": "Request withdrawn successful", 
+            return {"message": "Request cancel successful", 
                     "data": {"request_id": request_id, "staff_id": staff_id, "startdate": startdate, "enddate": enddate}}, 200 
 
         except Exception as e:
@@ -36,7 +36,7 @@ class RequestService:
             if not response.data or not response2.data:
                 abort(404, description="Request not found.")
 
-            return {"message": "Request cancel successful",
+            return {"message": "Request withdrawn successful",
                     "data":{"request_id": request_id, "staff_id": staff_id, "startdate": startdate, "enddate": enddate}}, 200
 
         except Exception as e:
