@@ -114,6 +114,7 @@ class notification_engine:
         email += f"Hi {managername}, {staffname} has sent a request (ID: {selected_request["request_id"]}) from {selected_request["startdate"]} to {selected_request["enddate"]}. Please check requests for details."
         return email, 200
     
+    #this method is actually called on cancel due to naming issues previously, send withdraw will notify of cancel and vici versa. Todo: change withdraw method names to cancel and vici versa
     def compose_cancel(self, data):
         email = ""
         try:
