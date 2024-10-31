@@ -251,7 +251,7 @@ export default {
       } catch (error) {
         if (error.response) {
           console.error(error.response.data);
-          this.message = `Error: ${error.response.data.error}`;
+          this.message = `Error: please fill in all fields.`;
         } else {
           this.message = "An error occurred. Please try again.";
         }

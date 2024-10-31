@@ -28,43 +28,10 @@ export default {
             staff_id: null,
             filteredTeams: [],  // Initialize filteredTeams to hold teams for the selected department
             events: [
-                {
-                    start: '2024-09-19 09:00',
-                    end: '2024-09-19 13:00',
-                    title: '1',
-                    class: 'AM',
-                    count: 1,
-                    nameList: [
-                        {
-                            staff_id: 0,
-                            name: "John"
-                        }
-                    ]
-                },
-                {
-                    start: '2024-09-19 14:00',
-                    end: '2024-09-19 18:00',
-                    title: '3',
-                    class: 'PM',
-                    count: 3,
-                    nameList: [
-                        {
-                            staff_id: 3,
-                            name: "Bob"
-                        },
-                        {
-                            staff_id: 4,
-                            name: "Alice"
-                        },
-                        {
-                            staff_id: 1,
-                            name: "Jane"
-                        }
+               
                     ]
                 }
-            ]
-        }
-    },
+        },
     mounted() {
         // Retrieve the role from localStorage when the component is mounted
         this.role = localStorage.getItem('role');
@@ -155,19 +122,48 @@ export default {
                     <v-dialog v-model="showDialog">
                         <v-card class="mycard">
                             <v-card-title style="background-color:#68B5C7;color:white;">
-                                <strong>Employee List (ID - name)</strong>
+                                <strong>Employee List</strong>
                                 <v-spacer />
                             </v-card-title>
                             <v-card-text> 
-                                <span>WFH</span> 
-                                <ul v-for="employee in selectedEvent.WFH"> 
-                                    <li>{{ employee }}</li> 
-                                </ul> 
-                                
-                                <span>In Office</span> 
-                                <ul v-for="employee in selectedEvent.inOffice"> 
-                                    <li>{{ employee }}</li> 
-                                </ul> 
+                                <strong>WFH</strong>
+                                <table class="table table-bordered table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Staff_ID</th>
+                                            <th scope="col">Name</th>
+                                            <th scope="col">Dept</th>
+                                            <th scope="col">Position</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody v-for="employee in selectedEvent.WFH">
+                                        <tr>
+                                            <th scope="row">{{employee.staff_id}}</th>
+                                            <td>{{employee.staff_fname +" "+ employee.staff_lname}}</td>
+                                            <td>{{ employee.dept }}</td>
+                                            <td>{{ employee.position }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <strong>In Office</strong>
+                                <table class="table table-bordered table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Staff_ID</th>
+                                            <th scope="col">Name</th>
+                                            <th scope="col">Dept</th>
+                                            <th scope="col">Position</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody v-for="employee in selectedEvent.inOffice">
+                                        <tr>
+                                            <th scope="row">{{employee.staff_id}}</th>
+                                            <td>{{employee.staff_fname +" "+ employee.staff_lname}}</td>
+                                            <td>{{ employee.dept }}</td>
+                                            <td>{{ employee.position }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </v-card-text>
                             <v-card-actions>
                                 <v-spacer />
@@ -277,4 +273,14 @@ export default {
 .vuecal__event-content {
     font-style: italic;
 }
+th{
+    text-align:left;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+td{
+    padding-left: 10px;
+    padding-right: 10px;
+}
+.table-bordered th, .table-bordered td { border: 1px solid #70b4c4!important }
 </style>
