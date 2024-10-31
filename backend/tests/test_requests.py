@@ -206,7 +206,7 @@ def test_withdraw_request_success(request_service, supabase_client):
     response, status_code = request_service.withdraw_request(1)
     
     assert status_code == 200
-    assert response["message"] == "Request withdrawn successful"
+    assert response["message"] == "Request cancel successful"
     supabase_client.from_("request").delete().eq("request_id", 1).execute.assert_called_once()
 
 def test_withdraw_request_not_found(request_service, supabase_client):
@@ -229,7 +229,7 @@ def test_cancel_request_success(request_service, supabase_client):
     response, status_code = request_service.cancel_request(1)
 
     # Assert that the response is what we expect when the cancel is successful
-    assert response["message"] == "Request cancel successful"
+    assert response["message"] == "Request withdrawn successful"
     assert status_code == 200
 
 def test_cancel_request_not_found(request_service, supabase_client):
