@@ -1,52 +1,115 @@
 <template>
-  <div>
-    <h1><strong>New Request</strong></h1>
-    <br>
-    <form @submit.prevent="submitRequest">
+  <div class="max-w-xl mx-auto mt-10 p-6 bg-white shadow-md rounded-lg">
+    <h1 class="text-2xl font-semibold text-gray-800 mb-4">New Request</h1>
+    <form @submit.prevent="submitRequest" class="space-y-6">
       <div>
-        <label for="reason">Reason:</label>
-        <textarea v-model="form.reason" id="reason" required></textarea>
+        <label for="reason" class="block text-sm font-medium text-gray-700">Reason:</label>
+        <textarea
+          v-model="form.reason"
+          id="reason"
+          required
+          class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+          rows="4"
+        ></textarea>
       </div>
       <div>
-        <label for="date">Start Date:</label>
-        <input type="date" v-model="form.startdate" :min="minDate" @change="handleStartDateChange" id="startdate" required />
-        <p v-if="dateError" class="error">{{ dateError }}</p>
+        <label for="startdate" class="block text-sm font-medium text-gray-700">Start Date:</label>
+        <input
+          type="date"
+          v-model="form.startdate"
+          :min="minDate"
+          @change="handleStartDateChange"
+          id="startdate"
+          required
+          class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+        />
+        <p v-if="dateError" class="text-red-500 text-xs mt-1">{{ dateError }}</p>
       </div>
       <div>
-        <label for="date">End Date:</label>
-        <input type="date" v-model="form.enddate" :min="form.startdate || minDate" @change="validateEndDate" id="enddate" required />
-        <p v-if="endDateError" class="error">{{ endDateError }}</p>
+        <label for="enddate" class="block text-sm font-medium text-gray-700">End Date:</label>
+        <input
+          type="date"
+          v-model="form.enddate"
+          :min="form.startdate || minDate"
+          @change="validateEndDate"
+          id="enddate"
+          required
+          class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+        />
+        <p v-if="endDateError" class="text-red-500 text-xs mt-1">{{ endDateError }}</p>
       </div>
       <div>
-        <label>Time Slot:</label>
-        <div>
-          <input type="radio" id="morning" value="1" v-model="form.time_slot" :disabled="!canChooseAM" />
-          <label for="morning">AM WFH (9AM - 1PM)</label>
-        </div>
-        <div>
-          <input type="radio" id="afternoon" value="2" v-model="form.time_slot" :disabled="!canChoosePM" />
-          <label for="afternoon">PM WFH (2PM - 6PM)</label>
-        </div>
-        <div>
-          <input type="radio" id="evening" value="3" v-model="form.time_slot" :disabled="!canChooseFullDay" />
-          <label for="evening">Full Day WFH (9AM - 6PM)</label>
+        <label class="block text-sm font-medium text-gray-700">Time Slot:</label>
+        <div class="mt-2 space-y-1">
+          <div class="flex items-center">
+            <input
+              type="radio"
+              id="morning"
+              value="1"
+              v-model="form.time_slot"
+              :disabled="!canChooseAM"
+              class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300"
+            />
+            <label for="morning" class="ml-2 block text-sm text-gray-700">AM WFH (9AM - 1PM)</label>
+          </div>
+          <div class="flex items-center">
+            <input
+              type="radio"
+              id="afternoon"
+              value="2"
+              v-model="form.time_slot"
+              :disabled="!canChoosePM"
+              class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300"
+            />
+            <label for="afternoon" class="ml-2 block text-sm text-gray-700">PM WFH (2PM - 6PM)</label>
+          </div>
+          <div class="flex items-center">
+            <input
+              type="radio"
+              id="evening"
+              value="3"
+              v-model="form.time_slot"
+              :disabled="!canChooseFullDay"
+              class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300"
+            />
+            <label for="evening" class="ml-2 block text-sm text-gray-700">Full Day WFH (9AM - 6PM)</label>
+          </div>
         </div>
       </div>
       <div>
-        <label>Request Type:</label>
-        <div>
-          <input type="radio" id="type1" value="1" v-model="form.request_type" />
-          <label for="type1">Adhoc</label>
-        </div>
-        <div>
-          <input type="radio" id="type2" value="2" v-model="form.request_type" />
-          <label for="type2">Recurring</label>
+        <label class="block text-sm font-medium text-gray-700">Request Type:</label>
+        <div class="mt-2 space-y-1">
+          <div class="flex items-center">
+            <input
+              type="radio"
+              id="type1"
+              value="1"
+              v-model="form.request_type"
+              class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300"
+            />
+            <label for="type1" class="ml-2 block text-sm text-gray-700">Adhoc</label>
+          </div>
+          <div class="flex items-center">
+            <input
+              type="radio"
+              id="type2"
+              value="2"
+              v-model="form.request_type"
+              class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300"
+            />
+            <label for="type2" class="ml-2 block text-sm text-gray-700">Recurring</label>
+          </div>
         </div>
       </div>
-      <button type="submit">Submit Request</button>
+      <button
+        type="submit"
+        class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+      >
+        Submit Request
+      </button>
     </form>
 
-    <div v-if="message">
+    <div v-if="message" class="mt-4 p-2 bg-green-100 text-green-700 rounded">
       <p>{{ message }}</p>
     </div>
   </div>

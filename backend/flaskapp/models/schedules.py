@@ -67,16 +67,16 @@ class SchedulesService:
             temp = {
                 "Date": item["date"],
                 "Time_Slot": item["time_slot"],
-                "Name_List": [f'{item["staff_id"]} - {item["staff_fname"]} {item["staff_lname"]} - {item["dept"]} - {item["position"]}']
+                "Name_List": [{"staff_id": item["staff_id"], "staff_fname": item["staff_fname"], "staff_lname": item["staff_lname"], "dept": item["dept"], "position": item["position"]}]
             }
             if (item["date"], item["time_slot"]) not in dict1:
                 dict1[(item["date"], item["time_slot"])] = temp
             else:
-                dict1[(item["date"], item["time_slot"])]["Name_List"].append(f'{item["staff_id"]} - {item["staff_fname"]} {item["staff_lname"]} - {item["dept"]} - {item["position"]}')
+                dict1[(item["date"], item["time_slot"])]["Name_List"].append({"staff_id": item["staff_id"], "staff_fname": item["staff_fname"], "staff_lname": item["staff_lname"], "dept": item["dept"], "position": item["position"]})
 
         # Convert data into the final format for frontend
         returnlist = []
-        allnamelist = [f'{employee["Staff_ID"]} - {employee["Staff_FName"]} {employee["Staff_LName"]} - {employee["Dept"]} - {employee["Position"]}' for employee in allnames.data]
+        allnamelist = [{"staff_id": employee["Staff_ID"], "staff_fname": employee["Staff_FName"], "staff_lname": employee["Staff_LName"], "dept": employee["Dept"], "position": employee["Position"]} for employee in allnames.data]
 
         for key in dict1:
             time_slot_data = dict1[key]
