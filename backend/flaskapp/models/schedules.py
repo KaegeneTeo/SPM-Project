@@ -94,5 +94,4 @@ class SchedulesService:
                 "title": len(time_slot_data["Name_List"]),
                 "inOffice": in_office
             })
-        # print(returnlist)
         return {"schedules": returnlist}, 200

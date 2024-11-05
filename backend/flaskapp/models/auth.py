@@ -35,7 +35,6 @@ class AuthService:
         try:
             # Sign out using Supabase Auth
             signout = self.supabase.auth.sign_out()
-            print(signout)
             if signout == None:
                 return {"message": "User signed out successfully."}, 200
             else:
