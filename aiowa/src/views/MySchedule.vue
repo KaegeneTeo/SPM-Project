@@ -66,8 +66,6 @@ export default {
                 if (this.events.length === 0) {
                     // Show a popup when no schedules are found
                     alert("There are no personal schedules found.");
-                } else {
-                    console.log(this.events);
                 }
             } catch (error) {
                 console.error("Error fetching personal schedules: ", error);

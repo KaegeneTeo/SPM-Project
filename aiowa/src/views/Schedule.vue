@@ -103,19 +103,15 @@ export default {
                 const response = await axios.get(`${VITE_AWS_URL}/team_details`, {
                     params: { m_name: this.managername, dept: this.selectedDept }
                 });
-                // console.log(response.data.Staff_ID)
                 this.selectedReportingManager = response.data.Staff_ID
-                // console.log(this.selectedReportingManager)
             }
             else if (this.role == '3') {
                 if (team == 'all') {
                     this.selectedReportingManager = this.staff_id
 
-                    // console.log(this.selectedReportingManager)
                 }
                 else if (team == 'my team') {
                     this.selectedReportingManager = localStorage.getItem('reporting_manager')
-                    // console.log(this.selectedReportingManager)
                 }
 
             }
@@ -124,7 +120,6 @@ export default {
         async fetchTeams(department) {
             if (department == "") {
                 this.filteredTeams = [];
-                // alert("Please select a department!") // Clear teams if no department is selected
                 return;
             }
             if (department == 'all') {
@@ -143,11 +138,9 @@ export default {
                     });
 
                     // Assuming the response contains the CEO's information
-                    console.log(response.data.teams[0].manager_name); // Access the first item in the response array
 
                     if (response) {
                         const ceoName = response.data.teams[0].manager_name; // Get CEO's name
-                        console.log(ceoName)
                         const position = response.data.positions[0]; // Get CEO's position
 
                         // Create the team display string
@@ -164,7 +157,6 @@ export default {
                     const response = await axios.get(`${VITE_AWS_URL}/teams_by_reporting_manager`, {
                         params: { department } // Pass department as a query parameter
                     });
-                    console.log(response.data)
                     // Initialize with "All"
                     this.filteredTeams = [];
 
@@ -194,12 +186,10 @@ export default {
                 }
                 if (this.selectedTeam == 'all' && this.selectedDept == 'all') {
                     params = { dept: 'all', reporting_manager: 'all', position: this.position, role: this.role }
-                    // console.log(params)
                 }
                 else {
 
                     params = { dept: this.selectedDept, role: this.role, reporting_manager: this.selectedReportingManager, position: this.position }
-                    // console.log(params);
                 }
 
             }
@@ -210,11 +200,9 @@ export default {
                 }
                 if (this.selectedTeam == 'all') {
                     params = { dept: localStorage.getItem('dept'), role: localStorage.getItem('role'), reporting_manager: this.selectedReportingManager, position: localStorage.getItem('position') }
-                    // console.log(params)
                 }
                 else if (this.selectedTeam == 'my team') {
                     params = { dept: localStorage.getItem('dept'), role: this.role, reporting_manager: this.selectedReportingManager, position: this.position }
-                    // console.log(params)
                 }
             }
             if (this.role === '2') {
@@ -227,8 +215,6 @@ export default {
                     if (this.events.length === 0) {
                         // Show a popup when schedules are empty
                         alert("There are no schedules found.");
-                    } else {
-                        console.log(this.events);
                     }
                 })
                 .catch(error => {

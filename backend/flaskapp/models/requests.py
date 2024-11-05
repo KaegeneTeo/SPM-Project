@@ -183,7 +183,6 @@ class RequestService:
                 if response2 is None:
                     current_app.logger.error("Failed to create schedule entry for date %s with time_slot 2", date)
             elif time_slot_int in [1, 2]:
-                print("here")
                 # Insert single record for other time_slot values
                 response = self.supabase.from_("schedule").insert({
                     "staff_id": staff_id,
